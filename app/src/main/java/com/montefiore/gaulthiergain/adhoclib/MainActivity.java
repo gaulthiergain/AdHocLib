@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.montefiore.gaulthiergain.adhoclib.fragment.PageAdapter;
 import com.montefiore.gaulthiergain.adhoclib.services.InfosInterface;
 
 import java.net.InetAddress;
@@ -21,101 +22,61 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 
+import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        Button button = (Button) findViewById(R.id.button1);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //Toast.makeText(getApplicationContext(), "Click", Toast.LENGTH_SHORT).show();
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 3"));
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-                // Get infos Interface
-                InfosInterface infosInterface = new InfosInterface();
-                ArrayList<NetworkInterface> arrayNetworkInterfaces = infosInterface.getAllNetworkInterfaces();
-                displayScreenInfosNetInterface(arrayNetworkInterfaces);
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        final PageAdapter adapter = new PageAdapter
+                (getSupportFragmentManager(), tabLayout.getTabCount());
+        viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
 
             }
         });
     }
 
-    /**
-     * Display in console Infos Interface
-     * @param arrayNetworkInterfaces array of network interfaces
-     */
-    void displayConsoleInfosNetInterface(ArrayList<NetworkInterface> arrayNetworkInterfaces) {
-        for (int i = 0; i < arrayNetworkInterfaces.size(); i++) {
-            Log.d("[AdHoc]", "Name: " + arrayNetworkInterfaces.get(i).getName());
-
-            try {
-                if (arrayNetworkInterfaces.get(i).getHardwareAddress() != null) {
-                    Log.d("[AdHoc]", "MAC: " + new String(arrayNetworkInterfaces.get(i).getHardwareAddress(), StandardCharsets.UTF_8));
-                } else {
-                    Log.d("[AdHoc]", "MAC: /");
-                }
-
-                Log.d("[AdHoc]", "MTU: " + arrayNetworkInterfaces.get(i).getMTU());
-
-                Enumeration<InetAddress> en = arrayNetworkInterfaces.get(i).getInetAddresses();
-                while (en.hasMoreElements()) {
-                    InetAddress addr = en.nextElement();
-                    String s = addr.getHostAddress();
-                    int end = s.lastIndexOf("%");
-                    if (end > 0)
-                        Log.d("[AdHoc]","\tAddr: " + s.substring(0, end));
-                    else
-                        Log.d("[AdHoc]","\tAddr: " + s);
-                }
-
-            } catch (SocketException e) {
-                e.printStackTrace();
-            }
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
     }
 
-    /**
-     * Display in screen Infos Interface
-     * @param arrayNetworkInterfaces array of network interfaces
-     */
-    void displayScreenInfosNetInterface(ArrayList<NetworkInterface> arrayNetworkInterfaces) {
-
-        StringBuilder txt = new StringBuilder();
-        for (int i = 0; i < arrayNetworkInterfaces.size(); i++) {
-
-            txt.append("Name: ").append(arrayNetworkInterfaces.get(i).getName()).append("\n");
-
-            try {
-                if (arrayNetworkInterfaces.get(i).getHardwareAddress() != null) {
-                    txt.append("MAC: ").append(new String(arrayNetworkInterfaces.get(i).getHardwareAddress(), StandardCharsets.UTF_8)).append("\n");
-                } else {
-                    txt.append("MAC: /").append("\n");
-                }
-
-                txt.append("MTU: ").append(arrayNetworkInterfaces.get(i).getMTU()).append("\n");
-
-                Enumeration<InetAddress> en = arrayNetworkInterfaces.get(i).getInetAddresses();
-                while (en.hasMoreElements()) {
-                    InetAddress addr = en.nextElement();
-                    String s = addr.getHostAddress();
-                    int end = s.lastIndexOf("%");
-                    if (end > 0)
-                        txt.append("\tAddr: ").append(s.substring(0, end)).append("\n");
-                    else
-                        txt.append("\tAddr: ").append(s).append("\n");
-                }
-
-                txt.append("\n").append("\n");
-
-            } catch (SocketException e) {
-                e.printStackTrace();
-            }
-        }
-
-        TextView textView = (TextView) findViewById(R.id.textView1);
-        textView.setText(txt.toString());
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 }
+
