@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AdHocLib</string>
+    <string name="title_activity_main">MainActivity</string>
+</resources>
