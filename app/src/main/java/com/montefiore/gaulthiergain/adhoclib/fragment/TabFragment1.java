@@ -28,7 +28,7 @@ public class TabFragment1 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         fragmentView = inflater.inflate(R.layout.fragment_tab_fragment1, container, false);
-        Button button = (Button) fragmentView.findViewById(R.id.button1);
+        Button button = fragmentView.findViewById(R.id.button1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 

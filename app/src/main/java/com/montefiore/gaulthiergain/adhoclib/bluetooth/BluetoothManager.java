@@ -1,8 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
 import android.util.Log;
 
 /**
@@ -10,7 +8,7 @@ import android.util.Log;
  *
  */
 
-public class BluetoothManager extends Activity {
+public class BluetoothManager {
 
     // Intent Request Code
     private static final int REQUEST_ENABLE_BT = 3;
@@ -27,22 +25,9 @@ public class BluetoothManager extends Activity {
         }
     }
 
-    public void activeBluetooth(){
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
+    public boolean activeBluetooth(){
+        return bluetoothAdapter.isEnabled();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Check which request we're responding to
-        if (requestCode == REQUEST_ENABLE_BT) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                // The user picked a contact.
 
-            }
-        }
-    }
 }
