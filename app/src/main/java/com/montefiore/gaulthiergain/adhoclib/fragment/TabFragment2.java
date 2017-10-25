@@ -26,9 +26,14 @@ public class TabFragment2 extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                BluetoothManager bluetoothManager = new BluetoothManager();
+                BluetoothManager bluetoothManager = new BluetoothManager(getContext());
                 if(bluetoothManager.activeBluetooth()){
                     Log.d("[AdHoc]", "Bluetooth is enabled");
+                    bluetoothManager.getPairedDevices();
+
+                    bluetoothManager.discovery();
+
+
                 }else{
                     Log.d("[AdHoc]", "Bluetooth is disabled");
                 }
@@ -38,6 +43,13 @@ public class TabFragment2 extends Fragment {
 
 
         return fragmentView;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d("[AdHoc]", "On Destroy");
+        super.onDestroy();
+        bluetoothManager.unregisterDiscovery();
     }
 
 }
