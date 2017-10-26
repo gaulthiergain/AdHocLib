@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclib.bluetooth.OnDiscoveryCompleteListener;
 
 public class TabFragment2 extends ListFragment implements AdapterView.OnItemClickListener {
 
@@ -25,7 +26,11 @@ public class TabFragment2 extends ListFragment implements AdapterView.OnItemClic
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-        bluetoothManager = new BluetoothManager(getContext());
+        bluetoothManager = new BluetoothManager(getContext(), new OnDiscoveryCompleteListener() {
+            public void OnDiscoveryComplete(String response) {
+                Toast.makeText(getContext(), "REPONSE: " + response, Toast.LENGTH_LONG).show();
+            }
+        });
 
         View fragmentView = inflater.inflate(R.layout.fragment_tab_fragment2, container, false);
 
@@ -33,23 +38,17 @@ public class TabFragment2 extends ListFragment implements AdapterView.OnItemClic
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-
-
                 Toast.makeText(getContext(), "Bluetooth", Toast.LENGTH_LONG).show();
 
-                if(bluetoothManager.activeBluetooth()){
+                if(bluetoothManager.isEnabled()){
 
                     Log.d("[AdHoc]", "Bluetooth is enabled");
 
                     bluetoothManager.getPairedDevices();
                     bluetoothManager.discovery();
-
-
-
-
-
                 }else{
                     Log.d("[AdHoc]", "Bluetooth is disabled");
+                    bluetoothManager.enable();
                 }
 
             }

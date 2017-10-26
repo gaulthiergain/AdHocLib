@@ -20,11 +20,14 @@ public class BluetoothManager {
 
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
+
     private HashMap<String, BluetoothDevice> hashMapBluetoothDevice;
+    private OnDiscoveryCompleteListener listener;
 
 
-    public BluetoothManager(Context context) {
+    public BluetoothManager(Context context, OnDiscoveryCompleteListener listener) {
         this.context = context;
+        this.listener = listener;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -35,8 +38,16 @@ public class BluetoothManager {
         }
     }
 
-    public boolean activeBluetooth(){
+    public boolean isEnabled(){
         return bluetoothAdapter.isEnabled();
+    }
+
+    public boolean enable(){
+        return bluetoothAdapter.enable();
+    }
+
+    public boolean disable(){
+        return bluetoothAdapter.disable();
     }
 
     public void getPairedDevices(){
@@ -65,6 +76,8 @@ public class BluetoothManager {
                 // Add into the hashMap
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
                     hashMapBluetoothDevice.put(device.getAddress(), device);
+
+                    listener.OnDiscoveryComplete(device.getAddress());
 
                     // Debug
                     String deviceName = device.getName();
