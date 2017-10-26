@@ -7,8 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -18,8 +18,10 @@ import java.util.Set;
 
 public class BluetoothManager {
 
-    private BluetoothAdapter bluetoothAdapter;
-    private Context context;
+    private final Context context;
+    private final BluetoothAdapter bluetoothAdapter;
+    private HashMap<String, BluetoothDevice> hashMapBluetoothDevice;
+
 
     public BluetoothManager(Context context) {
         this.context = context;
@@ -29,6 +31,7 @@ public class BluetoothManager {
             Log.d("[AdHoc]", "Error device does not support Bluetooth");
         }else{
             Log.d("[AdHoc]", "Device supports Bluetooth");
+            hashMapBluetoothDevice = new HashMap<String, BluetoothDevice>();
         }
     }
 
@@ -44,31 +47,43 @@ public class BluetoothManager {
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
-                Log.d("[AdHoc]", "DeviceName: " + deviceName);
-                Log.d("[AdHoc]", "DeviceHardwareAddress: " + deviceHardwareAddress);
+                Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
             }
         }
     }
+
 
     // Create a BroadcastReceiver for ACTION_FOUND.
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
+
+                // Get the BluetoothDevice object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                Toast.makeText(context, deviceName + "-" + deviceHardwareAddress, Toast.LENGTH_LONG).show();
-                Log.d("[AdHoc]", "DeviceName: " + deviceName);
-                Log.d("[AdHoc]", "DeviceHardwareAddress: " + deviceHardwareAddress);
+
+                // Add into the hashMap
+                if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
+                    hashMapBluetoothDevice.put(device.getAddress(), device);
+
+                    // Debug
+                    String deviceName = device.getName();
+                    String deviceHardwareAddress = device.getAddress();
+                    Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
+                }
             }
         }
-
     };
 
+    public void cancelDiscovery(){
+        // Check if the device is already "discovering". If it is, then cancel discovery.
+        if (bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
+        }
+    }
+
     public void discovery(){
+
         // Check if the device is already "discovering". If it is, then cancel discovery.
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
@@ -83,8 +98,12 @@ public class BluetoothManager {
 
     }
 
-    public void unregisterDiscovery(){
+    public void unregisterDiscovery() throws IllegalArgumentException{
+        Log.d("[AdHoc]", "unregisterDiscovery()");
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 
+    public HashMap<String, BluetoothDevice> getHashMapBluetoothDevice() {
+        return hashMapBluetoothDevice;
+    }
 }

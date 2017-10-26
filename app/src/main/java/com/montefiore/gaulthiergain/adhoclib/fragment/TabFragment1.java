@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclib.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,8 @@ public class TabFragment1 extends Fragment {
         Button button = fragmentView.findViewById(R.id.button1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                Log.d("[AdHoc]", "Get Infos Interfaces");
 
                 // Get infos Interface
                 InfosInterface infosInterface = new InfosInterface();
