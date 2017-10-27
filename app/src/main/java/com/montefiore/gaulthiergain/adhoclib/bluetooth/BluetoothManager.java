@@ -68,7 +68,8 @@ public class BluetoothManager {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d("[AdHoc]", "Action BroadcastReceiver: " + action);
+
+            //Log.d("[AdHoc]", "Action BroadcastReceiver: " + action);
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
@@ -79,14 +80,18 @@ public class BluetoothManager {
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
                     hashMapBluetoothDevice.put(device.getAddress(), device);
 
-                    // Listener
-                    listener.OnDiscoveryComplete(hashMapBluetoothDevice);
-
                     // Debug
                     String deviceName = device.getName();
                     String deviceHardwareAddress = device.getAddress();
                     Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
                 }
+            }else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
+                Log.d("[AdHoc]", "ACTION_DISCOVERY_STARTED");
+                hashMapBluetoothDevice.clear();
+            }else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+                Log.d("[AdHoc]", "ACTION_DISCOVERY_FINISHED");
+                // Listener
+                listener.OnDiscoveryComplete(hashMapBluetoothDevice);
             }
         }
     };
