@@ -4,18 +4,12 @@ package com.montefiore.gaulthiergain.adhoclib.fragment;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
@@ -29,7 +23,7 @@ public class TabFragment2 extends Fragment {
     private BluetoothManager bluetoothManager;
 
 
-    private void updateGUI(View fragmentView){
+    private void updateGUI(View fragmentView) {
         LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
 
         LinearLayout row = new LinearLayout(this.getContext());
@@ -45,7 +39,8 @@ public class TabFragment2 extends Fragment {
             btnTag.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     Toast.makeText(getContext(), btnTag.getText(), Toast.LENGTH_LONG).show();
-                }});
+                }
+            });
 
             row.addView(btnTag);
         }
@@ -59,7 +54,7 @@ public class TabFragment2 extends Fragment {
 
         bluetoothManager = new BluetoothManager(getContext(), new OnDiscoveryCompleteListener() {
             public void OnDiscoveryComplete(HashMap<String, BluetoothDevice> hashMapBluetoothDevice) {
-                if(bluetoothManager.getHashMapBluetoothDevice().size() != 0){
+                if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
                     updateGUI(fragmentView);
                 }
             }
@@ -72,13 +67,13 @@ public class TabFragment2 extends Fragment {
 
                 Toast.makeText(getContext(), "Bluetooth", Toast.LENGTH_LONG).show();
 
-                if(bluetoothManager.isEnabled()){
+                if (bluetoothManager.isEnabled()) {
 
                     Log.d("[AdHoc]", "Bluetooth is enabled");
 
                     bluetoothManager.getPairedDevices();
                     bluetoothManager.discovery();
-                }else{
+                } else {
                     Log.d("[AdHoc]", "Bluetooth is disabled");
                     bluetoothManager.enable();
                 }
