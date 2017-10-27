@@ -38,10 +38,15 @@ public class TabFragment2 extends Fragment {
         int i = 0;
         for (BluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
 
-            Button btnTag = new Button(this.getContext());
+            final Button btnTag = new Button(this.getContext());
             btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            btnTag.setText(device.getName() + "-" + device.getAddress());
+            btnTag.setText(device.getName() + " - " + device.getAddress());
             btnTag.setId(i++);
+            btnTag.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), btnTag.getText(), Toast.LENGTH_LONG).show();
+                }});
+
             row.addView(btnTag);
         }
         layout.addView(row);

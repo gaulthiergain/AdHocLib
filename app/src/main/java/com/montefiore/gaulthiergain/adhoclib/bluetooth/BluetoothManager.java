@@ -68,6 +68,8 @@ public class BluetoothManager {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d("[AdHoc]", "Action BroadcastReceiver: " + action);
+
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
                 // Get the BluetoothDevice object and its info from the Intent.
@@ -77,7 +79,7 @@ public class BluetoothManager {
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
                     hashMapBluetoothDevice.put(device.getAddress(), device);
 
-                    //
+                    // Listener
                     listener.OnDiscoveryComplete(hashMapBluetoothDevice);
 
                     // Debug
@@ -107,8 +109,12 @@ public class BluetoothManager {
         bluetoothAdapter.startDiscovery();
 
         // Register for broadcasts when a device is discovered.
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        context.getApplicationContext().registerReceiver(mReceiver, filter);
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothDevice.ACTION_FOUND));
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothAdapter.ACTION_DISCOVERY_STARTED));
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 
     }
 
