@@ -1,7 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclib.fragment;
 
 
+import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,21 +22,44 @@ import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.OnDiscoveryCompleteListener;
 
-public class TabFragment2 extends ListFragment implements AdapterView.OnItemClickListener {
+import java.util.HashMap;
+
+public class TabFragment2 extends Fragment {
 
     private BluetoothManager bluetoothManager;
+
+
+    private void updateGUI(View fragmentView){
+        LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
+
+        LinearLayout row = new LinearLayout(this.getContext());
+        row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        int i = 0;
+        for (BluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
+
+            Button btnTag = new Button(this.getContext());
+            btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            btnTag.setText(device.getName() + "-" + device.getAddress());
+            btnTag.setId(i++);
+            row.addView(btnTag);
+        }
+        layout.addView(row);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        final View fragmentView = inflater.inflate(R.layout.fragment_tab_fragment2, container, false);
 
         bluetoothManager = new BluetoothManager(getContext(), new OnDiscoveryCompleteListener() {
-            public void OnDiscoveryComplete(String response) {
-                Toast.makeText(getContext(), "REPONSE: " + response, Toast.LENGTH_LONG).show();
+            public void OnDiscoveryComplete(HashMap<String, BluetoothDevice> hashMapBluetoothDevice) {
+                if(bluetoothManager.getHashMapBluetoothDevice().size() != 0){
+                    updateGUI(fragmentView);
+                }
             }
         });
 
-        View fragmentView = inflater.inflate(R.layout.fragment_tab_fragment2, container, false);
 
         Button button = fragmentView.findViewById(R.id.button2);
         button.setOnClickListener(new View.OnClickListener() {
@@ -54,19 +81,6 @@ public class TabFragment2 extends ListFragment implements AdapterView.OnItemClic
             }
         });
 
-
-       /* final String[] items = new String[bluetoothManager.getHashMapBluetoothDevice().size() + 1];
-        for (int i = 0; i < bluetoothManager.getHashMapBluetoothDevice().size(); i++) {
-            items[i] = bluetoothManager.getHashMapBluetoothDevice().get(i).getName();
-        }*/
-
-        String[] items = {"salut", "test"};
-
-        final ArrayAdapter<String> aa = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_list_item_1, items);
-        setListAdapter(aa);
-
-
         return fragmentView;
     }
 
@@ -77,21 +91,4 @@ public class TabFragment2 extends ListFragment implements AdapterView.OnItemClic
         bluetoothManager.unregisterDiscovery();
     }
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-
-        // Cancel discovery
-        bluetoothManager.cancelDiscovery();
-
-        // Unregister Discovery
-        bluetoothManager.unregisterDiscovery();
-
-        String info = ((TextView) v).getText().toString();
-        Toast.makeText(getContext(), "info: " + info, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-    }
 }

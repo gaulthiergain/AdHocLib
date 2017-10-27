@@ -77,7 +77,8 @@ public class BluetoothManager {
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
                     hashMapBluetoothDevice.put(device.getAddress(), device);
 
-                    listener.OnDiscoveryComplete(device.getAddress());
+                    //
+                    listener.OnDiscoveryComplete(hashMapBluetoothDevice);
 
                     // Debug
                     String deviceName = device.getName();
