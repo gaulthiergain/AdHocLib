@@ -22,7 +22,7 @@ public class BluetoothManager {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
 
-    private HashMap<String, BluetoothDevice> hashMapBluetoothDevice;
+    private HashMap<String, AdHocBluetoothDevice> hashMapBluetoothDevice;
     private OnDiscoveryCompleteListener listener;
 
 
@@ -31,11 +31,11 @@ public class BluetoothManager {
         this.listener = listener;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
-            // Device does not support Bluetooth
+            // AdHocBluetoothDevice does not support Bluetooth
             Log.d("[AdHoc]", "Error device does not support Bluetooth");
         }else{
-            Log.d("[AdHoc]", "Device supports Bluetooth");
-            hashMapBluetoothDevice = new HashMap<String, BluetoothDevice>();
+            Log.d("[AdHoc]", "AdHocBluetoothDevice supports Bluetooth");
+            hashMapBluetoothDevice = new HashMap<String, AdHocBluetoothDevice>();
         }
     }
 
@@ -53,7 +53,7 @@ public class BluetoothManager {
 
     public void getPairedDevices(){
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        Log.d("[AdHoc]", "Device Paired: ");
+        Log.d("[AdHoc]", "AdHocBluetoothDevice Paired: ");
         if (pairedDevices.size() > 0) {
             // Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices) {
@@ -79,7 +79,9 @@ public class BluetoothManager {
 
                 // Add into the hashMap
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
-                    hashMapBluetoothDevice.put(device.getAddress(), device);
+                    hashMapBluetoothDevice.put(device.getAddress(), new AdHocBluetoothDevice(device.getName(), device.getAddress(),
+                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,
+                            Short.MIN_VALUE)));
 
                     Toast.makeText(context, device.getName() + " discovered", Toast.LENGTH_SHORT).show();
 
@@ -109,9 +111,7 @@ public class BluetoothManager {
     public void discovery(){
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
-        if (bluetoothAdapter.isDiscovering()) {
-            bluetoothAdapter.cancelDiscovery();
-        }
+        this.cancelDiscovery();
 
         // Start Discovery
         bluetoothAdapter.startDiscovery();
@@ -131,7 +131,7 @@ public class BluetoothManager {
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 
-    public HashMap<String, BluetoothDevice> getHashMapBluetoothDevice() {
+    public HashMap<String, AdHocBluetoothDevice> getHashMapBluetoothDevice() {
         return hashMapBluetoothDevice;
     }
 }

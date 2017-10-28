@@ -1,9 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclib.fragment;
 
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
+import com.montefiore.gaulthiergain.adhoclib.bluetooth.AdHocBluetoothDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.OnDiscoveryCompleteListener;
 
@@ -31,7 +32,7 @@ public class TabFragment2 extends Fragment {
         row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         int i = 0;
-        for (final BluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
+        for (final AdHocBluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
 
             final Button btnTag = new Button(this.getContext());
             btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -41,7 +42,8 @@ public class TabFragment2 extends Fragment {
                 public void onClick(View v) {
                     Toast.makeText(getContext(), btnTag.getText(), Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getContext(), BluetoothConnect.class);
-                    intent.putExtra(device.getAddress(), device);
+                    intent.putExtra(AdHocBluetoothDevice.EXTRA_ADDR, device.getAddress());
+                    intent.putExtra(device.getAddress(), (Parcelable) device);
                     bluetoothManager.unregisterDiscovery();
                     startActivity(intent);
                 }
@@ -58,7 +60,7 @@ public class TabFragment2 extends Fragment {
         final View fragmentView = inflater.inflate(R.layout.fragment_tab_fragment2, container, false);
 
         bluetoothManager = new BluetoothManager(getContext(), new OnDiscoveryCompleteListener() {
-            public void OnDiscoveryComplete(HashMap<String, BluetoothDevice> hashMapBluetoothDevice) {
+            public void OnDiscoveryComplete(HashMap<String, AdHocBluetoothDevice> hashMapBluetoothDevice) {
                 if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
                     updateGUI(fragmentView);
                 }

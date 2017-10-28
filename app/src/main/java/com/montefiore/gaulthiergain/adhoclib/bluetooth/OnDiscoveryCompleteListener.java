@@ -10,5 +10,5 @@ import java.util.HashMap;
  */
 
 public interface OnDiscoveryCompleteListener {
-    void OnDiscoveryComplete(HashMap<String, BluetoothDevice> hashMapBluetoothDevice);
+    void OnDiscoveryComplete(HashMap<String, AdHocBluetoothDevice> hashMapBluetoothDevice);
 }
