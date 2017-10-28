@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import java.io.IOException;
@@ -17,7 +16,6 @@ public class BluetoothListenThread extends Thread {
     private String TAG = "[AdHoc]";
     private BluetoothServerNetwork bluetoothNetwork;
     private String socketType;
-
 
     public BluetoothListenThread(boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) {
         this.socketType = secure ? "Secure" : "Insecure";
@@ -36,10 +34,10 @@ public class BluetoothListenThread extends Thread {
     }
 
     public void run() {
+
         Log.d(TAG, "Socket Type: " + socketType + "BEGIN mAcceptThread" + this);
         setName("BluetoothListenThread" + socketType);
 
-        BluetoothSocket socket = null;
         BluetoothNetwork bluetoothSocketNetwork;
 
         try {

@@ -14,7 +14,6 @@ import java.util.Set;
 
 /**
  * Created by gaulthiergain on 25/10/17.
- *
  */
 
 public class BluetoothManager {
@@ -22,7 +21,7 @@ public class BluetoothManager {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
 
-    private HashMap<String, BluetoothDevice> hashMapBluetoothDevice;
+    private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
     private OnDiscoveryCompleteListener listener;
 
 
@@ -33,25 +32,25 @@ public class BluetoothManager {
         if (bluetoothAdapter == null) {
             // AdHocBluetoothDevice does not support Bluetooth
             Log.d("[AdHoc]", "Error device does not support Bluetooth");
-        }else{
+        } else {
             Log.d("[AdHoc]", "AdHocBluetoothDevice supports Bluetooth");
-            hashMapBluetoothDevice = new HashMap<String, BluetoothDevice>();
+            hashMapBluetoothDevice = new HashMap<String, BluetoothAdHocDevice>();
         }
     }
 
-    public boolean isEnabled(){
+    public boolean isEnabled() {
         return bluetoothAdapter.isEnabled();
     }
 
-    public boolean enable(){
+    public boolean enable() {
         return bluetoothAdapter.enable();
     }
 
-    public boolean disable(){
+    public boolean disable() {
         return bluetoothAdapter.disable();
     }
 
-    public void getPairedDevices(){
+    public void getPairedDevices() {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         Log.d("[AdHoc]", "AdHocBluetoothDevice Paired: ");
         if (pairedDevices.size() > 0) {
@@ -78,8 +77,9 @@ public class BluetoothManager {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 // Add into the hashMap
-                if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
-                    hashMapBluetoothDevice.put(device.getAddress(), device);
+                if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
+                    hashMapBluetoothDevice.put(device.getAddress(), new BluetoothAdHocDevice(device,
+                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)));
 
                     Toast.makeText(context, device.getName() + " discovered", Toast.LENGTH_SHORT).show();
 
@@ -88,10 +88,10 @@ public class BluetoothManager {
                     String deviceHardwareAddress = device.getAddress();
                     Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
                 }
-            }else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 Log.d("[AdHoc]", "ACTION_DISCOVERY_STARTED");
                 hashMapBluetoothDevice.clear();
-            }else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d("[AdHoc]", "ACTION_DISCOVERY_FINISHED");
                 // Listener
                 listener.OnDiscoveryComplete(hashMapBluetoothDevice);
@@ -99,14 +99,14 @@ public class BluetoothManager {
         }
     };
 
-    public void cancelDiscovery(){
+    public void cancelDiscovery() {
         // Check if the device is already "discovering". If it is, then cancel discovery.
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
     }
 
-    public void discovery(){
+    public void discovery() {
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         this.cancelDiscovery();
@@ -124,12 +124,12 @@ public class BluetoothManager {
 
     }
 
-    public void unregisterDiscovery() throws IllegalArgumentException{
+    public void unregisterDiscovery() throws IllegalArgumentException {
         Log.d("[AdHoc]", "unregisterDiscovery()");
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 
-    public HashMap<String, BluetoothDevice> getHashMapBluetoothDevice() {
+    public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
         return hashMapBluetoothDevice;
     }
 }

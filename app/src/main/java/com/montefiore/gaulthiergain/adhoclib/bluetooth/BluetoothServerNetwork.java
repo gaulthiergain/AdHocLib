@@ -21,7 +21,6 @@ import java.io.OutputStream;
 public class BluetoothServerNetwork {
 
     private BluetoothServerSocket serverSocket;
-    private String TAG = "[AdHoc]";
 
     /**
      * Constructor.
