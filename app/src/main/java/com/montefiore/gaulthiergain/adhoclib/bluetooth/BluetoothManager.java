@@ -22,7 +22,7 @@ public class BluetoothManager {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
 
-    private HashMap<String, AdHocBluetoothDevice> hashMapBluetoothDevice;
+    private HashMap<String, BluetoothDevice> hashMapBluetoothDevice;
     private OnDiscoveryCompleteListener listener;
 
 
@@ -35,7 +35,7 @@ public class BluetoothManager {
             Log.d("[AdHoc]", "Error device does not support Bluetooth");
         }else{
             Log.d("[AdHoc]", "AdHocBluetoothDevice supports Bluetooth");
-            hashMapBluetoothDevice = new HashMap<String, AdHocBluetoothDevice>();
+            hashMapBluetoothDevice = new HashMap<String, BluetoothDevice>();
         }
     }
 
@@ -79,9 +79,7 @@ public class BluetoothManager {
 
                 // Add into the hashMap
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
-                    hashMapBluetoothDevice.put(device.getAddress(), new AdHocBluetoothDevice(device.getName(), device.getAddress(),
-                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,
-                            Short.MIN_VALUE)));
+                    hashMapBluetoothDevice.put(device.getAddress(), device);
 
                     Toast.makeText(context, device.getName() + " discovered", Toast.LENGTH_SHORT).show();
 
@@ -131,7 +129,7 @@ public class BluetoothManager {
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 
-    public HashMap<String, AdHocBluetoothDevice> getHashMapBluetoothDevice() {
+    public HashMap<String, BluetoothDevice> getHashMapBluetoothDevice() {
         return hashMapBluetoothDevice;
     }
 }
