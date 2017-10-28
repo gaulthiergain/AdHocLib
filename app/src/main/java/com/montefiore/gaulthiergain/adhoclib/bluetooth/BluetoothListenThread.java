@@ -1,10 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,64 +15,62 @@ import java.util.UUID;
 public class BluetoothListenThread extends Thread {
 
     private String TAG = "[AdHoc]";
-    private final BluetoothServerSocket mmServerSocket;
-    private String mSocketType;
+    private BluetoothServerNetwork bluetoothNetwork;
+    private String socketType;
 
 
     public BluetoothListenThread(boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) {
-        BluetoothServerSocket tmp = null;
-        mSocketType = secure ? "Secure" : "Insecure";
+        this.socketType = secure ? "Secure" : "Insecure";
         //uuid = UUID.fromString("e0917680-d427-11e4-8830-" + mmDevice.getAddress().replace(":", "")); TODO
-
 
         // Create a new listening server socket
         try {
             if (secure) {
-                tmp = mAdapter.listenUsingRfcommWithServiceRecord(name,
-                        uuid);
+                this.bluetoothNetwork = new BluetoothServerNetwork(mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
             } else {
-                tmp = mAdapter.listenUsingInsecureRfcommWithServiceRecord(
-                        name, uuid);
+                this.bluetoothNetwork = new BluetoothServerNetwork(mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid));
             }
         } catch (IOException e) {
-            Log.e(TAG, "Socket Type: " + mSocketType + "listen() failed", e);
+            Log.e(TAG, "Socket Type: " + socketType + "listen() failed", e);
         }
-        mmServerSocket = tmp;
     }
 
     public void run() {
-        Log.d(TAG, "Socket Type: " + mSocketType + "BEGIN mAcceptThread" + this);
-        setName("AcceptThread" + mSocketType);
+        Log.d(TAG, "Socket Type: " + socketType + "BEGIN mAcceptThread" + this);
+        setName("BluetoothListenThread" + socketType);
 
         BluetoothSocket socket = null;
+        BluetoothNetwork bluetoothSocketNetwork;
 
         try {
             // This is a blocking call and will only return on a
             // successful connection or an exception
-            socket = mmServerSocket.accept();
-        } catch (IOException e) {
-            Log.e(TAG, "Socket Type: " + mSocketType + "accept() failed", e);
-        }
+            bluetoothSocketNetwork = new BluetoothNetwork(bluetoothNetwork.accept());
 
-        // If a connection was accepted
-        if (socket != null) {
+            // If a connection was accepted
+            if (bluetoothSocketNetwork.getSocket() != null) {
             /*connected(socket, socket.getRemoteDevice(),
-                    mSocketType);*/
-            //
-            Log.d(TAG, "SUCCEDEED: " + mSocketType);
+                    socketType);*/
+                //
+                Log.d(TAG, "CONNECTED: " + socketType);
+                bluetoothSocketNetwork.sendString("test");
+            }
+
+
+            Log.d(TAG, "END BluetoothListenThread, socket Type: " + socketType);
+
+        } catch (IOException e) {
+            Log.e(TAG, "Socket Type: " + socketType + "accept() failed", e);
         }
-
-
-        Log.d(TAG, "END mAcceptThread, socket Type: " + mSocketType);
 
     }
 
     public void cancel() {
-        Log.d(TAG, "Socket Type" + mSocketType + "cancel " + this);
+        Log.d(TAG, "Socket Type" + socketType + "cancel " + this);
         try {
-            mmServerSocket.close();
+            bluetoothNetwork.closeSocket();
         } catch (IOException e) {
-            Log.e(TAG, "Socket Type" + mSocketType + "close() of server failed", e);
+            Log.e(TAG, "Socket Type" + socketType + "close() of server failed", e);
         }
     }
 }

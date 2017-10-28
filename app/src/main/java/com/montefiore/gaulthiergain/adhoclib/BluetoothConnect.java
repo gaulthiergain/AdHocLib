@@ -76,6 +76,13 @@ public class BluetoothConnect extends AppCompatActivity {
         });
 
 
+        final Button buttonChat = (Button) findViewById(R.id.buttonChat);
+        buttonChat.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+
+            }
+        });
 
 
 

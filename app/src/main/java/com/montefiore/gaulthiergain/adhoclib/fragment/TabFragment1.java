@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
-import com.montefiore.gaulthiergain.adhoclib.services.InfosInterface;
+import com.montefiore.gaulthiergain.adhoclib.util.InfosInterface;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

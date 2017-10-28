@@ -33,5 +33,35 @@
         android:layout_marginEnd="49dp"
         android:text="@string/listen" />
 
+    <Button
+        android:id="@+id/buttonChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/editTextChat"
+        android:layout_alignEnd="@+id/textView2"
+        android:layout_marginEnd="13dp"
+        android:text="Chat" />
+
+    <EditText
+        android:id="@+id/editTextChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonConnect"
+        android:layout_marginTop="71dp"
+        android:layout_toStartOf="@+id/buttonListen"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="" />
+
+    <EditText
+        android:id="@+id/editTextRcvChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonChat"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="34dp"
+        android:ems="10"
+        android:inputType="textMultiLine" />
+
 
 </RelativeLayout>
