@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclib.fragment;
 
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.OnDiscoveryCompleteListener;
@@ -22,7 +24,6 @@ public class TabFragment2 extends Fragment {
 
     private BluetoothManager bluetoothManager;
 
-
     private void updateGUI(View fragmentView) {
         LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
 
@@ -30,7 +31,7 @@ public class TabFragment2 extends Fragment {
         row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         int i = 0;
-        for (BluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
+        for (final BluetoothDevice device : bluetoothManager.getHashMapBluetoothDevice().values()) {
 
             final Button btnTag = new Button(this.getContext());
             btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -39,6 +40,10 @@ public class TabFragment2 extends Fragment {
             btnTag.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     Toast.makeText(getContext(), btnTag.getText(), Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(getContext(), BluetoothConnect.class);
+                    intent.putExtra(device.getAddress(), device);
+                    bluetoothManager.unregisterDiscovery();
+                    startActivity(intent);
                 }
             });
 
@@ -60,12 +65,9 @@ public class TabFragment2 extends Fragment {
             }
         });
 
-
         Button button = fragmentView.findViewById(R.id.button2);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
-                Toast.makeText(getContext(), "Bluetooth", Toast.LENGTH_LONG).show();
 
                 if (bluetoothManager.isEnabled()) {
 

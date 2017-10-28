@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -79,6 +80,8 @@ public class BluetoothManager {
                 // Add into the hashMap
                 if(!hashMapBluetoothDevice.containsKey(device.getAddress())){
                     hashMapBluetoothDevice.put(device.getAddress(), device);
+
+                    Toast.makeText(context, device.getName() + " discovered", Toast.LENGTH_SHORT).show();
 
                     // Debug
                     String deviceName = device.getName();
