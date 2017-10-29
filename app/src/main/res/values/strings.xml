@@ -8,4 +8,6 @@
     <string name="connect_to">Connect to</string>
     <string name="listen">Listen</string>
     <string name="stop">Stop</string>
+    <string name="discovery">Discovery</string>
+    <string name="chat">Chat</string>
 </resources>

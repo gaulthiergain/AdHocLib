@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
@@ -25,35 +24,6 @@ import java.util.HashMap;
 public class TabFragment2 extends Fragment {
 
     private BluetoothManager bluetoothManager;
-
-    private void updateGUI(View fragmentView) {
-        LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
-
-
-        int i = 0;
-        for (final BluetoothAdHocDevice adHocDevice : bluetoothManager.getHashMapBluetoothDevice().values()) {
-            LinearLayout row = new LinearLayout(this.getContext());
-            row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-            final Button btnTag = new Button(this.getContext());
-            btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            btnTag.setText(adHocDevice.toString());
-            btnTag.setId(i++);
-            btnTag.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Toast.makeText(getContext(), btnTag.getText(), Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(getContext(), BluetoothConnect.class);
-                    intent.putExtra(BluetoothAdHocDevice.EXTRA_DEVICE, adHocDevice);
-                    bluetoothManager.unregisterDiscovery();
-                    startActivity(intent);
-                }
-            });
-
-            row.addView(btnTag);
-            layout.addView(row);
-        }
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -73,9 +43,7 @@ public class TabFragment2 extends Fragment {
             public void onClick(View v) {
 
                 if (bluetoothManager.isEnabled()) {
-
                     Log.d("[AdHoc]", "Bluetooth is enabled");
-
                     bluetoothManager.getPairedDevices();
                     bluetoothManager.discovery();
                 } else {
@@ -86,6 +54,33 @@ public class TabFragment2 extends Fragment {
         });
 
         return fragmentView;
+    }
+
+    private void updateGUI(View fragmentView) {
+        LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
+
+        int i = 0;
+        for (final BluetoothAdHocDevice adHocDevice : bluetoothManager.getHashMapBluetoothDevice().values()) {
+
+            LinearLayout row = new LinearLayout(this.getContext());
+            row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            final Button btnTag = new Button(this.getContext());
+            btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            btnTag.setText(adHocDevice.toString());
+            btnTag.setId(i++);
+            btnTag.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Intent intent = new Intent(getContext(), BluetoothConnect.class);
+                    intent.putExtra(BluetoothAdHocDevice.EXTRA_DEVICE, adHocDevice);
+                    bluetoothManager.unregisterDiscovery();
+                    startActivity(intent);
+                }
+            });
+
+            row.addView(btnTag);
+            layout.addView(row);
+        }
     }
 
     @Override

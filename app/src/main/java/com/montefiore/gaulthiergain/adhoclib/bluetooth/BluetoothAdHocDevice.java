@@ -3,7 +3,6 @@ package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.io.Serializable;
 
@@ -72,7 +71,7 @@ public class BluetoothAdHocDevice implements Parcelable {
 
     @Override
     public String toString() {
-        return device.getAddress() + " - " + device.getName()  + " - " + uuid;
+        return device.getAddress() + " - " + device.getName();
     }
 
 

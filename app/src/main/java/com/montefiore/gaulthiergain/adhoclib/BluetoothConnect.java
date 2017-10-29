@@ -30,11 +30,7 @@ public class BluetoothConnect extends AppCompatActivity {
         setContentView(R.layout.activity_bluetooth_connect);
 
         Intent intent = getIntent();
-
         final BluetoothAdHocDevice adHocDevice = intent.getParcelableExtra(BluetoothAdHocDevice.EXTRA_DEVICE);
-        Log.d("[AdHoc]", "UUID: " + adHocDevice.getUuid());
-        Log.d("[AdHoc]", "RSSI: " + adHocDevice.getRssi());
-        Log.d("[AdHoc]", "DEVICE: " + adHocDevice.getDevice().getName());
 
         TextView textView = (TextView) findViewById(R.id.textView2);
         textView.setText(adHocDevice.toString());
@@ -85,9 +81,6 @@ public class BluetoothConnect extends AppCompatActivity {
 
             }
         });
-
-
-
-
+        
     }
 }
