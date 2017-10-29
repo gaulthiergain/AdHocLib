@@ -65,4 +65,11 @@ public class BluetoothNetwork {
         return socket;
     }
 
+    public InputStream getInput() {
+        return input;
+    }
+
+    public OutputStream getOutput() {
+        return output;
+    }
 }

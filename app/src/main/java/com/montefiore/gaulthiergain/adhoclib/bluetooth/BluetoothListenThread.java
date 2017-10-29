@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
@@ -14,13 +15,15 @@ import java.util.UUID;
 public class BluetoothListenThread extends Thread {
 
     private String TAG = "[AdHoc]";
+    private BluetoothNetwork bluetoothSocketNetwork;
     private BluetoothServerNetwork bluetoothNetwork;
     private String socketType;
 
-    public BluetoothListenThread(boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) {
-        this.socketType = secure ? "Secure" : "Insecure";
-        //uuid = UUID.fromString("e0917680-d427-11e4-8830-" + mmDevice.getAddress().replace(":", "")); TODO
+    private Handler mHandler;
 
+    public BluetoothListenThread(Handler mHandler , boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) {
+        this.socketType = secure ? "Secure" : "Insecure";
+        this.mHandler = mHandler;
         // Create a new listening server socket
         try {
             if (secure) {
@@ -33,12 +36,16 @@ public class BluetoothListenThread extends Thread {
         }
     }
 
+    public void sendMessage(String msg) throws IOException {
+        bluetoothSocketNetwork.sendString(msg);
+    }
+
     public void run() {
 
         Log.d(TAG, "Socket Type: " + socketType + "BEGIN mAcceptThread" + this);
         setName("BluetoothListenThread" + socketType);
 
-        BluetoothNetwork bluetoothSocketNetwork;
+
 
         try {
             // This is a blocking call and will only return on a
@@ -47,11 +54,8 @@ public class BluetoothListenThread extends Thread {
 
             // If a connection was accepted
             if (bluetoothSocketNetwork.getSocket() != null) {
-            /*connected(socket, socket.getRemoteDevice(),
-                    socketType);*/
-                //
+                //TODO State here
                 Log.d(TAG, "CONNECTED: " + socketType);
-                bluetoothSocketNetwork.sendString("test");
             }
 
 

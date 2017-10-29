@@ -21,7 +21,8 @@ public class BluetoothAdHocDevice implements Parcelable {
 
 
     BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
-        this.uuid = "e0917680-d427-11e4-8830-" + device.getAddress().replace(":", "");
+        //this.uuid = "e0917680-d427-11e4-8830-" + device.getAddress().replace(":", ""); TODO
+        this.uuid = "983d081a-86e6-4581-8bcb-e5b28013ea08";
         this.rssi = rssi;
         this.device = device;
 

@@ -1,27 +1,29 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.os.Handler;
 import android.util.Log;
+
+import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 
 import java.io.IOException;
 import java.util.UUID;
 
 /**
  * Created by gaulthiergain on 28/10/17.
- *
  */
 
 public class BluetoothConnectThread extends Thread {
 
     private String TAG = "[AdHoc]";
-    private final UUID uuid;
     private BluetoothNetwork bluetoothNetwork;
     private final BluetoothDevice device;
 
-    public BluetoothConnectThread(BluetoothDevice device, boolean secure) {
+    private Handler mHandler;
+
+    public BluetoothConnectThread(Handler mHandler, BluetoothDevice device, boolean secure, UUID uuid) {
         this.device = device;
-        //uuid = UUID.fromString("e0917680-d427-11e4-8830-" + device.getAddress().replace(":", ""));TODO
-        this.uuid = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+        this.mHandler = mHandler;
 
         try {
             // Get a BluetoothSocket to connect with the given BluetoothDevice.
@@ -56,12 +58,24 @@ public class BluetoothConnectThread extends Thread {
 
         // The connection attempt succeeded. Perform work associated with
         // the connection in a separate thread.TODO
-        try {
-            Log.d(TAG,"WAITING: ");
-            String receive = bluetoothNetwork.receiveString();
-            Log.d(TAG,"Message received: " + receive);
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                Log.d(TAG, "WAITING: ");
+
+                //String receive = bluetoothNetwork.receiveString();
+               // Log.d(TAG, "Message received: " + receive);
+
+                byte[] buffer = new byte[256];
+                int bytes;
+                bytes = bluetoothNetwork.getInput().read(buffer);
+                Log.d(TAG, "RCVD: " + new String(buffer, 0, bytes));
+
+                // Send the obtained bytes to the UI Activity
+                mHandler.obtainMessage(BluetoothConnect.MESSAGE_READ, bytes, -1, buffer)
+                        .sendToTarget();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
