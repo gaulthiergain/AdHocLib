@@ -60,6 +60,7 @@
         android:layout_below="@+id/buttonChat"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="34dp"
+        android:text=""
          />
 
 

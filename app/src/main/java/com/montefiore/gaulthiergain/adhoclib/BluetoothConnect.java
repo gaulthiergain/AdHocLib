@@ -112,7 +112,7 @@ public class BluetoothConnect extends AppCompatActivity {
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     // Update GUI
                     final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                    textViewChat.setText(readMessage);
+                    textViewChat.setText(textViewChat.getText() + "\n------> " + readMessage);
                     break;
             }
         }
