@@ -11,23 +11,24 @@ import android.widget.Button;
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.wifi.WifiP2P;
 
+import java.net.Socket;
+
 
 public class TabFragment3 extends Fragment {
 
     private View fragmentView;
+    private WifiP2P wifiP2P;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentView = inflater.inflate(R.layout.fragment_tab_fragment3, container, false);
+
+        wifiP2P = new WifiP2P(getContext());
+
         Button button = fragmentView.findViewById(R.id.buttonDiscoveryWifi);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
-                WifiP2P wifiP2P = new WifiP2P(getContext());
                 wifiP2P.discover();
-
-
-
             }
         });
 

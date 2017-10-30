@@ -12,6 +12,10 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +40,7 @@ public class WifiP2P {
 
     private HashMap<String, WifiP2pDevice> peers = new HashMap<String, WifiP2pDevice>();
 
-    public WifiP2P(Context context) {
+    public WifiP2P(final Context context) {
         this.context = context;
         mManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(context, getMainLooper(), null);
@@ -85,8 +89,15 @@ public class WifiP2P {
             @Override
             public void onConnectionInfoAvailable(WifiP2pInfo info) {
                 Log.d(TAG, "onConnectionInfoAvailable");
-                Log.d(TAG, String.valueOf(info.groupOwnerAddress.getHostAddress()));
+                Log.d(TAG, "isgroupFormed: " + info.groupFormed);
+                Log.d(TAG, "isGroupOwner: " + info.isGroupOwner);
+                Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
 
+                if(info.isGroupOwner){
+                    new ServerTask(context).execute();
+                }else{
+                    new ClientTask(context, info.groupOwnerAddress.getHostAddress()).execute();
+                }
 
             }
         };
@@ -143,4 +154,9 @@ public class WifiP2P {
             }
         });
     }
+
+    public void unregister(){
+        context.unregisterReceiver(wiFiDirectBroadcastReceiver);
+    }
+
 }
