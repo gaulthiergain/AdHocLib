@@ -116,12 +116,15 @@ public class WifiP2P {
         context.registerReceiver(wiFiDirectBroadcastReceiver, intentFilter);
     }
 
-    public void discover(){
+    public void discover(final OnDiscoveryCompleteListener onDiscoveryCompleteListener){
+
+
 
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
+                onDiscoveryCompleteListener.OnDiscoveryComplete(peers);
                 // Code for when the discovery initiation is successful goes here.
                 // No services have actually been discovered yet, so this method
                 // can often be left blank.  Code for peer discovery goes in the
