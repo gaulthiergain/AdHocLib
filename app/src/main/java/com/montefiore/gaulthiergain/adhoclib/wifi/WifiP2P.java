@@ -9,6 +9,8 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -37,11 +39,13 @@ public class WifiP2P {
     private WiFiDirectBroadcastReceiver wiFiDirectBroadcastReceiver;
     private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
+    private Handler mHandler;
 
     private HashMap<String, WifiP2pDevice> peers = new HashMap<String, WifiP2pDevice>();
 
-    public WifiP2P(final Context context) {
+    public WifiP2P(final Context context, final Handler mHandler) {
         this.context = context;
+        this.mHandler = mHandler;
         mManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(context, getMainLooper(), null);
 
@@ -94,7 +98,13 @@ public class WifiP2P {
                 Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
 
                 if(info.isGroupOwner){
-                    new ServerTask(context).execute();
+                    new ServerTask(context, new OnReceiveListener() {
+                        @Override
+                        public void OnReceive(Context context, String str) {
+                            Message message = mHandler.obtainMessage(1, str);
+                            message.sendToTarget();
+                        }
+                    }).execute();
                 }else{
                     new ClientTask(context, info.groupOwnerAddress.getHostAddress()).execute();
                 }

@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -30,9 +31,17 @@ public class ClientTask extends AsyncTask<Void, Void, String> {
             socket.bind(null);
             socket.connect((new InetSocketAddress(addr, 8988)), 5000);
             Log.d(TAG, "Client socket - " + socket.isConnected());
-            socket.close();
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write("salut".getBytes());
+            outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }

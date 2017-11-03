@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -16,23 +18,49 @@ public class ServerTask extends AsyncTask<Void, Void, String> {
 
     private static final String TAG = "[AdHoc]";
     private Context context;
+    private OnReceiveListener onReceiveListener;
 
-    public ServerTask(Context context) {
+    public ServerTask(Context context, OnReceiveListener onReceiveListener) {
         this.context = context;
+        this.onReceiveListener = onReceiveListener;
     }
 
     @Override
     protected String doInBackground(Void... voids) {
+        ServerSocket serverSocket = null;
+        Socket client = null;
         try {
             Log.d(TAG, "Listening ... ");
-            ServerSocket serverSocket = new ServerSocket(8988);
+             serverSocket = new ServerSocket(8988);
             Log.d(TAG, "Server: Socket opened");
-            Socket client = serverSocket.accept();
+             client = serverSocket.accept();
             Log.d(TAG, "Server: connection done");
-            client.close();
-            serverSocket.close();
+            OutputStream outputStream;
+            InputStream inputStream;
+            do{
+                inputStream = client.getInputStream();
+                byte[] buffer = new byte[256];
+                int length;
+                length = inputStream.read(buffer);
+                if(length > 0){
+                    Log.d(TAG, "Size length: " + length);
+                    onReceiveListener.OnReceive(context, new String(buffer, 0, length));
+                }else{
+                    throw new IOException("error");
+                }
+
+            }while(true);
+
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                client.close();
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
         return null;
     }
