@@ -32,6 +32,7 @@ import static android.os.Looper.getMainLooper;
 public class WifiP2P {
 
     private static final String TAG = "[AdHoc]";
+    private final OnDiscoveryCompleteListener onDiscoveryCompleteListener;
     private Context context;
     private WifiP2pManager mManager;
     private Channel mChannel;
@@ -43,9 +44,10 @@ public class WifiP2P {
 
     private HashMap<String, WifiP2pDevice> peers = new HashMap<String, WifiP2pDevice>();
 
-    public WifiP2P(final Context context, final Handler mHandler) {
+    public WifiP2P(final Context context, final Handler mHandler, final OnDiscoveryCompleteListener onDiscoveryCompleteListener) {
         this.context = context;
         this.mHandler = mHandler;
+        this.onDiscoveryCompleteListener = onDiscoveryCompleteListener;
         mManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(context, getMainLooper(), null);
 
@@ -76,7 +78,8 @@ public class WifiP2P {
                         peers.put(wifiP2pDevice.deviceAddress, wifiP2pDevice);
                         Log.d(TAG, "Size: " + peers.size());
                         Log.d(TAG, "Devices found: " + peers.get(wifiP2pDevice.deviceAddress).deviceName);
-                        connect(wifiP2pDevice.deviceAddress);
+                        onDiscoveryCompleteListener.OnDiscoveryComplete(peers);
+                        //connect(wifiP2pDevice.deviceAddress);
                     }else{
                         Log.d(TAG, "Device already present");
                     }
@@ -116,7 +119,7 @@ public class WifiP2P {
         context.registerReceiver(wiFiDirectBroadcastReceiver, intentFilter);
     }
 
-    public void discover(final OnDiscoveryCompleteListener onDiscoveryCompleteListener){
+    public void discover(){
 
 
 
@@ -124,7 +127,6 @@ public class WifiP2P {
 
             @Override
             public void onSuccess() {
-                onDiscoveryCompleteListener.OnDiscoveryComplete(peers);
                 // Code for when the discovery initiation is successful goes here.
                 // No services have actually been discovered yet, so this method
                 // can often be left blank.  Code for peer discovery goes in the
