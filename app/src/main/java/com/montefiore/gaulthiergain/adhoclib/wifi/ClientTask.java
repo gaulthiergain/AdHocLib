@@ -18,10 +18,12 @@ public class ClientTask extends AsyncTask<Void, Void, String> {
     private static final String TAG = "[AdHoc]";
     private Context context;
     private String addr;
+    private String message;
 
-    public ClientTask(Context context, String addr) {
+    public ClientTask(Context context, String addr, String msg) {
         this.context = context;
         this.addr = addr;
+        this.message = msg;
     }
 
     @Override
@@ -32,8 +34,10 @@ public class ClientTask extends AsyncTask<Void, Void, String> {
             socket.connect((new InetSocketAddress(addr, 8988)), 5000);
             Log.d(TAG, "Client socket - " + socket.isConnected());
             OutputStream outputStream = socket.getOutputStream();
-            outputStream.write("salut".getBytes());
+            outputStream.write(message.getBytes());
             outputStream.flush();
+            outputStream.close();
+            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }finally {

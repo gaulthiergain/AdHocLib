@@ -40,13 +40,16 @@ public class WifiP2P {
     private WiFiDirectBroadcastReceiver wiFiDirectBroadcastReceiver;
     private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
+    private OnConnectedListener onConnectedListener;
     private Handler mHandler;
+
 
     private HashMap<String, WifiP2pDevice> peers = new HashMap<String, WifiP2pDevice>();
 
     public WifiP2P(final Context context, final Handler mHandler, final OnDiscoveryCompleteListener onDiscoveryCompleteListener) {
         this.context = context;
         this.mHandler = mHandler;
+        this.onConnectedListener = onConnectedListener;
         this.onDiscoveryCompleteListener = onDiscoveryCompleteListener;
         mManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(context, getMainLooper(), null);
@@ -79,7 +82,6 @@ public class WifiP2P {
                         Log.d(TAG, "Size: " + peers.size());
                         Log.d(TAG, "Devices found: " + peers.get(wifiP2pDevice.deviceAddress).deviceName);
                         onDiscoveryCompleteListener.OnDiscoveryComplete(peers);
-                        //connect(wifiP2pDevice.deviceAddress);
                     }else{
                         Log.d(TAG, "Device already present");
                     }
@@ -109,7 +111,9 @@ public class WifiP2P {
                         }
                     }).execute();
                 }else{
-                    new ClientTask(context, info.groupOwnerAddress.getHostAddress()).execute();
+                    //new ClientTask(context, info.groupOwnerAddress.getHostAddress()).execute();
+                    Message message = mHandler.obtainMessage(2, info.groupOwnerAddress.getHostAddress());
+                    message.sendToTarget();
                 }
 
             }

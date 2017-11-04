@@ -85,6 +85,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
             Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION");
             if (manager == null) {
+                Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION NULL");
                 return;
             }
 
@@ -93,11 +94,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
             if (networkInfo.isConnected()) {
 
+                Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION networkInfo.isConnected()");
                 // we are connected with the other device, request connection
                 // info to find group owner IP
 
                 manager.requestConnectionInfo(channel, onConnectionInfoAvailable);
             } else {
+                Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION disconnect()");
                 // It's a disconnect
                 // activity.resetData();
             }

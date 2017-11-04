@@ -37,19 +37,17 @@ public class ServerTask extends AsyncTask<Void, Void, String> {
             Log.d(TAG, "Server: connection done");
             OutputStream outputStream;
             InputStream inputStream;
+            int length = 0;
             do{
                 inputStream = client.getInputStream();
                 byte[] buffer = new byte[256];
-                int length;
+
                 length = inputStream.read(buffer);
                 if(length > 0){
                     Log.d(TAG, "Size length: " + length);
                     onReceiveListener.OnReceive(context, new String(buffer, 0, length));
-                }else{
-                    throw new IOException("error");
                 }
-
-            }while(true);
+            }while(length > 0);
 
         } catch (IOException e) {
             e.printStackTrace();
