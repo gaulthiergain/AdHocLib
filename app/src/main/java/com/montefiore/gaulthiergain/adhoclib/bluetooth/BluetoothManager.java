@@ -7,7 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -18,23 +19,29 @@ import java.util.Set;
 
 public class BluetoothManager {
 
+
+
+    private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
+    private final String TAG = "[AdHoc][" + getClass().getName() + "]";
 
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
+
     private OnDiscoveryCompleteListener listener;
 
-
-    public BluetoothManager(Context context, OnDiscoveryCompleteListener listener) {
+    public BluetoothManager(Context context, OnDiscoveryCompleteListener listener)
+            throws BluetoothDeviceException {
         this.context = context;
+        this.v = true;
         this.listener = listener;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
-            // AdHocBluetoothDevice does not support Bluetooth
-            Log.d("[AdHoc]", "Error device does not support Bluetooth");
+            // Device does not support Bluetooth
+            throw new BluetoothDeviceException("Error device does not support Bluetooth");
         } else {
-            Log.d("[AdHoc]", "AdHocBluetoothDevice supports Bluetooth");
-            hashMapBluetoothDevice = new HashMap<String, BluetoothAdHocDevice>();
+            // Device supports Bluetooth
+            hashMapBluetoothDevice = new HashMap<>();
         }
     }
 
@@ -50,21 +57,51 @@ public class BluetoothManager {
         return bluetoothAdapter.disable();
     }
 
-    public void getPairedDevices() {
+    public HashMap<String, BluetoothAdHocDevice> getPairedDevices() {
+        if(v) Log.d(TAG, "getPairedDevices()");
+
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        Log.d("[AdHoc]", "AdHocBluetoothDevice Paired: ");
+        HashMap<String, BluetoothAdHocDevice> hashMapBluetoothPairedDevice = new HashMap<>();
+
         if (pairedDevices.size() > 0) {
-            // Get the name and address of each paired device.
+            // Add each paired device into a hashMap
             for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
+                if(v) Log.d(TAG, "DeviceName: " + device.getName() +
+                        " - DeviceHardwareAddress: " + device.getAddress());
+                hashMapBluetoothPairedDevice.put(device.getAddress(),
+                        new BluetoothAdHocDevice(device));
             }
+        }
+        return hashMapBluetoothPairedDevice;
+    }
+
+    public void discovery() {
+        if(v) Log.d(TAG, "discovery()");
+
+        // Check if the device is already "discovering". If it is, then cancel discovery.
+        cancelDiscovery();
+
+        // Start Discovery
+        bluetoothAdapter.startDiscovery();
+
+        // Register for broadcasts when a device is discovered.
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothDevice.ACTION_FOUND));
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothAdapter.ACTION_DISCOVERY_STARTED));
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+    }
+
+    public void cancelDiscovery() {
+        if(v) Log.d(TAG, "cancelDiscovery()");
+
+        // Check if the device is already "discovering". If it is, then cancel discovery.
+        if (bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
         }
     }
 
-
-    // Create a BroadcastReceiver for ACTION_FOUND.
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -78,54 +115,25 @@ public class BluetoothManager {
 
                 // Add into the hashMap
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
+                    if(v) Log.d(TAG, "DeviceName: " + device.getName() +
+                            " - DeviceHardwareAddress: " + device.getAddress());
                     hashMapBluetoothDevice.put(device.getAddress(), new BluetoothAdHocDevice(device,
                             intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)));
-
-                    Toast.makeText(context, device.getName() + " discovered", Toast.LENGTH_SHORT).show();
-
-                    // Debug
-                    String deviceName = device.getName();
-                    String deviceHardwareAddress = device.getAddress();
-                    Log.d("[AdHoc]", "DeviceName: " + deviceName + " - DeviceHardwareAddress: " + deviceHardwareAddress);
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                Log.d("[AdHoc]", "ACTION_DISCOVERY_STARTED");
+                if(v) Log.d(TAG, "ACTION_DISCOVERY_STARTED");
+                // Clear the hashMap
                 hashMapBluetoothDevice.clear();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.d("[AdHoc]", "ACTION_DISCOVERY_FINISHED");
+                if(v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener
                 listener.OnDiscoveryComplete(hashMapBluetoothDevice);
             }
         }
     };
 
-    public void cancelDiscovery() {
-        // Check if the device is already "discovering". If it is, then cancel discovery.
-        if (bluetoothAdapter.isDiscovering()) {
-            bluetoothAdapter.cancelDiscovery();
-        }
-    }
-
-    public void discovery() {
-
-        // Check if the device is already "discovering". If it is, then cancel discovery.
-        this.cancelDiscovery();
-
-        // Start Discovery
-        bluetoothAdapter.startDiscovery();
-
-        // Register for broadcasts when a device is discovered.
-        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
-                BluetoothDevice.ACTION_FOUND));
-        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
-                BluetoothAdapter.ACTION_DISCOVERY_STARTED));
-        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-
-    }
-
     public void unregisterDiscovery() throws IllegalArgumentException {
-        Log.d("[AdHoc]", "unregisterDiscovery()");
+        if(v) Log.d(TAG, "unregisterDiscovery()");
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 

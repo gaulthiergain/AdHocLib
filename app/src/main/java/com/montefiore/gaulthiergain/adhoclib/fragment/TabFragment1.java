@@ -60,11 +60,11 @@ public class TabFragment1 extends Fragment {
             txt.append("Name: ").append(arrayNetworkInterfaces.get(i).getName()).append("\n");
 
             try {
-                if (arrayNetworkInterfaces.get(i).getHardwareAddress() != null) {
+                /*if (arrayNetworkInterfaces.get(i).getHardwareAddress() != null) {
                     txt.append("MAC: ").append(new String(arrayNetworkInterfaces.get(i).getHardwareAddress(), StandardCharsets.UTF_8)).append("\n");
                 } else {
                     txt.append("MAC: /").append("\n");
-                }
+                }*/
 
                 txt.append("MTU: ").append(arrayNetworkInterfaces.get(i).getMTU()).append("\n");
 

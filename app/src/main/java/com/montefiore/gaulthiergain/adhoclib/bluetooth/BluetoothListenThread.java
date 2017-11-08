@@ -16,7 +16,7 @@ public class BluetoothListenThread extends Thread {
 
     private String TAG = "[AdHoc]";
     private BluetoothNetwork bluetoothSocketNetwork;
-    private BluetoothServerNetwork bluetoothNetwork;
+    private BluetoothServerNetwork bluetoothServerNetwork;
     private String socketType;
 
     private Handler mHandler;
@@ -27,9 +27,9 @@ public class BluetoothListenThread extends Thread {
         // Create a new listening server socket
         try {
             if (secure) {
-                this.bluetoothNetwork = new BluetoothServerNetwork(mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
+                this.bluetoothServerNetwork = new BluetoothServerNetwork(mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
             } else {
-                this.bluetoothNetwork = new BluetoothServerNetwork(mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid));
+                this.bluetoothServerNetwork = new BluetoothServerNetwork(mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid));
             }
         } catch (IOException e) {
             Log.e(TAG, "Socket Type: " + socketType + "listen() failed", e);
@@ -50,7 +50,7 @@ public class BluetoothListenThread extends Thread {
         try {
             // This is a blocking call and will only return on a
             // successful connection or an exception
-            bluetoothSocketNetwork = new BluetoothNetwork(bluetoothNetwork.accept());
+            bluetoothSocketNetwork = new BluetoothNetwork(bluetoothServerNetwork.accept());
 
             // If a connection was accepted
             if (bluetoothSocketNetwork.getSocket() != null) {
@@ -70,7 +70,7 @@ public class BluetoothListenThread extends Thread {
     public void cancel() {
         Log.d(TAG, "Socket Type" + socketType + "cancel " + this);
         try {
-            bluetoothNetwork.closeSocket();
+            bluetoothServerNetwork.closeSocket();
         } catch (IOException e) {
             Log.e(TAG, "Socket Type" + socketType + "close() of server failed", e);
         }
