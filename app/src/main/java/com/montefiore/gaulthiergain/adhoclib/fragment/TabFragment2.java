@@ -25,6 +25,7 @@ import java.util.HashMap;
 public class TabFragment2 extends Fragment {
 
     private final String TAG = "[AdHoc]";
+    private boolean registered = false;
     private BluetoothManager bluetoothManager;
 
     @Override
@@ -42,39 +43,46 @@ public class TabFragment2 extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                /*Test
                 try {
                     bluetoothManager.enableDiscovery(10);
                 } catch (BluetoothBadDuration bluetoothBadDuration) {
                     bluetoothBadDuration.printStackTrace();
-                }
+                }*/
 
                 if (bluetoothManager.isEnabled()) {
                     Log.d(TAG, "Bluetooth is enabled");
-                    bluetoothManager.getPairedDevices();
-                    bluetoothManager.discovery(new ConnectionListener() {
-                        @Override
-                        public void onDiscoveryFinished(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
-                            if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
-                                updateGUI(fragmentView);
+                    HashMap<String, BluetoothAdHocDevice> peers = bluetoothManager.getPairedDevices();
+
+                    if(peers.size() == 0){
+                        bluetoothManager.discovery(new ConnectionListener() {
+                            @Override
+                            public void onDiscoveryFinished(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                                if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
+                                    updateGUI(fragmentView, bluetoothManager.getHashMapBluetoothDevice());
+                                    registered = true;
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onDiscoveryStarted() {
-                            Log.d(TAG, "EVENT: onDiscoveryStarted()");
-                        }
+                            @Override
+                            public void onDiscoveryStarted() {
+                                Log.d(TAG, "EVENT: onDiscoveryStarted()");
+                            }
 
-                        @Override
-                        public void onDeviceFound(BluetoothDevice device) {
-                            Log.d(TAG, "EVENT: onDeviceFound() " + device.getName());
-                        }
+                            @Override
+                            public void onDeviceFound(BluetoothDevice device) {
+                                Log.d(TAG, "EVENT: onDeviceFound() " + device.getName());
+                            }
 
-                        @Override
-                        public void onScanModeChange(int currentMode, int oldMode) {
-                            Log.d(TAG, "EVENT: onScanModeChange() " + String.valueOf(currentMode) + " " + String.valueOf(oldMode));
-                        }
+                            @Override
+                            public void onScanModeChange(int currentMode, int oldMode) {
+                                Log.d(TAG, "EVENT: onScanModeChange() " + String.valueOf(currentMode) + " " + String.valueOf(oldMode));
+                            }
 
-                    });
+                        });
+                    }else{
+                        updateGUI(fragmentView, peers);
+                    }
                 } else {
                     Log.d(TAG, "Bluetooth is disabled");
                     bluetoothManager.enable();
@@ -85,11 +93,11 @@ public class TabFragment2 extends Fragment {
         return fragmentView;
     }
 
-    private void updateGUI(View fragmentView) {
+    private void updateGUI(View fragmentView, HashMap<String, BluetoothAdHocDevice> hashMap) {
         LinearLayout layout = fragmentView.findViewById(R.id.linearLayout);
 
         int i = 0;
-        for (final BluetoothAdHocDevice adHocDevice : bluetoothManager.getHashMapBluetoothDevice().values()) {
+        for (final BluetoothAdHocDevice adHocDevice : hashMap.values()) {
 
             LinearLayout row = new LinearLayout(this.getContext());
             row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -102,7 +110,8 @@ public class TabFragment2 extends Fragment {
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), BluetoothConnect.class);
                     intent.putExtra(BluetoothAdHocDevice.EXTRA_DEVICE, adHocDevice);
-                    bluetoothManager.unregisterDiscovery();
+                    if(registered)
+                        bluetoothManager.unregisterDiscovery();
                     startActivity(intent);
                 }
             });
