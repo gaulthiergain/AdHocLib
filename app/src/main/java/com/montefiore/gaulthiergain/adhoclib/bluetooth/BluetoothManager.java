@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
@@ -19,8 +20,6 @@ import java.util.Set;
 
 public class BluetoothManager {
 
-
-
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
@@ -28,13 +27,12 @@ public class BluetoothManager {
 
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
 
-    private OnDiscoveryCompleteListener listener;
+    private ConnectionListener connectionListener;
 
-    public BluetoothManager(Context context, OnDiscoveryCompleteListener listener)
+    public BluetoothManager(Context context, boolean verbose)
             throws BluetoothDeviceException {
         this.context = context;
-        this.v = true;
-        this.listener = listener;
+        this.v = verbose;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -75,11 +73,13 @@ public class BluetoothManager {
         return hashMapBluetoothPairedDevice;
     }
 
-    public void discovery() {
+    public void discovery(ConnectionListener listener) {
         if(v) Log.d(TAG, "discovery()");
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         cancelDiscovery();
+
+        this.connectionListener = listener;
 
         // Start Discovery
         bluetoothAdapter.startDiscovery();
@@ -106,12 +106,11 @@ public class BluetoothManager {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            //Log.d("[AdHoc]", "Action BroadcastReceiver: " + action);
-
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
                 // Get the BluetoothDevice object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                connectionListener.onDeviceFound(device);
 
                 // Add into the hashMap
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
@@ -124,10 +123,12 @@ public class BluetoothManager {
                 if(v) Log.d(TAG, "ACTION_DISCOVERY_STARTED");
                 // Clear the hashMap
                 hashMapBluetoothDevice.clear();
+                // Listener onDiscoveryStarted
+                connectionListener.onDiscoveryStarted();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 if(v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
-                // Listener
-                listener.OnDiscoveryComplete(hashMapBluetoothDevice);
+                // Listener onDiscoveryFinished
+                connectionListener.onDiscoveryFinished(hashMapBluetoothDevice);
             }
         }
     };
