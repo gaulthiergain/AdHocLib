@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
@@ -136,6 +137,18 @@ public class BluetoothManager {
     public void unregisterDiscovery() throws IllegalArgumentException {
         if(v) Log.d(TAG, "unregisterDiscovery()");
         context.getApplicationContext().unregisterReceiver(mReceiver);
+    }
+
+
+    public void enableDiscovery(int duration) throws BluetoothBadDuration {
+        if(duration < 0 || duration > 3600){
+            throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
+        }
+
+        Intent discoverableIntent =
+                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
+       context.startActivity(discoverableIntent);
     }
 
     public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {

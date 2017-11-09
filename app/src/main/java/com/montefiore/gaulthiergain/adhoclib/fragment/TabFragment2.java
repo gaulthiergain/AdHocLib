@@ -4,7 +4,6 @@ package com.montefiore.gaulthiergain.adhoclib.fragment;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,14 +16,15 @@ import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.OnDiscoveryCompleteListener;
 import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
 
 public class TabFragment2 extends Fragment {
 
+    private final String TAG = "[AdHoc]";
     private BluetoothManager bluetoothManager;
 
     @Override
@@ -42,8 +42,14 @@ public class TabFragment2 extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                try {
+                    bluetoothManager.enableDiscovery(0);
+                } catch (BluetoothBadDuration bluetoothBadDuration) {
+                    bluetoothBadDuration.printStackTrace();
+                }
+
                 if (bluetoothManager.isEnabled()) {
-                    Log.d("[AdHoc]", "Bluetooth is enabled");
+                    Log.d(TAG, "Bluetooth is enabled");
                     bluetoothManager.getPairedDevices();
                     bluetoothManager.discovery(new ConnectionListener() {
                         @Override
@@ -55,17 +61,17 @@ public class TabFragment2 extends Fragment {
 
                         @Override
                         public void onDiscoveryStarted() {
-                            Log.d("[AdHoc]", "EVENT: onDiscoveryStarted()");
+                            Log.d(TAG, "EVENT: onDiscoveryStarted()");
                         }
 
                         @Override
                         public void onDeviceFound(BluetoothDevice device) {
-                            Log.d("[AdHoc]", "EVENT: onDeviceFound() " + device.getName());
+                            Log.d(TAG, "EVENT: onDeviceFound() " + device.getName());
                         }
 
                     });
                 } else {
-                    Log.d("[AdHoc]", "Bluetooth is disabled");
+                    Log.d(TAG, "Bluetooth is disabled");
                     bluetoothManager.enable();
                 }
             }
@@ -102,8 +108,15 @@ public class TabFragment2 extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        Log.d(TAG, "onStop");
+        super.onStop();
+        bluetoothManager.unregisterDiscovery();
+    }
+
+    @Override
     public void onDestroy() {
-        Log.d("[AdHoc]", "On Destroy");
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
         bluetoothManager.unregisterDiscovery();
     }
