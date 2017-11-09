@@ -1,5 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclib.util;
 
+import android.bluetooth.BluetoothAdapter;
+import android.os.Build;
 import android.util.Log;
 
 import java.net.NetworkInterface;
@@ -36,4 +38,8 @@ public class InfosInterface {
         return arrayNetworkInterfaces;
 
     }
+
+
+
+
 }

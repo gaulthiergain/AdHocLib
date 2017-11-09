@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclib;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothConnectThread;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothListenThread;
+import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -29,6 +31,9 @@ public class BluetoothConnect extends AppCompatActivity {
 
     private BluetoothListenThread mListenThread;
     private BluetoothConnectThread mConnectThread;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +54,7 @@ public class BluetoothConnect extends AppCompatActivity {
                     // Listen on a particular thread
                     mListenThread = new BluetoothListenThread(mHandler , true, "test",
                             BluetoothAdapter.getDefaultAdapter(),
-                            UUID.fromString(adHocDevice.getUuid())); // Update with own Bluetooth TODO
+                            UUID.fromString("e0917680-d427-11e4-8830-" + BluetoothManager.getcurrentMac(getApplicationContext()).replace(":", "")));
                     mListenThread.start();
                     onClickListen = true;
                     buttonListen.setText(R.string.stop);

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
@@ -165,4 +166,19 @@ public class BluetoothManager {
     public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
         return hashMapBluetoothDevice;
     }
+
+
+    public static String getcurrentMac(Context context){
+
+        String mac;
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mac =  android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+        }else{
+            mac = BluetoothAdapter.getDefaultAdapter().getAddress();
+        }
+
+        return mac;
+    }
+
+
 }
