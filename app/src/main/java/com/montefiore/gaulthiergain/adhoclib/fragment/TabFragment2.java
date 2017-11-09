@@ -71,7 +71,7 @@ public class TabFragment2 extends Fragment {
 
                         @Override
                         public void onScanModeChange(int currentMode, int oldMode) {
-                            Log.d(TAG, "EVENT: onScanModeChange() " + currentMode + " " + oldMode);
+                            Log.d(TAG, "EVENT: onScanModeChange() " + String.valueOf(currentMode) + " " + String.valueOf(oldMode));
                         }
 
                     });
@@ -116,7 +116,7 @@ public class TabFragment2 extends Fragment {
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
-        bluetoothManager.unregisterDiscovery();
+        //bluetoothManager.unregisterDiscovery();
     }
 
     @Override
@@ -125,9 +125,4 @@ public class TabFragment2 extends Fragment {
         super.onDestroy();
         bluetoothManager.unregisterDiscovery();
     }
-
-    public void onActivityResult(){
-
-    }
-
 }

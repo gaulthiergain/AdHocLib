@@ -149,7 +149,6 @@ public class BluetoothManager {
         context.getApplicationContext().unregisterReceiver(mReceiver);
     }
 
-
     public void enableDiscovery(int duration) throws BluetoothBadDuration {
         if(duration < 0 || duration > 3600){
             throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
