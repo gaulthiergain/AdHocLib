@@ -43,7 +43,7 @@ public class TabFragment2 extends Fragment {
             public void onClick(View v) {
 
                 try {
-                    bluetoothManager.enableDiscovery(0);
+                    bluetoothManager.enableDiscovery(10);
                 } catch (BluetoothBadDuration bluetoothBadDuration) {
                     bluetoothBadDuration.printStackTrace();
                 }
@@ -67,6 +67,11 @@ public class TabFragment2 extends Fragment {
                         @Override
                         public void onDeviceFound(BluetoothDevice device) {
                             Log.d(TAG, "EVENT: onDeviceFound() " + device.getName());
+                        }
+
+                        @Override
+                        public void onScanModeChange(int currentMode, int oldMode) {
+                            Log.d(TAG, "EVENT: onScanModeChange() " + currentMode + " " + oldMode);
                         }
 
                     });
@@ -119,6 +124,10 @@ public class TabFragment2 extends Fragment {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
         bluetoothManager.unregisterDiscovery();
+    }
+
+    public void onActivityResult(){
+
     }
 
 }

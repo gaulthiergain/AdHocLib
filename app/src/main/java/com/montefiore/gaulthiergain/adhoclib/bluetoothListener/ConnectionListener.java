@@ -14,4 +14,5 @@ public interface ConnectionListener {
     void onDiscoveryFinished(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice);
     void onDiscoveryStarted();
     void onDeviceFound(BluetoothDevice device);
+    void onScanModeChange(int currentMode, int oldMode);
 }

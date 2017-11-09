@@ -92,6 +92,10 @@ public class BluetoothManager {
                 BluetoothAdapter.ACTION_DISCOVERY_STARTED));
         context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
                 BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+
+        // Change scan mode
+        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
+                BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
     }
 
     public void cancelDiscovery() {
@@ -130,6 +134,12 @@ public class BluetoothManager {
                 if(v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener onDiscoveryFinished
                 connectionListener.onDiscoveryFinished(hashMapBluetoothDevice);
+            }else if(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)){
+                if(v) Log.d(TAG, "ACTION_SCAN_MODE_CHANGED");
+                // Listener onScanModeChange
+                int currentMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
+                int oldMode = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE, 0);
+                connectionListener.onScanModeChange(currentMode, oldMode);
             }
         }
     };
