@@ -180,5 +180,4 @@ public class BluetoothManager {
         return mac;
     }
 
-
 }
