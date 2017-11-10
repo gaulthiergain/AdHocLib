@@ -1,40 +1,36 @@
-package com.montefiore.gaulthiergain.adhoclib.threadPool;
+package com.montefiore.gaulthiergain.adhoclib.network;
 
 
+import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import java.io.*;
-import java.net.Socket;
-import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Created by gaulthiergain on 10/11/17.
  */
-public class Network {
+public class BluetoothNetwork {
 
     private static final String TAG = "[AdHoc]";
 
-    private Socket socket;
+    private BluetoothSocket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    public void setSocket(Socket socket) {
+    public void setSocket(BluetoothSocket socket) {
         this.socket = socket;
     }
 
-    public Socket getSocket() {
+    public BluetoothSocket getSocket() {
         return socket;
     }
 
-    public void setTimeout(int timeout) throws SocketException {
-        socket.setSoTimeout(timeout);
-    }
 
-    public Network(Socket socket, boolean object) {
+    public BluetoothNetwork(BluetoothSocket socket, boolean object) {
         try {
             this.socket = socket;
             if (!object) {
@@ -45,7 +41,7 @@ public class Network {
                 this.ois = new ObjectInputStream(socket.getInputStream());
             }
         } catch (IOException ex) {
-            Logger.getLogger(Network.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BluetoothNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

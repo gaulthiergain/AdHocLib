@@ -1,8 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclib.threadPool;
 
+import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-
-import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -13,24 +12,25 @@ public class ListSocketDevice {
 
     private static final String TAG = "[AdHoc]";
 
-    private ArrayList<Socket> listTasks;
+    private ArrayList<BluetoothSocket> listTasks;
 
-    ListSocketDevice() {
+    public ListSocketDevice() {
         listTasks = new ArrayList<>();
     }
 
-    public synchronized Socket getSocketDevice() throws InterruptedException {
+    public synchronized BluetoothSocket getSocketDevice() throws InterruptedException {
         Log.d(TAG, "Waiting Socket...");
-        while (listTasks.isEmpty()){
+        while (listTasks.isEmpty()) {
             wait();
         }
         return listTasks.remove(0);
     }
 
 
-    public synchronized void addSocketClient(Socket socket) {
+    public synchronized void addSocketClient(BluetoothSocket socket) {
         listTasks.add(socket);
         Log.d(TAG, "Add waiting Socket");
         notify();
     }
+
 }

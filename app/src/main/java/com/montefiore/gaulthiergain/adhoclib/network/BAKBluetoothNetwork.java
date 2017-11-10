@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+package com.montefiore.gaulthiergain.adhoclib.network;
 
 /**
  * Created by gaulthiergain on 28/10/17.
@@ -19,7 +19,7 @@ import java.io.OutputStream;
  *
  * @author Gain Gaulthier
  */
-public class BluetoothNetwork {
+public class BAKBluetoothNetwork {
 
     private BluetoothSocket socket;
     private InputStream input;
@@ -32,7 +32,7 @@ public class BluetoothNetwork {
      *
      * @param socket a stream socket connected to the specified client.
      */
-    public BluetoothNetwork(BluetoothSocket socket) throws IOException {
+    public BAKBluetoothNetwork(BluetoothSocket socket) throws IOException {
         this.socket = socket;
         this.input = socket.getInputStream();
         this.output = socket.getOutputStream();
@@ -51,7 +51,6 @@ public class BluetoothNetwork {
     }
 
     public void closeSocket() throws IOException {
-
         socket.close();
     }
 

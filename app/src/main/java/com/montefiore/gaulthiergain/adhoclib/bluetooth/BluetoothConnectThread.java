@@ -1,10 +1,13 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.net.Network;
 import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
+import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -16,7 +19,7 @@ import java.util.UUID;
 public class BluetoothConnectThread extends Thread {
 
     private String TAG = "[AdHoc]";
-    private BluetoothNetwork bluetoothNetwork;
+    private BluetoothSocket bluetoothSocket;
     private final BluetoothDevice device;
 
     private Handler mHandler;
@@ -28,9 +31,9 @@ public class BluetoothConnectThread extends Thread {
         try {
             // Get a BluetoothSocket to connect with the given BluetoothDevice.
             if (secure) {
-                this.bluetoothNetwork = new BluetoothNetwork(this.device.createRfcommSocketToServiceRecord(uuid));
+                this.bluetoothSocket = this.device.createRfcommSocketToServiceRecord(uuid);
             } else {
-                this.bluetoothNetwork = new BluetoothNetwork(this.device.createInsecureRfcommSocketToServiceRecord(uuid));
+                this.bluetoothSocket = this.device.createInsecureRfcommSocketToServiceRecord(uuid);
             }
         } catch (IOException e) {
             Log.e(TAG, "Socket's create() method failed", e);
@@ -44,11 +47,11 @@ public class BluetoothConnectThread extends Thread {
         try {
             // Connect to the remote device through the socket. This call blocks
             // until it succeeds or throws an exception.
-            bluetoothNetwork.connect();
+            bluetoothSocket.connect();
         } catch (IOException connectException) {
             // Unable to connect; close the socket and return.
             try {
-                bluetoothNetwork.closeSocket();
+                bluetoothSocket.close();
             } catch (IOException closeException) {
                 Log.e(TAG, "Could not close the client socket", closeException);
             }
@@ -60,19 +63,20 @@ public class BluetoothConnectThread extends Thread {
         // the connection in a separate thread.TODO
         while (true) {
             try {
+                BluetoothNetwork network = new BluetoothNetwork(bluetoothSocket, false);
+
+                network.send("test 123");
                 Log.d(TAG, "WAITING: ");
 
-                //String receive = bluetoothNetwork.receiveString();
-               // Log.d(TAG, "Message received: " + receive);
+                //String receive = bluetoothSocket.receiveString();
+                // Log.d(TAG, "Message received: " + receive);
 
-                byte[] buffer = new byte[256];
-                int bytes;
-                bytes = bluetoothNetwork.getInput().read(buffer);
-                Log.d(TAG, "RCVD: " + new String(buffer, 0, bytes));
+                String msg = network.receive();
+                Log.d(TAG, "Message received: " + msg);
 
                 // Send the obtained bytes to the UI Activity
-                mHandler.obtainMessage(BluetoothConnect.MESSAGE_READ, bytes, -1, buffer)
-                        .sendToTarget();
+               /* mHandler.obtainMessage(BluetoothConnect.MESSAGE_READ, bytes, -1, buffer)
+                        .sendToTarget();*/
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -82,7 +86,7 @@ public class BluetoothConnectThread extends Thread {
     // Closes the client socket and causes the thread to finish.
     public void cancel() {
         try {
-            bluetoothNetwork.closeSocket();
+            bluetoothSocket.close();
         } catch (IOException e) {
             Log.e(TAG, "Could not close the client socket", e);
         }

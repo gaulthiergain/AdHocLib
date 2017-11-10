@@ -1,8 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclib;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +18,8 @@ import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothConnectThread;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothListenThread;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclib.threadPool.ListSocketDevice;
+import com.montefiore.gaulthiergain.adhoclib.threadPool.ThreadServer;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -29,7 +31,7 @@ public class BluetoothConnect extends AppCompatActivity {
 
     public static final int MESSAGE_READ = 2;
 
-    private BluetoothListenThread mListenThread;
+    private ThreadServer threadListen;
     private BluetoothConnectThread mConnectThread;
 
 
@@ -52,14 +54,21 @@ public class BluetoothConnect extends AppCompatActivity {
 
                 if(!onClickListen){
                     // Listen on a particular thread
-                    mListenThread = new BluetoothListenThread(mHandler , true, "test",
-                            BluetoothAdapter.getDefaultAdapter(),
-                            UUID.fromString("e0917680-d427-11e4-8830-" + BluetoothManager.getcurrentMac(getApplicationContext()).replace(":", "")));
-                    mListenThread.start();
+                    try {
+                        threadListen = new ThreadServer(mHandler , 3, true, "test",
+                                BluetoothAdapter.getDefaultAdapter(),
+                                UUID.fromString("e0917680-d427-11e4-8830-" +
+                                        BluetoothManager.getcurrentMac(
+                                                getApplicationContext()).replace(":", "")), new ListSocketDevice());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    threadListen.start();
                     onClickListen = true;
                     buttonListen.setText(R.string.stop);
                 }else{
-                    mListenThread.cancel();
+                    threadListen.cancel();
                     onClickListen = false;
                     buttonListen.setText(R.string.listen);
                 }
@@ -89,22 +98,23 @@ public class BluetoothConnect extends AppCompatActivity {
         });
 
 
-        final Button buttonChat = (Button) findViewById(R.id.buttonChat);
+        /*final Button buttonChat = (Button) findViewById(R.id.buttonChat);
         buttonChat.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
                 try {
-                    mListenThread.sendMessage(editTextChat.getText().toString());
+                    threadListen.sendMessage(editTextChat.getText().toString());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
-        });
+        });*/
 
     }
 
     // The Handler that gets information back from the BluetoothChatService
+    @SuppressLint("HandlerLeak")
     private final  Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
