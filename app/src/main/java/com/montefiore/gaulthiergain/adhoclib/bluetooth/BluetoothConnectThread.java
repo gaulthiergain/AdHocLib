@@ -2,11 +2,9 @@ package com.montefiore.gaulthiergain.adhoclib.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.net.Network;
 import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
 import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
 
 import java.io.IOException;
@@ -75,8 +73,7 @@ public class BluetoothConnectThread extends Thread {
                 Log.d(TAG, "Message received: " + msg);
 
                 // Send the obtained bytes to the UI Activity
-               /* mHandler.obtainMessage(BluetoothConnect.MESSAGE_READ, bytes, -1, buffer)
-                        .sendToTarget();*/
+                mHandler.obtainMessage(BluetoothService.MESSAGE_READ, msg).sendToTarget();
             } catch (IOException e) {
                 e.printStackTrace();
             }

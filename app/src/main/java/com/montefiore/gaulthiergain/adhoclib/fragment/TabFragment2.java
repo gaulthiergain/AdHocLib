@@ -12,12 +12,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import com.montefiore.gaulthiergain.adhoclib.BluetoothConnect;
+import com.montefiore.gaulthiergain.adhoclib.BluetoothActivityConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
@@ -108,7 +107,7 @@ public class TabFragment2 extends Fragment {
             btnTag.setId(i++);
             btnTag.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    Intent intent = new Intent(getContext(), BluetoothConnect.class);
+                    Intent intent = new Intent(getContext(), BluetoothActivityConnect.class);
                     intent.putExtra(BluetoothAdHocDevice.EXTRA_DEVICE, adHocDevice);
                     if(registered)
                         bluetoothManager.unregisterDiscovery();

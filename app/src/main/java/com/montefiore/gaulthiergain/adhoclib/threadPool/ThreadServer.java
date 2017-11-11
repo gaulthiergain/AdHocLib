@@ -44,7 +44,7 @@ public class ThreadServer extends Thread {
 
         // Start pool de threads
         for (int i = 0; i < nbThreads; i++) {
-            ThreadClient threadClient = new ThreadClient(listSocketDevice, String.valueOf(i));
+            ThreadClient threadClient = new ThreadClient(listSocketDevice, String.valueOf(i), handler);
             arrayThreadClients.add(threadClient);
             threadClient.start();
         }

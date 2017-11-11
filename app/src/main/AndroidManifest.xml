@@ -29,7 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BluetoothConnect" />
+        <activity android:name=".BluetoothActivityConnect" />
     </application>
 
 </manifest>
