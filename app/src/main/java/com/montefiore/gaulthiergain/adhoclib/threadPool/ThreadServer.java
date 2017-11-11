@@ -51,7 +51,7 @@ public class ThreadServer extends Thread {
 
         // Server Waiting
         BluetoothSocket socket;
-        while (!isInterrupted()) {
+        while (true) {
             try {
                 Log.d(TAG, "Server is waiting on accept...");
                 socket = serverSocket.accept();
@@ -64,19 +64,20 @@ public class ThreadServer extends Thread {
 
             } catch (IOException e) {
                 Log.d(TAG, "Error: IO");
+                break;
             }
         }
     }
 
-    public void cancel() {
+    public void cancel() throws IOException {
         Log.d(TAG, "cancel() thread server");
-        try {
-            serverSocket.close();
-            for (int i = 0; i < arrayThreadClients.size(); i++) {
-                arrayThreadClients.get(i).interrupt(); //TODO UPDATE IT
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "close() of server failed", e);
+        for (ThreadClient threadClient : arrayThreadClients) {
+            // Stop all threads client
+            Log.d(TAG, "STOP thread" + threadClient.getNameThread());
+            threadClient.interrupt();
         }
+
+        // Close the server socket to throw an exception and thus stop the server thread
+        serverSocket.close();
     }
 }

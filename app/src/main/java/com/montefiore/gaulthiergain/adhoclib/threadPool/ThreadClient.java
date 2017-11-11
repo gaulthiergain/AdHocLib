@@ -11,7 +11,6 @@ import android.util.Log;
 
 /**
  * Created by gaulthiergain on 10/11/17.
- *
  */
 public class ThreadClient extends Thread {
 
@@ -35,6 +34,7 @@ public class ThreadClient extends Thread {
                     processRequest(network.receive());
                 }
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 Log.d(TAG, "Error InterruptedException: " + e.getMessage());
             } catch (EOFException e) {
                 Log.d(TAG, "Error EOFException: " + e.getMessage());
@@ -44,7 +44,8 @@ public class ThreadClient extends Thread {
                 Log.d(TAG, "Error IOException: " + e.getMessage());
                 e.printStackTrace();
             } finally {
-                network.closeConnection();
+                if (network != null)
+                    network.closeConnection();
             }
         }
     }
@@ -54,4 +55,7 @@ public class ThreadClient extends Thread {
         //network.send("CLOSING connection");
     }
 
+    public String getNameThread() {
+        return name;
+    }
 }

@@ -68,7 +68,12 @@ public class BluetoothConnect extends AppCompatActivity {
                     onClickListen = true;
                     buttonListen.setText(R.string.stop);
                 }else{
-                    threadListen.cancel();
+                    try {
+                        threadListen.cancel();
+                    } catch (IOException e) {
+                        Log.d("[AdHoc]", "C'est fini");
+                        e.printStackTrace();
+                    }
                     onClickListen = false;
                     buttonListen.setText(R.string.listen);
                 }
