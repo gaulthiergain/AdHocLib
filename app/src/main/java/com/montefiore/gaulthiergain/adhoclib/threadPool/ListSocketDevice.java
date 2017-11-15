@@ -34,6 +34,12 @@ public class ListSocketDevice {
 
 
     public synchronized void addSocketClient(BluetoothSocket socket) {
+
+        String key = socket.getRemoteDevice().toString();
+        if (!hashMapNetwork.containsKey(key)) {
+            hashMapNetwork.put(key, new BluetoothNetwork(socket, false));
+        }
+
         listTasks.add(socket);
         Log.d(TAG, "Add waiting Socket");
         notify();

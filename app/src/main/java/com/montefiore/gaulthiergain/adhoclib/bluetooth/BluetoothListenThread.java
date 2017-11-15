@@ -1,4 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
@@ -13,9 +14,11 @@ public class BluetoothListenThread extends Thread {
 
     private static final String TAG = "[AdHoc]";
     private final BluetoothNetwork network;
+    private final Handler handler;
 
-    public BluetoothListenThread(BluetoothNetwork network) {
+    public BluetoothListenThread(BluetoothNetwork network, Handler handler) {
         this.network = network;
+        this.handler = handler;
     }
 
     @Override
@@ -29,6 +32,7 @@ public class BluetoothListenThread extends Thread {
                 msg = network.receive();
 
                 Log.d(TAG, "---> Response: " + msg);
+                handler.obtainMessage(BluetoothService.MESSAGE_READ, msg).sendToTarget();
             } catch (IOException e){
                 if(!network.getSocket().isConnected()){
                     network.closeConnection();

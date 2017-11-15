@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
 import com.montefiore.gaulthiergain.adhoclib.threadPool.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclib.threadPool.ThreadServer;
@@ -23,11 +25,9 @@ public class BluetoothServiceServer extends BluetoothService {
 
     private UUID uuid;
     private ThreadServer threadListen;
-    private HashMap<String, BluetoothAdHocDevice> arrayConnectedDevice;
 
-    public BluetoothServiceServer(Context context, boolean verbose) {
-        super(context, verbose);
-        arrayConnectedDevice = new HashMap<>();
+    public BluetoothServiceServer(Context context, boolean verbose, MessageListener messageListener) {
+        super(context, verbose, messageListener);
     }
 
     public void listen(int nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
@@ -53,23 +53,26 @@ public class BluetoothServiceServer extends BluetoothService {
 
     }
 
-    public void sendto(BluetoothAdHocDevice device){
+    public void sendto(BluetoothAdHocDevice device) {
 
     }
 
-    public void sendtoAll(){
+    public void sendtoAll(String msg) throws IOException, NoConnectionException {
         ConcurrentHashMap<String, BluetoothNetwork> hashMap = threadListen.getActiveConnexion();
+
+
+        if (hashMap.size() == 0) {
+            throw new NoConnectionException("No remote connection");
+            //TODO debug here
+        }
+
         // Iterating over values only
         for (String value : hashMap.keySet()) {
             System.out.println("Value = " + value);
         }
 
         for (BluetoothNetwork network : hashMap.values()) {
-            try {
-                network.send("----> ---> test" + network.getSocket().getRemoteDevice().toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            network.send(msg);
         }
     }
 

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
 
@@ -20,8 +21,8 @@ public class BluetoothServiceClient extends BluetoothService {
     private BluetoothNetwork bluetoothNetwork;
     private BluetoothListenThread threadListening;
 
-    public BluetoothServiceClient(Context context, boolean verbose) {
-        super(context, verbose);
+    public BluetoothServiceClient(Context context, boolean verbose, MessageListener messageListener) {
+        super(context, verbose, messageListener);
     }
 
 
@@ -49,7 +50,7 @@ public class BluetoothServiceClient extends BluetoothService {
                 e.printStackTrace();
             }
 
-            if(bluetoothSocket == null){
+            if (bluetoothSocket == null) {
                 setState(STATE_NONE);
                 throw new NoConnectionException("No remote connection");
                 //TODO debug here to check the statements
@@ -86,7 +87,7 @@ public class BluetoothServiceClient extends BluetoothService {
         setState(STATE_LISTENING_CONNECTED);
 
         // Start the thread to connect with the given device
-        threadListening = new BluetoothListenThread(bluetoothNetwork);
+        threadListening = new BluetoothListenThread(bluetoothNetwork, handler);
         threadListening.start();
     }
 

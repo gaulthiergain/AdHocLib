@@ -56,7 +56,6 @@ public class ThreadClient extends Thread {
     private void processRequest(String request) throws IOException {
         Log.d(TAG, "Processing request " + request);
         handler.obtainMessage(BluetoothService.MESSAGE_READ, request).sendToTarget();
-        //network.send("CLOSING connection");
     }
 
     public String getNameThread() {

@@ -15,6 +15,7 @@ import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceServer;
+import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class BluetoothActivityConnect extends AppCompatActivity {
 
     private boolean onClickConnect = false;
     private boolean onClickListen = false;
+
+    private boolean server;
 
     private BluetoothServiceServer bluetoothServiceServer;
     private BluetoothServiceClient bluetoothServiceClient;
@@ -46,10 +49,34 @@ public class BluetoothActivityConnect extends AppCompatActivity {
         buttonListen.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                server = true;
+
                 if (!onClickListen) {
                     // Listen on a particular thread
                     try {
-                        bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true);
+                        bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true, new MessageListener() {
+                            @Override
+                            public void onMessageReceived(String message) {
+                                //Update GUI
+                                final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
+                                textViewChat.setText(textViewChat.getText() + "\n------> " + message);
+                            }
+
+                            @Override
+                            public void onMessageSent(String message) {
+
+                            }
+
+                            @Override
+                            public void onConnectionClosed() {
+
+                            }
+
+                            @Override
+                            public void onErrorMessage() {
+
+                            }
+                        });
                         bluetoothServiceServer.listen(3, true, "test",
                                 BluetoothAdapter.getDefaultAdapter(),
                                 UUID.fromString("e0917680-d427-11e4-8830-" +
@@ -78,9 +105,33 @@ public class BluetoothActivityConnect extends AppCompatActivity {
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                server = false;
+
                 if (!onClickConnect) {
                     // Start the thread to connect with the given device
-                    bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true);
+                    bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true, new MessageListener() {
+                        @Override
+                        public void onMessageReceived(String message) {
+                            //Update GUI
+                            final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
+                            textViewChat.setText(textViewChat.getText() + "\n------> " + message);
+                        }
+
+                        @Override
+                        public void onMessageSent(String message) {
+
+                        }
+
+                        @Override
+                        public void onConnectionClosed() {
+
+                        }
+
+                        @Override
+                        public void onErrorMessage() {
+
+                        }
+                    });
                     try {
                         bluetoothServiceClient.connect(true, adHocDevice);
                         bluetoothServiceClient.listenInBackground();
@@ -110,13 +161,25 @@ public class BluetoothActivityConnect extends AppCompatActivity {
         buttonChat.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
-                try {
-                    bluetoothServiceClient.send(editTextChat.getText().toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NoConnectionException e) {
-                    e.printStackTrace();
+
+                if(server){
+                    try {
+                        bluetoothServiceServer.sendtoAll(editTextChat.getText().toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    try {
+                        bluetoothServiceClient.send(editTextChat.getText().toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    }
                 }
+
 
             }
         });

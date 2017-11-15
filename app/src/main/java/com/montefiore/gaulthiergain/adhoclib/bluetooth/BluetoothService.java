@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
+import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
 
 /**
  * Created by gaulthiergain on 11/11/17.
@@ -28,13 +29,14 @@ public class BluetoothService {
 
     protected int state;
     protected final boolean v;
+    protected final MessageListener messageListener;
     protected final String TAG = "[AdHoc][" + getClass().getName() + "]";
     protected final Context context;
 
-    public BluetoothService(Context context, boolean verbose) {
-
+    public BluetoothService(Context context, boolean verbose, MessageListener messageListener) {
         this.context = context;
         this.v = verbose;
+        this.messageListener = messageListener;
         this.setState(STATE_NONE);
     }
 
@@ -51,21 +53,18 @@ public class BluetoothService {
     }
 
     @SuppressLint("HandlerLeak")
-    protected final  Handler handler = new Handler() {
+    protected final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             Log.d("[AdHoc]", "WITHIN handleMessage" + msg);
             switch (msg.what) {
 
                 case MESSAGE_READ:
-                    //byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
-                    //String readMessage = new String(readBuf, 0, msg.arg1);
-                    // Update GUI
-                    //final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                    //textViewChat.setText(textViewChat.getText() + "\n------> " + readMessage);
+                    messageListener.onMessageReceived((String) msg.obj);
                     Log.d(TAG, "RCVD HANDLER: " + msg.arg1);
-
+                    break;
+                case MESSAGE_WRITE:
+                    messageListener.onMessageSent((String) msg.obj);
                     break;
             }
         }
