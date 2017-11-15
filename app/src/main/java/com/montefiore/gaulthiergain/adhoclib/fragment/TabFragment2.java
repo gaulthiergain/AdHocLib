@@ -14,10 +14,10 @@ import android.widget.LinearLayout;
 
 import com.montefiore.gaulthiergain.adhoclib.BluetoothActivityConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
-import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
 

@@ -1,18 +1,16 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
-import com.montefiore.gaulthiergain.adhoclib.threadPool.ListSocketDevice;
-import com.montefiore.gaulthiergain.adhoclib.threadPool.ThreadServer;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -1,15 +1,15 @@
-package com.montefiore.gaulthiergain.adhoclib.threadPool;
+package com.montefiore.gaulthiergain.adhoclibrary.threadPool;
 
-
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothService;
-import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
-
-import java.io.EOFException;
-import java.io.IOException;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
+
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
+import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+
+import java.io.EOFException;
+import java.io.IOException;
 
 /**
  * Created by gaulthiergain on 10/11/17.

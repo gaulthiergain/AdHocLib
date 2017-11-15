@@ -11,12 +11,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceClient;
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceServer;
-import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
+
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 
 import java.io.IOException;
 import java.util.UUID;

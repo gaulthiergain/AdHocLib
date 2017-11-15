@@ -18,9 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
-import com.montefiore.gaulthiergain.adhoclib.wifi.ClientTask;
-import com.montefiore.gaulthiergain.adhoclib.wifi.OnDiscoveryCompleteListener;
-import com.montefiore.gaulthiergain.adhoclib.wifi.WifiP2P;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.ClientTask;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.OnDiscoveryCompleteListener;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiP2P;
 
 import java.util.HashMap;
 

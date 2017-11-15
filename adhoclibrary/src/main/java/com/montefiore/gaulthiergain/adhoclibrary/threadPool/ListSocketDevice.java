@@ -1,9 +1,9 @@
-package com.montefiore.gaulthiergain.adhoclib.threadPool;
+package com.montefiore.gaulthiergain.adhoclibrary.threadPool;
 
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;

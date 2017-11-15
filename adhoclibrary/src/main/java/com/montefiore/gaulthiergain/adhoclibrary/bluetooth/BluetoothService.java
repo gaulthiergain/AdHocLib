@@ -1,14 +1,12 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.TextView;
 
-import com.montefiore.gaulthiergain.adhoclib.R;
-import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 
 /**
  * Created by gaulthiergain on 11/11/17.

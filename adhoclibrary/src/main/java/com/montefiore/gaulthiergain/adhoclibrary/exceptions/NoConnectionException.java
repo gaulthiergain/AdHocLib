@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclib.exceptions;
+package com.montefiore.gaulthiergain.adhoclibrary.exceptions;
 
 public class NoConnectionException extends Exception {
 

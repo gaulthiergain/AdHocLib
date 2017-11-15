@@ -1,8 +1,8 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
 
 import java.io.IOException;
 

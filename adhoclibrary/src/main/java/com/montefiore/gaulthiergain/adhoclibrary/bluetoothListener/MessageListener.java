@@ -1,10 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetoothListener;
-
-import android.bluetooth.BluetoothDevice;
-
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
-
-import java.util.HashMap;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener;
 
 /**
  * Created by gaulthiergain on 15/11/17.

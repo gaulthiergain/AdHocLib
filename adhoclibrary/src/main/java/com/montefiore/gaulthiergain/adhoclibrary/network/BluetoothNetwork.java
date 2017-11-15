@@ -1,10 +1,15 @@
-package com.montefiore.gaulthiergain.adhoclib.network;
+package com.montefiore.gaulthiergain.adhoclibrary.network;
 
 
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

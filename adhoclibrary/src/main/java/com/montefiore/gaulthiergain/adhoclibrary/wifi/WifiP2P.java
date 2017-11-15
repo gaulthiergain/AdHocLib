@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclib.wifi;
+package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
 import android.content.Context;
 import android.content.IntentFilter;
@@ -12,12 +12,7 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

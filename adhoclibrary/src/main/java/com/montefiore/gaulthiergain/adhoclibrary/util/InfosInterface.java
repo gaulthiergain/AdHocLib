@@ -1,7 +1,5 @@
-package com.montefiore.gaulthiergain.adhoclib.util;
+package com.montefiore.gaulthiergain.adhoclibrary.util;
 
-import android.bluetooth.BluetoothAdapter;
-import android.os.Build;
 import android.util.Log;
 
 import java.net.NetworkInterface;

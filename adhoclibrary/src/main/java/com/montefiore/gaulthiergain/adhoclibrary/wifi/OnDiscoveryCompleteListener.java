@@ -1,8 +1,6 @@
-package com.montefiore.gaulthiergain.adhoclib.wifi;
+package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
 import android.net.wifi.p2p.WifiP2pDevice;
-
-import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 
 import java.util.HashMap;
 

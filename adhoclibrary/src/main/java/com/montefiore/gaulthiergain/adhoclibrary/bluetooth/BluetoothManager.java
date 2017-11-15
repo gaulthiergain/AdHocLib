@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclib.bluetooth;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,9 +9,9 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclib.bluetoothListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclib.exceptions.BluetoothDeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothDeviceException;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -171,7 +171,7 @@ public class BluetoothManager {
     public static String getcurrentMac(Context context){
 
         String mac;
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             mac =  android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
         }else{
             mac = BluetoothAdapter.getDefaultAdapter().getAddress();

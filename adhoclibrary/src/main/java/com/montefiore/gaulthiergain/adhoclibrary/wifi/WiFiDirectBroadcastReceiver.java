@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.montefiore.gaulthiergain.adhoclib.wifi;
+package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.NetworkInfo;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
