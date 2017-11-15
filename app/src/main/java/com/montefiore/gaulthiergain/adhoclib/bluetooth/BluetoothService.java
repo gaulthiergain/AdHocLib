@@ -20,11 +20,11 @@ public class BluetoothService {
     public static final int STATE_LISTENING = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+    public static final int STATE_LISTENING_CONNECTED = 4;
 
-    public static final int MESSAGE_STATE_CHANGE = 4;
-    public static final int MESSAGE_READ = 5;
-    public static final int MESSAGE_WRITE = 6;
-    public static final int STATE_CLOSING = 7;
+    public static final int MESSAGE_STATE_CHANGE = 5;
+    public static final int MESSAGE_READ = 6;
+    public static final int MESSAGE_WRITE = 7;
 
     protected int state;
     protected final boolean v;

@@ -14,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothServiceServer;
+import com.montefiore.gaulthiergain.adhoclib.exceptions.NoConnectionException;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -79,13 +80,21 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                 if (!onClickConnect) {
                     // Start the thread to connect with the given device
                     bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true);
-                    bluetoothServiceClient.connect(true, adHocDevice);
+                    try {
+                        bluetoothServiceClient.connect(true, adHocDevice);
+                    } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    }
 
                     onClickConnect = true;
                     buttonConnect.setText(R.string.stop);
 
                 } else {
-                    bluetoothServiceClient.cancel();
+                    try {
+                        bluetoothServiceClient.disconnect();
+                    } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    }
                     onClickConnect = false;
                     buttonConnect.setText(R.string.connect_to);
                 }

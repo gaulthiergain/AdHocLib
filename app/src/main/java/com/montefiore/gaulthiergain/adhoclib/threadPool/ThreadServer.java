@@ -6,9 +6,12 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclib.network.BluetoothNetwork;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by gaulthiergain on 10/11/17.
@@ -79,5 +82,10 @@ public class ThreadServer extends Thread {
 
         // Close the server socket to throw an exception and thus stop the server thread
         serverSocket.close();
+    }
+
+
+    public ConcurrentHashMap<String, BluetoothNetwork> getActiveConnexion() {
+        return listSocketDevice.getActiveConnexion();
     }
 }
