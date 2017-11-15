@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.montefiore.gaulthiergain.adhoclib.bluetooth.BluetoothAdHocDevice;
@@ -82,7 +83,10 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true);
                     try {
                         bluetoothServiceClient.connect(true, adHocDevice);
+                        bluetoothServiceClient.listenInBackground();
                     } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
 
@@ -102,18 +106,20 @@ public class BluetoothActivityConnect extends AppCompatActivity {
         });
 
 
-        /*final Button buttonChat = (Button) findViewById(R.id.buttonChat);
+        final Button buttonChat = (Button) findViewById(R.id.buttonChat);
         buttonChat.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
                 try {
-                    bluetoothService.sendMessage(editTextChat.getText().toString());
+                    bluetoothServiceClient.send(editTextChat.getText().toString());
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
                     e.printStackTrace();
                 }
 
             }
-        });*/
+        });
 
     }
 

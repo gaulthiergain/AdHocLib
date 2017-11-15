@@ -109,7 +109,7 @@ public class BluetoothServiceClient extends BluetoothService {
 
         if (state == STATE_NONE) {
             throw new NoConnectionException("No remote connection");
-
+            //TODO debug here
         }
 
         bluetoothNetwork.send(msg);
