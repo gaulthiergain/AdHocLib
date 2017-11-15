@@ -58,7 +58,8 @@ public class BluetoothService {
             switch (msg.what) {
 
                 case MESSAGE_READ:
-                    messageListener.onMessageReceived((String) msg.obj);
+                    //TODO CHANGE NULL HERE
+                    messageListener.onMessageReceived((String) msg.obj, null);
                     Log.d(TAG, "RCVD HANDLER: " + msg.arg1);
                     break;
                 case MESSAGE_WRITE:

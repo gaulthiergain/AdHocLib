@@ -57,10 +57,18 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     try {
                         bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true, new MessageListener() {
                             @Override
-                            public void onMessageReceived(String message) {
+                            public void onMessageReceived(String message, String sender) {
                                 //Update GUI
                                 final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
                                 textViewChat.setText(textViewChat.getText() + "\n------> " + message);
+
+                                try {
+                                    bluetoothServiceServer.sendtoAll(message);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                } catch (NoConnectionException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
                             @Override
@@ -112,7 +120,7 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     // Start the thread to connect with the given device
                     bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true, new MessageListener() {
                         @Override
-                        public void onMessageReceived(String message) {
+                        public void onMessageReceived(String message, String sender) {
                             //Update GUI
                             final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
                             textViewChat.setText(textViewChat.getText() + "\n------> " + message);
@@ -163,7 +171,7 @@ public class BluetoothActivityConnect extends AppCompatActivity {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
 
-                if(server){
+                if (server) {
                     try {
                         bluetoothServiceServer.sendtoAll(editTextChat.getText().toString());
                     } catch (IOException e) {
@@ -171,7 +179,7 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     } catch (NoConnectionException e) {
                         e.printStackTrace();
                     }
-                }else{
+                } else {
                     try {
                         bluetoothServiceClient.send(editTextChat.getText().toString());
                     } catch (IOException e) {
