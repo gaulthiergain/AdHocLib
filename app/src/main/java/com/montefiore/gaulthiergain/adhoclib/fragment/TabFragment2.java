@@ -124,13 +124,15 @@ public class TabFragment2 extends Fragment {
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
-        //bluetoothManager.unregisterDiscovery();
+        if(registered)
+            bluetoothManager.unregisterDiscovery();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
-        bluetoothManager.unregisterDiscovery();
+        if(registered)
+            bluetoothManager.unregisterDiscovery();
     }
 }
