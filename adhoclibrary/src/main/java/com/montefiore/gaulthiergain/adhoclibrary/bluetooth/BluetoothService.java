@@ -27,6 +27,7 @@ public class BluetoothService {
 
     // COnstants for connection
     public static final int CONNECTION_ABORTED = 7;         // connection aborted
+    public static final int CONNECTION_PERFORMED = 8;       // connection performed
 
     protected int state;
     protected final boolean v;
@@ -56,20 +57,27 @@ public class BluetoothService {
         public void handleMessage(Message msg) {
 
             switch (msg.what) {
-
                 case MESSAGE_READ:
-                    if (v)  Log.d(TAG, "MESSAGE_READ");
+                    if (v) Log.d(TAG, "MESSAGE_READ");
                     String handleMessage[] = (String[]) msg.obj;
                     messageListener.onMessageReceived(handleMessage[0], handleMessage[1], handleMessage[2]);
                     break;
                 case MESSAGE_WRITE:
-                    if (v)  Log.d(TAG, "MESSAGE_WRITE");
+                    if (v) Log.d(TAG, "MESSAGE_WRITE");
                     messageListener.onMessageSent((String) msg.obj);
                     break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");
-                    messageListener.onConnectionClosed();
+                    String handleConnectionAborted[] = (String[]) msg.obj;
+                    messageListener.onConnectionClosed(handleConnectionAborted[0], handleConnectionAborted[1]);
                     break;
+                case CONNECTION_PERFORMED:
+                    if (v) Log.d(TAG, "CONNECTION_PERFORMED");
+                    String handleConnectionPerformed[] = (String[]) msg.obj;
+                    messageListener.onConnection(handleConnectionPerformed[0], handleConnectionPerformed[1]);
+                    break;
+                default:
+                    if (v) Log.d(TAG, "default");
             }
         }
     };

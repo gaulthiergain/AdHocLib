@@ -26,6 +26,7 @@ public class BluetoothManager {
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
+    private boolean registered = false;
     private final String TAG = "[AdHoc][" + getClass().getName() + "]";
 
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
@@ -40,6 +41,7 @@ public class BluetoothManager {
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
             throw new BluetoothDeviceException("Error device does not support Bluetooth");
+            //TODO add flag
         } else {
             // Device supports Bluetooth
             hashMapBluetoothDevice = new HashMap<>();
@@ -86,6 +88,9 @@ public class BluetoothManager {
 
         // Start Discovery
         bluetoothAdapter.startDiscovery();
+
+        // Set Register to true
+        registered = true;
 
         // Register for broadcasts when a device is discovered.
         context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
@@ -149,7 +154,10 @@ public class BluetoothManager {
 
     public void unregisterDiscovery() throws IllegalArgumentException {
         if (v) Log.d(TAG, "unregisterDiscovery()");
-        context.getApplicationContext().unregisterReceiver(mReceiver);
+        if (registered) {
+            context.getApplicationContext().unregisterReceiver(mReceiver);
+            registered = false;
+        }
     }
 
     public void enableDiscovery(int duration) throws BluetoothBadDuration {
@@ -167,13 +175,12 @@ public class BluetoothManager {
         return hashMapBluetoothDevice;
     }
 
-
-    public static String getcurrentMac(Context context){
+    public static String getCurrentMac(Context context) {
 
         String mac;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mac =  android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
-        }else{
+            mac = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+        } else {
             mac = BluetoothAdapter.getDefaultAdapter().getAddress();
         }
 

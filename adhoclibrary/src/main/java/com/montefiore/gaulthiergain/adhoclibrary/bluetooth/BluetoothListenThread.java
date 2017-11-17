@@ -1,4 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
+
 import android.os.Handler;
 import android.util.Log;
 
@@ -40,18 +41,24 @@ public class BluetoothListenThread extends Thread {
 
                 Log.d(TAG, "---> Response: " + handleMessage[0]);
                 handler.obtainMessage(BluetoothService.MESSAGE_READ, handleMessage).sendToTarget();
-            } catch (IOException e){
-                if(!network.getSocket().isConnected()){
+            } catch (IOException e) {
+                if (!network.getSocket().isConnected()) {
                     network.closeConnection();
                 }
-                handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, -1).sendToTarget();
+                String handleConnectionAborted[] = new String[2];
+                // Get remote device name
+                handleConnectionAborted[0] = network.getSocket().getRemoteDevice().getName();
+                // Get remote device address
+                handleConnectionAborted[1] = network.getSocket().getRemoteDevice().getAddress();
+                // Notify handler
+                handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                 break;
             }
         }
     }
 
     public void cancel() {
-        if(network != null){ //TODO !network.getSocket().isConnected()
+        if (network != null) { //TODO !network.getSocket().isConnected()
             network.closeConnection();
         }
     }

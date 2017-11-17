@@ -48,6 +48,16 @@ public class BluetoothServiceClient extends BluetoothService {
                 // Connect to the remote host
                 bluetoothSocket.connect();
                 bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, false);
+
+
+                // Notify handler
+                String messageHandle[] = new String[2];
+                messageHandle[0] = bluetoothSocket.getRemoteDevice().getName();
+                messageHandle[1] = bluetoothSocket.getRemoteDevice().getAddress();
+                handler.obtainMessage(BluetoothService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+
+
+                // Update state
                 setState(STATE_CONNECTED);
             } catch (IOException e) {
                 setState(STATE_NONE);

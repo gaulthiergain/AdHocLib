@@ -42,13 +42,25 @@ public class ThreadClient extends Thread {
                 Log.d(TAG, "Error InterruptedException: " + e.getMessage());
             } catch (EOFException e) {
                 Log.d(TAG, "Error EOFException: " + e.getMessage());
-                e.printStackTrace();
+                e.printStackTrace(); //TODO remove
             } catch (IOException e) {
                 Log.d(TAG, "Error IOException: " + e.getMessage());
-                e.printStackTrace();
+                e.printStackTrace(); //TODO remove
             } finally {
-                if (network != null)
+                if (network != null) {
+                    String handleConnectionAborted[] = new String[2];
+
+                    // Get remote device name
+                    handleConnectionAborted[0] = network.getSocket().getRemoteDevice().getName();
+                    // Get remote device address
+                    handleConnectionAborted[1] = network.getSocket().getRemoteDevice().getAddress();
+                    // Notify handler
+                    handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+
+                    // Close network
                     network.closeConnection();
+                }
+
             }
         }
     }

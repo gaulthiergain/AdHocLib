@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
 import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
 
 import java.io.IOException;
@@ -59,8 +60,15 @@ public class ThreadServer extends Thread {
                 Log.d(TAG, "Server is waiting on accept...");
                 socket = serverSocket.accept();
                 if (socket != null) {
+                    // Add to the list
                     Log.d(TAG, socket.getRemoteDevice().getAddress() + " accepted");
                     listSocketDevice.addSocketClient(socket);
+
+                    // Notify handler
+                    String messageHandle[] = new String[2];
+                    messageHandle[0] = socket.getRemoteDevice().getName();
+                    messageHandle[1] = socket.getRemoteDevice().getAddress();
+                    handler.obtainMessage(BluetoothService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
                 } else {
                     Log.d(TAG, "Error while accepting client");
                 }

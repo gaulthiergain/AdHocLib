@@ -7,6 +7,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener;
 public interface MessageListener {
     void onMessageReceived(String message, String senderName, String senderAddr);
     void onMessageSent(String message);
-    void onConnectionClosed();
-    void onErrorMessage();
+    void onConnectionClosed(String deviceName, String deviceAddr);
+    void onConnection(String deviceName, String deviceAddr);
 }
