@@ -4,9 +4,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.network;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,8 +18,6 @@ public class BluetoothNetwork {
     private static final String TAG = "[AdHoc]";
 
     private BluetoothSocket socket;
-    private DataInputStream dis;
-    private DataOutputStream dos;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
@@ -38,19 +33,14 @@ public class BluetoothNetwork {
     public BluetoothNetwork(BluetoothSocket socket, boolean object) {
         try {
             this.socket = socket;
-            if (!object) {
-                this.dis = new DataInputStream(socket.getInputStream());
-                this.dos = new DataOutputStream(socket.getOutputStream());
-            } else {
-                this.oos = new ObjectOutputStream(socket.getOutputStream());
-                this.ois = new ObjectInputStream(socket.getInputStream());
-            }
+            this.oos = new ObjectOutputStream(socket.getOutputStream());
+            this.ois = new ObjectInputStream(socket.getInputStream());
         } catch (IOException ex) {
             Logger.getLogger(BluetoothNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public void sendObject(Object obj) throws IOException {
+    public void sendObjectStream(Object obj) throws IOException {
         oos.writeObject(obj);
         oos.flush();
         if (obj.toString().length() > 50) {
@@ -61,27 +51,7 @@ public class BluetoothNetwork {
     }
 
 
-    public void send(String msg) throws IOException {
-        dos.writeInt(msg.length());
-        dos.flush();
-        dos.writeBytes(msg);
-        dos.flush();
-        Log.d(TAG, "Message sent: " + msg);
-    }
-
-    public void send(String msg, String endchar) throws IOException {
-        dos.writeBytes(msg + endchar);
-        dos.flush();
-        Log.d(TAG, "Message sent: " + msg + endchar);
-    }
-
-    public void sendUTF(String msg, String endchar) throws IOException {
-        dos.writeUTF(msg + endchar);
-        dos.flush();
-        Log.d(TAG, "Message sent: " + msg);
-    }
-
-    public Object receiveObject() throws IOException, ClassNotFoundException {
+    public Object receiveObjectStream() throws IOException, ClassNotFoundException {
         Object obj = ois.readObject();
 
         if (obj.toString().length() > 50) {
@@ -92,43 +62,7 @@ public class BluetoothNetwork {
         return obj;
     }
 
-    public String receive() throws IOException {
-        int size = dis.readInt();
-        byte[] bytes = new byte[size];
-        dis.readFully(bytes);
-        return new String(bytes);
-    }
-
-    public String receive(char endchar) throws IOException {
-        StringBuilder trame = new StringBuilder();
-        char c;
-        while (true) {
-            try {
-                c = (char) dis.readByte();
-                if (c == endchar) {
-                    break;
-                } else {
-                    trame.append(c);
-                }
-            } catch (EOFException ex) {
-                Log.d(TAG, "Error EOF: " + ex.getMessage());
-            }
-        }
-        Log.d(TAG, "Received msg: " + trame.toString());
-        return trame.toString();
-    }
-
     public void closeConnection() {
-        try {
-            dos.close();
-            dis.close();
-            socket.close();
-        } catch (IOException ex) {
-            Log.d(TAG, "Error I/O: " + ex.getMessage());
-        }
-    }
-
-    public void closeConnectionObject() {
         try {
             oos.close();
             ois.close();

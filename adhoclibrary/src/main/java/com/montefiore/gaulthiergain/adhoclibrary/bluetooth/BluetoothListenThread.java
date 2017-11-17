@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 
@@ -25,22 +26,18 @@ public class BluetoothListenThread extends Thread {
     @Override
     public void run() {
         Log.d(TAG, "start Listening ...");
-        String handleMessage[] = new String[3];
+        MessageAdHoc message;
         while (true) {
             // Read response
             try {
 
                 Log.d(TAG, "Waiting response from server ...");
 
-                // Get response
-                handleMessage[0] = network.receive();
-                // Get remote device name
-                handleMessage[1] = network.getSocket().getRemoteDevice().getName();
-                // Get remote device address
-                handleMessage[2] = network.getSocket().getRemoteDevice().getAddress();
+                // Get response MessageAdHoc
+                message = (MessageAdHoc) network.receiveObjectStream();
 
-                Log.d(TAG, "---> Response: " + handleMessage[0]);
-                handler.obtainMessage(BluetoothService.MESSAGE_READ, handleMessage).sendToTarget();
+                Log.d(TAG, "---> Response: " + message);
+                handler.obtainMessage(BluetoothService.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
                 if (!network.getSocket().isConnected()) {
                     network.closeConnection();
@@ -53,6 +50,8 @@ public class BluetoothListenThread extends Thread {
                 // Notify handler
                 handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                 break;
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace(); //TODO update
             }
         }
     }

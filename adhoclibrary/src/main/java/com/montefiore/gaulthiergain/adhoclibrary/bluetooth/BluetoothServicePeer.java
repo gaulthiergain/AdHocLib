@@ -45,7 +45,7 @@ public class BluetoothServicePeer extends BluetoothServiceClient {
         BluetoothSocket bluetoothSocket = serverSocket.accept();
         if (bluetoothSocket != null) {
             Log.d(TAG, bluetoothSocket.getRemoteDevice().getAddress() + " accepted");
-            bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, false);
+            bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, true);
             setState(STATE_LISTENING);
         } else {
             Log.d(TAG, "Error while accepting client");

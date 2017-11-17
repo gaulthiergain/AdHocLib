@@ -37,7 +37,7 @@ public class ListSocketDevice {
 
         String key = socket.getRemoteDevice().toString();
         if (!hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.put(key, new BluetoothNetwork(socket, false));
+            hashMapNetwork.put(key, new BluetoothNetwork(socket, true));
         }
 
         listTasks.add(socket);

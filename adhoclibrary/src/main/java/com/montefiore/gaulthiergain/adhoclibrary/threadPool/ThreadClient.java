@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
 import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -33,9 +34,9 @@ public class ThreadClient extends Thread {
         while (!isInterrupted()) {
             try {
                 BluetoothSocket socketDevice = listSocketDevice.getSocketDevice();
-                network = new BluetoothNetwork(socketDevice, false);
+                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteDevice().getAddress());
                 while (true) {
-                    processRequest(network.receive());
+                    processRequest((MessageAdHoc) network.receiveObjectStream());
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -46,6 +47,8 @@ public class ThreadClient extends Thread {
             } catch (IOException e) {
                 Log.d(TAG, "Error IOException: " + e.getMessage());
                 e.printStackTrace(); //TODO remove
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             } finally {
                 if (network != null) {
                     String handleConnectionAborted[] = new String[2];
@@ -65,18 +68,9 @@ public class ThreadClient extends Thread {
         }
     }
 
-    private void processRequest(String request) throws IOException {
-        String handleMessage[] = new String[3];
+    private void processRequest(MessageAdHoc request) throws IOException {
         Log.d(TAG, "Processing request " + request);
-
-        // Get response
-        handleMessage[0] = request;
-        // Get remote device name
-        handleMessage[1] = network.getSocket().getRemoteDevice().getName();
-        // Get remote device address
-        handleMessage[2] = network.getSocket().getRemoteDevice().getAddress();
-
-        handler.obtainMessage(BluetoothService.MESSAGE_READ, handleMessage).sendToTarget();
+        handler.obtainMessage(BluetoothService.MESSAGE_READ, request).sendToTarget();
     }
 
     public String getNameThread() {

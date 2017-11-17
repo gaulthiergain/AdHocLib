@@ -7,6 +7,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 /**
  * Created by gaulthiergain on 11/11/17.
@@ -24,10 +26,11 @@ public class BluetoothService {
     // Constants for message handling
     public static final int MESSAGE_READ = 5;               // message received
     public static final int MESSAGE_WRITE = 6;              // message sent
+    public static final int BROADCAST_WRITE = 7;              // broadcast sent
 
     // COnstants for connection
-    public static final int CONNECTION_ABORTED = 7;         // connection aborted
-    public static final int CONNECTION_PERFORMED = 8;       // connection performed
+    public static final int CONNECTION_ABORTED = 8;         // connection aborted
+    public static final int CONNECTION_PERFORMED = 9;       // connection performed
 
     protected int state;
     protected final boolean v;
@@ -59,12 +62,11 @@ public class BluetoothService {
             switch (msg.what) {
                 case MESSAGE_READ:
                     if (v) Log.d(TAG, "MESSAGE_READ");
-                    String handleMessage[] = (String[]) msg.obj;
-                    messageListener.onMessageReceived(handleMessage[0], handleMessage[1], handleMessage[2]);
+                    messageListener.onMessageReceived((MessageAdHoc) msg.obj);
                     break;
                 case MESSAGE_WRITE:
                     if (v) Log.d(TAG, "MESSAGE_WRITE");
-                    messageListener.onMessageSent((String) msg.obj);
+                    messageListener.onMessageSent((MessageAdHoc) msg.obj);
                     break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");

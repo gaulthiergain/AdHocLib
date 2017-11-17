@@ -7,6 +7,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -47,7 +48,7 @@ public class BluetoothServiceClient extends BluetoothService {
 
                 // Connect to the remote host
                 bluetoothSocket.connect();
-                bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, false);
+                bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, true);
 
 
                 // Notify handler
@@ -100,14 +101,14 @@ public class BluetoothServiceClient extends BluetoothService {
         }
     }
 
-    public void send(String msg) throws IOException, NoConnectionException {
+    public void send(MessageAdHoc msg) throws IOException, NoConnectionException {
         if (v) Log.d(TAG, "send()");
 
         if (state == STATE_NONE) {
             throw new NoConnectionException("No remote connection");
         } else {
             // Send message to remote device
-            bluetoothNetwork.send(msg);
+            bluetoothNetwork.sendObjectStream(msg);
 
             // Notify handler
             handler.obtainMessage(BluetoothService.MESSAGE_WRITE, msg).sendToTarget();
