@@ -44,7 +44,7 @@ public class BluetoothListenThread extends Thread {
                 if(!network.getSocket().isConnected()){
                     network.closeConnection();
                 }
-                e.printStackTrace(); //TODO remove
+                handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, -1).sendToTarget();
                 break;
             }
         }

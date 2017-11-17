@@ -25,6 +25,9 @@ public class BluetoothService {
     public static final int MESSAGE_READ = 5;               // message received
     public static final int MESSAGE_WRITE = 6;              // message sent
 
+    // COnstants for connection
+    public static final int CONNECTION_ABORTED = 7;         // connection aborted
+
     protected int state;
     protected final boolean v;
     protected final MessageListener messageListener;
@@ -55,13 +58,17 @@ public class BluetoothService {
             switch (msg.what) {
 
                 case MESSAGE_READ:
-                    Log.d(TAG, "MESSAGE_READ");
+                    if (v)  Log.d(TAG, "MESSAGE_READ");
                     String handleMessage[] = (String[]) msg.obj;
                     messageListener.onMessageReceived(handleMessage[0], handleMessage[1], handleMessage[2]);
                     break;
                 case MESSAGE_WRITE:
-                    Log.d(TAG, "MESSAGE_WRITE");
+                    if (v)  Log.d(TAG, "MESSAGE_WRITE");
                     messageListener.onMessageSent((String) msg.obj);
+                    break;
+                case CONNECTION_ABORTED:
+                    if (v) Log.d(TAG, "CONNECTION_ABORTED");
+                    messageListener.onConnectionClosed();
                     break;
             }
         }
