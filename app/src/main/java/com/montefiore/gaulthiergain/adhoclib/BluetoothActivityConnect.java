@@ -24,6 +24,7 @@ import java.util.UUID;
 
 public class BluetoothActivityConnect extends AppCompatActivity {
 
+    private static final String TAG = "[AdHoc]";
     private boolean onClickConnect = false;
     private boolean onClickListen = false;
 
@@ -57,10 +58,12 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     try {
                         bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true, new MessageListener() {
                             @Override
-                            public void onMessageReceived(String message, String sender) {
+                            public void onMessageReceived(String message, String senderName, String senderAddr) {
                                 //Update GUI
                                 final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                                textViewChat.setText(textViewChat.getText() + "\n------> " + message);
+                                textViewChat.setText(textViewChat.getText() + "\n------> " + senderName + ":" + message);
+                                Log.d(TAG, "Sender: " + senderName + " - " + senderAddr);
+                                ;
 
                                 try {
                                     bluetoothServiceServer.sendtoAll(message);
@@ -73,7 +76,7 @@ public class BluetoothActivityConnect extends AppCompatActivity {
 
                             @Override
                             public void onMessageSent(String message) {
-
+                                Log.d(TAG, "MESSAGE SENT: " + message);
                             }
 
                             @Override
@@ -120,15 +123,16 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     // Start the thread to connect with the given device
                     bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true, new MessageListener() {
                         @Override
-                        public void onMessageReceived(String message, String sender) {
+                        public void onMessageReceived(String message, String senderName, String senderAddr) {
                             //Update GUI
                             final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                            textViewChat.setText(textViewChat.getText() + "\n------> " + message);
+                            textViewChat.setText(textViewChat.getText() + "\n------> " + senderName + ":" + message);
+                            Log.d(TAG, "Sender: " + senderName + " - " + senderAddr);
                         }
 
                         @Override
                         public void onMessageSent(String message) {
-
+                            Log.d(TAG, "MESSAGE SENT: " + message);
                         }
 
                         @Override
@@ -188,13 +192,8 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-
-
             }
         });
 
     }
-
-    // The Handler that gets information back from the BluetoothChatService
-
 }

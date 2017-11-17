@@ -54,8 +54,17 @@ public class ThreadClient extends Thread {
     }
 
     private void processRequest(String request) throws IOException {
+        String handleMessage[] = new String[3];
         Log.d(TAG, "Processing request " + request);
-        handler.obtainMessage(BluetoothService.MESSAGE_READ, request).sendToTarget();
+
+        // Get response
+        handleMessage[0] = request;
+        // Get remote device name
+        handleMessage[1] = network.getSocket().getRemoteDevice().getName();
+        // Get remote device address
+        handleMessage[2] = network.getSocket().getRemoteDevice().getAddress();
+
+        handler.obtainMessage(BluetoothService.MESSAGE_READ, handleMessage).sendToTarget();
     }
 
     public String getNameThread() {

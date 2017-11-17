@@ -24,27 +24,34 @@ public class BluetoothListenThread extends Thread {
     @Override
     public void run() {
         Log.d(TAG, "start Listening ...");
-        String msg;
+        String handleMessage[] = new String[3];
         while (true) {
             // Read response
             try {
-                Log.d(TAG, "Waiting response from server ...");
-                msg = network.receive();
 
-                Log.d(TAG, "---> Response: " + msg);
-                handler.obtainMessage(BluetoothService.MESSAGE_READ, msg).sendToTarget();
+                Log.d(TAG, "Waiting response from server ...");
+
+                // Get response
+                handleMessage[0] = network.receive();
+                // Get remote device name
+                handleMessage[1] = network.getSocket().getRemoteDevice().getName();
+                // Get remote device address
+                handleMessage[2] = network.getSocket().getRemoteDevice().getAddress();
+
+                Log.d(TAG, "---> Response: " + handleMessage[0]);
+                handler.obtainMessage(BluetoothService.MESSAGE_READ, handleMessage).sendToTarget();
             } catch (IOException e){
                 if(!network.getSocket().isConnected()){
                     network.closeConnection();
                 }
-                e.printStackTrace();
+                e.printStackTrace(); //TODO remove
                 break;
             }
         }
     }
 
     public void cancel() {
-        if(network != null){
+        if(network != null){ //TODO !network.getSocket().isConnected()
             network.closeConnection();
         }
     }

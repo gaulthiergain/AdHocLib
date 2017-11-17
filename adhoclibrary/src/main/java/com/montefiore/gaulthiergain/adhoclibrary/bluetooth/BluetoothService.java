@@ -15,15 +15,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListen
 public class BluetoothService {
 
     // Constants that indicate the current connection state
-    public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTENING = 1;     // now listening for incoming connections
-    public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
-    public static final int STATE_CONNECTED = 3;  // now connected to a remote device
-    public static final int STATE_LISTENING_CONNECTED = 4;
+    public static final int STATE_NONE = 0;                 // no connection
+    public static final int STATE_LISTENING = 1;            // listening for incoming connections
+    public static final int STATE_CONNECTING = 2;           // initiating an outgoing connection
+    public static final int STATE_CONNECTED = 3;            // connected to a remote device
+    public static final int STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
-    public static final int MESSAGE_STATE_CHANGE = 5;
-    public static final int MESSAGE_READ = 6;
-    public static final int MESSAGE_WRITE = 7;
+    // Constants for message handling
+    public static final int MESSAGE_READ = 5;               // message received
+    public static final int MESSAGE_WRITE = 6;              // message sent
 
     protected int state;
     protected final boolean v;
@@ -41,9 +41,6 @@ public class BluetoothService {
     protected void setState(int state) {
         if (v) Log.d(TAG, "setState() " + state + " -> " + state);
         this.state = state;
-
-        // Give the new state to the Handler so the UI Activity can update TODO
-        // mHandler.obtainMessage(BluetoothChat.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
     public int getState() {
@@ -54,15 +51,16 @@ public class BluetoothService {
     protected final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            Log.d("[AdHoc]", "WITHIN handleMessage" + msg);
+
             switch (msg.what) {
 
                 case MESSAGE_READ:
-                    //TODO CHANGE NULL HERE
-                    messageListener.onMessageReceived((String) msg.obj, null);
-                    Log.d(TAG, "RCVD HANDLER: " + msg.arg1);
+                    Log.d(TAG, "MESSAGE_READ");
+                    String handleMessage[] = (String[]) msg.obj;
+                    messageListener.onMessageReceived(handleMessage[0], handleMessage[1], handleMessage[2]);
                     break;
                 case MESSAGE_WRITE:
+                    Log.d(TAG, "MESSAGE_WRITE");
                     messageListener.onMessageSent((String) msg.obj);
                     break;
             }
