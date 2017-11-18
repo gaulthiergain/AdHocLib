@@ -54,21 +54,21 @@ public class BluetoothServiceServer extends BluetoothService {
 
     }
 
-    public void sendto(MessageAdHoc msg, BluetoothAdHocDevice bluetoothAdHocDevice) throws NoConnectionException, IOException {
+    public void sendto(MessageAdHoc msg, String address) throws NoConnectionException, IOException {
         if (v) Log.d(TAG, "sendto()");
 
         // Get remote connection
         ConcurrentHashMap<String, BluetoothNetwork> hashMap = threadListen.getActiveConnexion();
 
         // Get associated socket
-        BluetoothNetwork network = hashMap.get(bluetoothAdHocDevice.getDevice().getAddress());
+        BluetoothNetwork network = hashMap.get(address);
         if (network == null) {
-            throw new NoConnectionException("No remote connexion with " + bluetoothAdHocDevice.toString());
+            throw new NoConnectionException("No remote connexion with " + address);
         } else {
             // Send message to connected device
             network.sendObjectStream(msg);
             if (v)
-                Log.d(TAG, "Send " + msg + " to " + bluetoothAdHocDevice.getDevice().getAddress());
+                Log.d(TAG, "Send " + msg + " to " + address);
 
             // Notify handler
             handler.obtainMessage(BluetoothService.MESSAGE_WRITE, msg).sendToTarget();

@@ -7,15 +7,15 @@ import java.io.Serializable;
  */
 
 public class MessageAdHoc implements Serializable {
-    private Header header;
+    private IHeader header;
     private Serializable pdu;
 
-    public MessageAdHoc(Header header, Serializable pdu) {
+    public MessageAdHoc(IHeader header, Serializable pdu) {
         this.header = header;
         this.pdu = pdu;
     }
 
-    public Header getHeader() {
+    public IHeader getHeader() {
         return header;
     }
 

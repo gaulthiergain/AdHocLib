@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by gaulthiergain on 17/11/17.
  */
 
-public class Header implements Serializable {
+public class Header implements Serializable, IHeader {
     private final String type;
     private final String senderAddr;
     private final String senderName;
