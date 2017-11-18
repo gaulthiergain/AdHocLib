@@ -187,4 +187,12 @@ public class BluetoothManager {
         return mac;
     }
 
+    public static String getCurrentName() {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter != null) {
+            return mBluetoothAdapter.getName();
+        }
+        return null;
+    }
+
 }
