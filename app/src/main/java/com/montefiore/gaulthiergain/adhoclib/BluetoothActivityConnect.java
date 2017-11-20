@@ -18,6 +18,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClien
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -58,41 +60,38 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                     try {
                         bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true, new MessageListener() {
                             @Override
-                            public void onMessageReceived(String message, String senderName, String senderAddr) {
+                            public void onMessageReceived(MessageAdHoc message) {
                                 //Update GUI
                                 final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                                textViewChat.setText(textViewChat.getText() + "\n------> " + senderName + ":" + message);
-                                Log.d(TAG, "Sender: " + senderName + " - " + senderAddr);
-                                ;
-
-                                try {
-                                    bluetoothServiceServer.sendtoAll(message);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } catch (NoConnectionException e) {
-                                    e.printStackTrace();
-                                }
+                                textViewChat.setText(textViewChat.getText() + "\n------> " + message.getHeader().getSenderName() + ":" + message);
+                                Log.d(TAG, "Sender: " + message.getPdu().toString());
                             }
 
                             @Override
-                            public void onMessageSent(String message) {
-                                Log.d(TAG, "MESSAGE SENT: " + message);
-                            }
-
-                            @Override
-                            public void onConnectionClosed() {
+                            public void onMessageSent(MessageAdHoc message) {
 
                             }
 
                             @Override
-                            public void onErrorMessage() {
+                            public void onBroadcastSend(MessageAdHoc message) {
 
                             }
+
+                            @Override
+                            public void onConnectionClosed(String deviceName, String deviceAddr) {
+
+                            }
+
+                            @Override
+                            public void onConnection(String deviceName, String deviceAddr) {
+
+                            }
+
                         });
                         bluetoothServiceServer.listen(3, true, "test",
                                 BluetoothAdapter.getDefaultAdapter(),
                                 UUID.fromString("e0917680-d427-11e4-8830-" +
-                                        BluetoothManager.getcurrentMac(
+                                        BluetoothManager.getCurrentMac(
                                                 getApplicationContext()).replace(":", "")));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -122,26 +121,29 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                 if (!onClickConnect) {
                     // Start the thread to connect with the given device
                     bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true, new MessageListener() {
-                        @Override
-                        public void onMessageReceived(String message, String senderName, String senderAddr) {
-                            //Update GUI
-                            final TextView textViewChat = (TextView) findViewById(R.id.textViewChat);
-                            textViewChat.setText(textViewChat.getText() + "\n------> " + senderName + ":" + message);
-                            Log.d(TAG, "Sender: " + senderName + " - " + senderAddr);
-                        }
 
                         @Override
-                        public void onMessageSent(String message) {
-                            Log.d(TAG, "MESSAGE SENT: " + message);
-                        }
-
-                        @Override
-                        public void onConnectionClosed() {
+                        public void onMessageReceived(MessageAdHoc message) {
 
                         }
 
                         @Override
-                        public void onErrorMessage() {
+                        public void onMessageSent(MessageAdHoc message) {
+                            Log.d(TAG, "Message sent " + message.getPdu());
+                        }
+
+                        @Override
+                        public void onBroadcastSend(MessageAdHoc message) {
+
+                        }
+
+                        @Override
+                        public void onConnectionClosed(String deviceName, String deviceAddr) {
+
+                        }
+
+                        @Override
+                        public void onConnection(String deviceName, String deviceAddr) {
 
                         }
                     });
@@ -175,17 +177,17 @@ public class BluetoothActivityConnect extends AppCompatActivity {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
 
-                if (server) {
+
+                if (!server) {
                     try {
-                        bluetoothServiceServer.sendtoAll(editTextChat.getText().toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (NoConnectionException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    try {
-                        bluetoothServiceClient.send(editTextChat.getText().toString());
+                        String msg = "";
+                        for (int i = 0; i < 200; i++) {
+                            msg = "VALUE :" + i;
+                            bluetoothServiceClient.send(new MessageAdHoc(
+                                    new Header("Object", BluetoothManager.getCurrentMac(getApplicationContext()),
+                                            BluetoothManager.getCurrentName()), msg));
+                        }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (NoConnectionException e) {
