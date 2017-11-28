@@ -17,11 +17,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
-import com.montefiore.gaulthiergain.adhoclibrary.wifi.ClientTask;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
@@ -31,7 +37,11 @@ public class TabFragment3 extends Fragment {
     private View fragmentView;
     private WifiManager wifiManager;
     private String TAG = "[AdHoc]";
-    private String addr;
+    private final int PORT = 8888;
+
+
+    private WifiServiceClient wifiServiceClient;
+    private WifiServiceServer wifiServiceServer;
 
     private int nbReceive = 0;
 
@@ -41,31 +51,7 @@ public class TabFragment3 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentView = inflater.inflate(R.layout.fragment_tab_fragment3, container, false);
 
-
-        Handler mHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message message) {
-                switch (message.what) {
-                    case 1:
-                        String msg = (String) message.obj;
-                        Log.d(TAG, "String rcv: " + msg);
-                        updateViewChat(fragmentView, msg);
-                        nbReceive++;
-                        break;
-                    case 2: //Connected
-                        addr = (String) message.obj;
-                        Log.d(TAG, "YEAH it's connected: " + addr);
-                        addTextChat(fragmentView);
-                        //new ClientTask(context, info.groupOwnerAddress.getHostAddress()).execute();
-                        break;
-                    default:
-                        Log.d(TAG, "error");
-                }
-
-            }
-        };
-
-        wifiManager = new WifiManager(getContext(), mHandler, true, new DiscoveryListener() {
+        wifiManager = new WifiManager(getContext(), true, new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
                 Log.d(TAG, "Discovery onSuccess");
@@ -95,11 +81,69 @@ public class TabFragment3 extends Fragment {
             @Override
             public void onGroupOwner(InetAddress groupOwnerAddr) {
                 Log.d(TAG, "I am the groupOwner" + groupOwnerAddr.toString());
+                wifiServiceServer = new WifiServiceServer(getContext(), true, new WifiMessageListener() {
+                    @Override
+                    public void onMessageReceived(MessageAdHoc message) {
+                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onMessageSent(MessageAdHoc message) {
+                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onBroadcastSend(MessageAdHoc message) {
+                        Log.d(TAG, "onBroadcastSend EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onConnectionClosed(String deviceAddr) {
+                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddr);
+                    }
+
+                    @Override
+                    public void onConnection(String deviceAddr) {
+                        Log.d(TAG, "onConnection EVENT: " + deviceAddr);
+                    }
+                });
+                try {
+                    wifiServiceServer.listen(3, PORT);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onClient(InetAddress groupOwnerAddr) {
-                Log.d(TAG, "The groupOwner" + groupOwnerAddr.toString());
+                Log.d(TAG, "The groupOwner is " + groupOwnerAddr.toString());
+                wifiServiceClient = new WifiServiceClient(getContext(), true, new WifiMessageListener() {
+                    @Override
+                    public void onMessageReceived(MessageAdHoc message) {
+                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onMessageSent(MessageAdHoc message) {
+                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onBroadcastSend(MessageAdHoc message) {
+                        Log.d(TAG, "onBroadcastSend EVENT: " + message.getPdu());
+                    }
+
+                    @Override
+                    public void onConnectionClosed(String deviceAddr) {
+                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddr);
+                    }
+
+                    @Override
+                    public void onConnection(String deviceAddr) {
+                        Log.d(TAG, "onConnection EVENT: " + deviceAddr);
+                    }
+                }, groupOwnerAddr.getHostAddress(), PORT);
+                (new Thread(wifiServiceClient)).start();
             }
         });
 
@@ -210,7 +254,13 @@ public class TabFragment3 extends Fragment {
 
                 int i = 0;
                 EditText myEditText = fragmentView.findViewById(i);
-                new ClientTask(getContext(), addr, myEditText.getText().toString()).execute();
+                try {
+                    wifiServiceClient.send(new MessageAdHoc(new Header("Object", "TEST", "Test"), "SALUT  a tous"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
+                    e.printStackTrace();
+                }
             }
         });
 

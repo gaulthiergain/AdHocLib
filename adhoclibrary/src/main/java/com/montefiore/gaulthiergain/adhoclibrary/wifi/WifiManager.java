@@ -36,16 +36,14 @@ public class WifiManager {
 
     private WifiP2pManager wifiP2pManager;
     private Channel channel;
-    private Handler handler;
 
     private HashMap<String, WifiP2pDevice> peers = new HashMap<String, WifiP2pDevice>();
 
-    public WifiManager(final Context context, final Handler mHandler, boolean verbose,
+    public WifiManager(final Context context, boolean verbose,
                        final DiscoveryListener discoveryListener,
                        final ConnectionListener connectionListener) {
         this.v = verbose;
         this.context = context;
-        this.handler = mHandler;
         this.discoveryListener = discoveryListener;
         this.connectionListener = connectionListener;
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
