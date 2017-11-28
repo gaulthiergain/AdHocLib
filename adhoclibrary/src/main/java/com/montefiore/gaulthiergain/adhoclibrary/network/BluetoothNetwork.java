@@ -1,6 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.network;
 
-
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
@@ -10,9 +9,6 @@ import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Created by gaulthiergain on 10/11/17.
- */
 public class BluetoothNetwork {
 
     private static final String TAG = "[AdHoc]";
@@ -49,7 +45,6 @@ public class BluetoothNetwork {
             Log.d(TAG, "Object sent: " + obj);
         }
     }
-
 
     public Object receiveObjectStream() throws IOException, ClassNotFoundException {
         Object obj = ois.readObject();

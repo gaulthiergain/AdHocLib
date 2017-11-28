@@ -7,10 +7,6 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 
-/**
- * Created by gaulthiergain on 17/11/17.
- */
-
 public class BluetoothDataStream {
     private static final String TAG = "[AdHoc]";
 
@@ -21,6 +17,10 @@ public class BluetoothDataStream {
         //TODO socket
         this.dis = dis;
         this.dos = dos;
+    }
+
+    public void sendJSONObject(Json json){
+
     }
 
     public void sendDataStream(String msg) throws IOException {
