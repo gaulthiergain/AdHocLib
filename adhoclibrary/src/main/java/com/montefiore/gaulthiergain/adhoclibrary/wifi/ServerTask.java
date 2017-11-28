@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.OnReceiveListener;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

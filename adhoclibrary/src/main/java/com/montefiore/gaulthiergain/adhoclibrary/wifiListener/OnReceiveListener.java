@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.wifi;
+package com.montefiore.gaulthiergain.adhoclibrary.wifiListener;
 
 import android.content.Context;
 

@@ -24,7 +24,6 @@ import java.util.HashMap;
 public class TabFragment2 extends Fragment {
 
     private final String TAG = "[AdHoc]";
-    private boolean registered = false;
     private BluetoothManager bluetoothManager;
 
     @Override
@@ -53,13 +52,12 @@ public class TabFragment2 extends Fragment {
                     Log.d(TAG, "Bluetooth is enabled");
                     HashMap<String, BluetoothAdHocDevice> peers = bluetoothManager.getPairedDevices();
 
-                    if(peers.size() == 0){
+                    if (peers.size() == 0) {
                         bluetoothManager.discovery(new ConnectionListener() {
                             @Override
                             public void onDiscoveryFinished(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                                 if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
                                     updateGUI(fragmentView, bluetoothManager.getHashMapBluetoothDevice());
-                                    registered = true;
                                 }
                             }
 
@@ -79,7 +77,7 @@ public class TabFragment2 extends Fragment {
                             }
 
                         });
-                    }else{
+                    } else {
                         updateGUI(fragmentView, peers);
                     }
                 } else {
@@ -109,8 +107,7 @@ public class TabFragment2 extends Fragment {
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), BluetoothActivityConnect.class);
                     intent.putExtra(BluetoothAdHocDevice.EXTRA_DEVICE, adHocDevice);
-                    if(registered)
-                        bluetoothManager.unregisterDiscovery();
+                    bluetoothManager.unregisterDiscovery();
                     startActivity(intent);
                 }
             });
@@ -124,15 +121,13 @@ public class TabFragment2 extends Fragment {
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
-        if(registered)
-            bluetoothManager.unregisterDiscovery();
+        bluetoothManager.unregisterDiscovery();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
-        if(registered)
-            bluetoothManager.unregisterDiscovery();
+        bluetoothManager.unregisterDiscovery();
     }
 }
