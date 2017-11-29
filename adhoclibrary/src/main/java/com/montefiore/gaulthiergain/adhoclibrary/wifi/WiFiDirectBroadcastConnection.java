@@ -9,22 +9,20 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 
-public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
+public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
 
     private final boolean v;
     private final String TAG = "[AdHoc][" + getClass().getName() + "]";
     private WifiP2pManager manager;
     private Channel channel;
-    private PeerListListener peerListListener;
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
 
-    public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel, PeerListListener peerListListener,
-                                       WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable, boolean verbose) {
+    public WiFiDirectBroadcastConnection(WifiP2pManager manager, Channel channel,
+                                         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable, boolean verbose) {
         super();
         this.v = verbose;
         this.manager = manager;
         this.channel = channel;
-        this.peerListListener = peerListListener;
         this.onConnectionInfoAvailable = onConnectionInfoAvailable;
     }
 
@@ -39,15 +37,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 if (v) Log.d(TAG, "P2P state enabled: " + state);
             } else {
                 if (v) Log.d(TAG, "P2P state disabled: " + state);
-            }
-
-        } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-
-            // Peers have changed
-            if (manager != null) {
-                // Update the list of peers
-                manager.requestPeers(channel, peerListListener);
-                if (v) Log.d(TAG, "P2P peers changed");
             }
 
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
