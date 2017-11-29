@@ -39,7 +39,6 @@ public class TabFragment3 extends Fragment {
     private String TAG = "[AdHoc]";
     private final int PORT = 8888;
 
-
     private WifiServiceClient wifiServiceClient;
     private WifiServiceServer wifiServiceServer;
 
@@ -81,6 +80,7 @@ public class TabFragment3 extends Fragment {
             @Override
             public void onGroupOwner(InetAddress groupOwnerAddr) {
                 Log.d(TAG, "I am the groupOwner" + groupOwnerAddr.toString());
+                addTextChat(fragmentView);
                 wifiServiceServer = new WifiServiceServer(getContext(), true, new WifiMessageListener() {
                     @Override
                     public void onMessageReceived(MessageAdHoc message) {
@@ -116,6 +116,7 @@ public class TabFragment3 extends Fragment {
 
             @Override
             public void onClient(InetAddress groupOwnerAddr) {
+                addTextChat(fragmentView);
                 Log.d(TAG, "The groupOwner is " + groupOwnerAddr.toString());
                 wifiServiceClient = new WifiServiceClient(getContext(), true, new WifiMessageListener() {
                     @Override
