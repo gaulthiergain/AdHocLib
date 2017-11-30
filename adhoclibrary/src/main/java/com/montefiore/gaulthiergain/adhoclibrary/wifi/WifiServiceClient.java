@@ -1,22 +1,17 @@
 package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothListenThread;
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
-import com.montefiore.gaulthiergain.adhoclibrary.network.WifiNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.UUID;
 
 /**
  * Created by gaulthiergain on 28/10/17.
@@ -24,7 +19,7 @@ import java.util.UUID;
 
 public class WifiServiceClient extends WifiService implements Runnable {
 
-    protected WifiNetwork wifiNetwork;
+    protected NetworkObject wifiNetwork;
     protected WifiListenThread threadListening;
     private final int port;
     private final boolean background;
@@ -121,7 +116,7 @@ public class WifiServiceClient extends WifiService implements Runnable {
                 socket.bind(null);
                 socket.connect((new InetSocketAddress(remoteAddr, port)), 5000);
 
-                wifiNetwork = new WifiNetwork(socket, true);
+                wifiNetwork = new NetworkObject(new AdHocSocketWifi(socket));
 
                 // Notify handler
                 String messageHandle = socket.getRemoteSocketAddress().toString();

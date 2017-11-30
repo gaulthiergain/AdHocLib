@@ -4,12 +4,12 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
-import com.montefiore.gaulthiergain.adhoclibrary.network.WifiNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.Socket;
 
 public class ThreadClient extends Thread {
 
@@ -18,7 +18,7 @@ public class ThreadClient extends Thread {
     private final ListSocketDevice listSocketDevice;
     private final String name;
     private final Handler handler;
-    private WifiNetwork network = null;
+    private NetworkObject network = null;
 
     ThreadClient(ListSocketDevice listSocketDevice, String name, Handler handler) {
         this.listSocketDevice = listSocketDevice;
@@ -29,8 +29,8 @@ public class ThreadClient extends Thread {
     public void run() {
         while (!isInterrupted()) {
             try {
-                Socket socketDevice = listSocketDevice.getSocketDevice();
-                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteSocketAddress().toString());
+                ISocket socketDevice = listSocketDevice.getSocketDevice();
+                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteSocketAddress());
                 while (true) {
                     processRequest((MessageAdHoc) network.receiveObjectStream());
                 }

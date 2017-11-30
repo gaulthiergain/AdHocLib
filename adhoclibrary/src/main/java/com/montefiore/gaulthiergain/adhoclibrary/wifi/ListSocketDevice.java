@@ -1,12 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
-import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
-import com.montefiore.gaulthiergain.adhoclibrary.network.WifiNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,41 +15,41 @@ public class ListSocketDevice {
 
     private static final String TAG = "[AdHoc]";
 
-    private ArrayList<Socket> listTasks;
-    private ConcurrentHashMap<String, WifiNetwork> hashMapNetwork;
+    private ArrayList<ISocket> listISockets;
+    private ConcurrentHashMap<String, NetworkObject> hashMapNetwork;
 
     public ListSocketDevice() {
-        listTasks = new ArrayList<>();
+        listISockets = new ArrayList<>();
         hashMapNetwork = new ConcurrentHashMap<>();
     }
 
-    public synchronized Socket getSocketDevice() throws InterruptedException {
+    public synchronized ISocket getSocketDevice() throws InterruptedException {
         Log.d(TAG, "Waiting Socket...");
-        while (listTasks.isEmpty()) {
+        while (listISockets.isEmpty()) {
             wait();
         }
-        return listTasks.remove(0);
+        return listISockets.remove(0);
     }
 
 
-    public synchronized void addSocketClient(Socket socket) {
+    public synchronized void addSocketClient(ISocket isocket) {
 
-        String key = socket.getRemoteSocketAddress().toString();
+        String key = isocket.getRemoteSocketAddress();
         if (!hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.put(key, new WifiNetwork(socket, true));
+            hashMapNetwork.put(key, new NetworkObject(isocket));
         }
 
-        listTasks.add(socket);
+        listISockets.add(isocket);
         Log.d(TAG, "Add waiting Socket");
         notify();
     }
 
-    public ConcurrentHashMap<String, WifiNetwork> getActiveConnexion() {
+    public ConcurrentHashMap<String, NetworkObject> getActiveConnexion() {
         return hashMapNetwork;
     }
 
-    public void removeActiveConnexion(BluetoothSocket socket) {
-        hashMapNetwork.remove(socket.getRemoteDevice().toString());
+    public void removeActiveConnexion(ISocket socket) {
+        hashMapNetwork.remove(socket.getRemoteSocketAddress());
     }
 
 }

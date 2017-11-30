@@ -1,39 +1,37 @@
 package com.montefiore.gaulthiergain.adhoclibrary.network;
 
-import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WifiNetwork {
+public class NetworkObject {
 
     private static final String TAG = "[AdHoc]";
 
-    private Socket socket;
+    private ISocket isocket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    public void setSocket(Socket socket) {
-        this.socket = socket;
+    public void setSocket(ISocket isocket) {
+        this.isocket = isocket;
     }
 
-    public Socket getSocket() {
-        return socket;
+    public ISocket getISocket() {
+        return isocket;
     }
 
 
-    public WifiNetwork(Socket socket, boolean object) {
+    public NetworkObject(ISocket isocket) {
         try {
-            this.socket = socket;
-            this.oos = new ObjectOutputStream(socket.getOutputStream());
-            this.ois = new ObjectInputStream(socket.getInputStream());
+            this.isocket = isocket;
+            this.oos = new ObjectOutputStream(isocket.getOutputStream());
+            this.ois = new ObjectInputStream(isocket.getInputStream());
         } catch (IOException ex) {
-            Logger.getLogger(WifiNetwork.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BluetoothNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -62,7 +60,7 @@ public class WifiNetwork {
         try {
             oos.close();
             ois.close();
-            socket.close();
+            isocket.close();
         } catch (IOException ex) {
             Log.d(TAG, "Error I/O: " + ex.getMessage());
         }

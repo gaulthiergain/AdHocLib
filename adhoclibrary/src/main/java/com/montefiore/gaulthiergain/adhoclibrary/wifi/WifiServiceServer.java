@@ -3,9 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.WifiNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
@@ -53,10 +52,10 @@ public class WifiServiceServer extends WifiService {
         if (v) Log.d(TAG, "sendto()");
 
         // Get remote connection
-        ConcurrentHashMap<String, WifiNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
 
         // Get associated socket
-        WifiNetwork network = hashMap.get(address);
+        NetworkObject network = hashMap.get(address);
         if (network == null) {
             throw new NoConnectionException("No remote connexion with " + address);
         } else {
@@ -117,14 +116,14 @@ public class WifiServiceServer extends WifiService {
     private boolean _sendtoAll(MessageAdHoc msg) throws IOException, NoConnectionException {
 
         // Get remote connection
-        ConcurrentHashMap<String, WifiNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
         if (hashMap.size() == 0) {
             // If no remote device, return false
             return false;
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, WifiNetwork> pairs : hashMap.entrySet()) {
+        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
             pairs.getValue().sendObjectStream(msg);
             if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());
         }
@@ -135,7 +134,7 @@ public class WifiServiceServer extends WifiService {
     private boolean _sendtoAllExcept(MessageAdHoc msg, String senderAddr) throws NoConnectionException, IOException {
 
         // Get remote connection
-        ConcurrentHashMap<String, WifiNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
 
         if (hashMap.size() == 0) {
             // If no remote device, return false
@@ -143,7 +142,7 @@ public class WifiServiceServer extends WifiService {
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, WifiNetwork> pairs : hashMap.entrySet()) {
+        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
             if (!pairs.getKey().equals(senderAddr)) {
                 pairs.getValue().sendObjectStream(msg);
                 if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());
