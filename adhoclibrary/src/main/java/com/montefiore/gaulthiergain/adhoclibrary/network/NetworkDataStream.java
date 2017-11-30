@@ -7,13 +7,13 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 
-public class BluetoothDataStream {
+public class NetworkDataStream {
     private static final String TAG = "[AdHoc]";
 
     private DataInputStream dis;
     private DataOutputStream dos;
 
-    public BluetoothDataStream(DataInputStream dis, DataOutputStream dos) {
+    public NetworkDataStream(DataInputStream dis, DataOutputStream dos) {
         //TODO socket
         this.dis = dis;
         this.dos = dos;

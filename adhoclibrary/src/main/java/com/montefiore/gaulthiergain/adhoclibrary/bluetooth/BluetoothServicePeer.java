@@ -8,15 +8,11 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 
 import java.io.IOException;
 import java.util.UUID;
-
-/**
- * Created by gaulthiergain on 28/10/17.
- */
-
 
 public class BluetoothServicePeer extends BluetoothServiceClient {
 
@@ -45,7 +41,7 @@ public class BluetoothServicePeer extends BluetoothServiceClient {
         BluetoothSocket bluetoothSocket = serverSocket.accept();
         if (bluetoothSocket != null) {
             Log.d(TAG, bluetoothSocket.getRemoteDevice().getAddress() + " accepted");
-            bluetoothNetwork = new BluetoothNetwork(bluetoothSocket, true);
+            bluetoothNetwork = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
             setState(STATE_LISTENING);
         } else {
             Log.d(TAG, "Error while accepting client");

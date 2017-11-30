@@ -30,8 +30,8 @@ public class NetworkObject {
             this.isocket = isocket;
             this.oos = new ObjectOutputStream(isocket.getOutputStream());
             this.ois = new ObjectInputStream(isocket.getInputStream());
-        } catch (IOException ex) {
-            Logger.getLogger(BluetoothNetwork.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

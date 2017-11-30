@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -58,10 +58,10 @@ public class BluetoothServiceServer extends BluetoothService {
         if (v) Log.d(TAG, "sendto()");
 
         // Get remote connection
-        ConcurrentHashMap<String, BluetoothNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
 
         // Get associated socket
-        BluetoothNetwork network = hashMap.get(address);
+        NetworkObject network = hashMap.get(address);
         if (network == null) {
             throw new NoConnectionException("No remote connexion with " + address);
         } else {
@@ -122,14 +122,14 @@ public class BluetoothServiceServer extends BluetoothService {
     private boolean _sendtoAll(MessageAdHoc msg) throws IOException, NoConnectionException {
 
         // Get remote connection
-        ConcurrentHashMap<String, BluetoothNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
         if (hashMap.size() == 0) {
             // If no remote device, return false
             return false;
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, BluetoothNetwork> pairs : hashMap.entrySet()) {
+        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
             pairs.getValue().sendObjectStream(msg);
             if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());
         }
@@ -140,7 +140,7 @@ public class BluetoothServiceServer extends BluetoothService {
     private boolean _sendtoAllExcept(MessageAdHoc msg, String senderAddr) throws NoConnectionException, IOException {
 
         // Get remote connection
-        ConcurrentHashMap<String, BluetoothNetwork> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
 
         if (hashMap.size() == 0) {
             // If no remote device, return false
@@ -148,7 +148,7 @@ public class BluetoothServiceServer extends BluetoothService {
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, BluetoothNetwork> pairs : hashMap.entrySet()) {
+        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
             if (!pairs.getKey().equals(senderAddr)) {
                 pairs.getValue().sendObjectStream(msg);
                 if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());

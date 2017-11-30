@@ -1,9 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
+import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -15,10 +16,10 @@ import java.io.IOException;
 public class BluetoothListenThread extends Thread {
 
     private static final String TAG = "[AdHoc]";
-    private final BluetoothNetwork network;
+    private final NetworkObject network;
     private final Handler handler;
 
-    public BluetoothListenThread(BluetoothNetwork network, Handler handler) {
+    public BluetoothListenThread(NetworkObject network, Handler handler) {
         this.network = network;
         this.handler = handler;
     }
@@ -39,14 +40,17 @@ public class BluetoothListenThread extends Thread {
                 Log.d(TAG, "---> Response: " + message);
                 handler.obtainMessage(BluetoothService.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
-                if (!network.getSocket().isConnected()) {
+                if (!network.getISocket().isConnected()) {
                     network.closeConnection();
                 }
                 String handleConnectionAborted[] = new String[2];
+
+                //Get socket
+                BluetoothSocket bluetoothSocket= (BluetoothSocket) network.getISocket().getSocket();
                 // Get remote device name
-                handleConnectionAborted[0] = network.getSocket().getRemoteDevice().getName();
+                handleConnectionAborted[0] = bluetoothSocket.getRemoteDevice().getName();
                 // Get remote device address
-                handleConnectionAborted[1] = network.getSocket().getRemoteDevice().getAddress();
+                handleConnectionAborted[1] = bluetoothSocket.getRemoteDevice().getAddress();
                 // Notify handler
                 handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                 break;

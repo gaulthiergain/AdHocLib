@@ -1,20 +1,19 @@
 package com.montefiore.gaulthiergain.adhoclibrary.threadPool;
 
-
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
-import com.montefiore.gaulthiergain.adhoclibrary.network.BluetoothNetwork;
+import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.network.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiService;
 
 import java.io.EOFException;
 import java.io.IOException;
 
-/**
- * Created by gaulthiergain on 10/11/17.
- */
 public class ThreadClient extends Thread {
 
     private static final String TAG = "[AdHoc]";
@@ -22,7 +21,7 @@ public class ThreadClient extends Thread {
     private final ListSocketDevice listSocketDevice;
     private final String name;
     private final Handler handler;
-    private BluetoothNetwork network = null;
+    private NetworkObject network = null;
 
     ThreadClient(ListSocketDevice listSocketDevice, String name, Handler handler) {
         this.listSocketDevice = listSocketDevice;
@@ -31,10 +30,11 @@ public class ThreadClient extends Thread {
     }
 
     public void run() {
+        ISocket socketDevice = null;
         while (!isInterrupted()) {
             try {
-                BluetoothSocket socketDevice = listSocketDevice.getSocketDevice();
-                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteDevice().getAddress());
+                socketDevice = listSocketDevice.getSocketDevice();
+                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteSocketAddress());
                 while (true) {
                     processRequest((MessageAdHoc) network.receiveObjectStream());
                 }
@@ -51,14 +51,23 @@ public class ThreadClient extends Thread {
                 e.printStackTrace();
             } finally {
                 if (network != null) {
-                    String handleConnectionAborted[] = new String[2];
+                    if (socketDevice instanceof AdHocSocketWifi) {
+                        // Notify handler
+                        String messageHandle = network.getISocket().getRemoteSocketAddress();
+                        handler.obtainMessage(WifiService.CONNECTION_ABORTED, messageHandle).sendToTarget();
+                    } else {
 
-                    // Get remote device name
-                    handleConnectionAborted[0] = network.getSocket().getRemoteDevice().getName();
-                    // Get remote device address
-                    handleConnectionAborted[1] = network.getSocket().getRemoteDevice().getAddress();
-                    // Notify handler
-                    handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+                        // Get Socket
+                        BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
+
+                        String handleConnectionAborted[] = new String[2];
+                        // Get remote device name
+                        handleConnectionAborted[0] = socket.getRemoteDevice().getName();
+                        // Get remote device address
+                        handleConnectionAborted[1] = socket.getRemoteDevice().getAddress();
+                        // Notify handler
+                        handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+                    }
 
                     // Close network
                     network.closeConnection();
