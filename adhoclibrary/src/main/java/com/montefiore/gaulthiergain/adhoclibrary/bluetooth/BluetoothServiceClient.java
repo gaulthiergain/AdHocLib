@@ -21,10 +21,12 @@ import java.util.UUID;
 public class BluetoothServiceClient extends BluetoothService {
 
     protected NetworkObject bluetoothNetwork;
+    protected boolean background;
     protected BluetoothListenThread threadListening;
 
-    public BluetoothServiceClient(Context context, boolean verbose, MessageListener messageListener) {
+    public BluetoothServiceClient(Context context, boolean verbose, boolean background, MessageListener messageListener) {
         super(context, verbose, messageListener);
+        this.background = background;
     }
 
 
@@ -61,6 +63,11 @@ public class BluetoothServiceClient extends BluetoothService {
 
                 // Update state
                 setState(STATE_CONNECTED);
+
+                // Listen in Background
+                if (background) {
+                    listenInBackground();
+                }
             } catch (IOException e) {
                 setState(STATE_NONE);
                 throw new NoConnectionException("No remote connection");
@@ -68,7 +75,7 @@ public class BluetoothServiceClient extends BluetoothService {
         }
     }
 
-    public void listenInBackground() throws NoConnectionException, IOException {
+    private void listenInBackground() throws NoConnectionException, IOException {
         if (v) Log.d(TAG, "listenInBackground()");
 
         if (state == STATE_NONE) {

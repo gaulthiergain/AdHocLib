@@ -22,8 +22,8 @@ public class BluetoothServicePeer extends BluetoothServiceClient {
     private final UUID device_uuid;
 
     public BluetoothServicePeer(Context context, boolean verbose, MessageListener messageListener,
-                                boolean secure, BluetoothAdapter bluetoothAdapter, UUID device_uuid) throws IOException {
-        super(context, verbose, messageListener);
+                                boolean secure, BluetoothAdapter bluetoothAdapter, UUID device_uuid, boolean background) throws IOException {
+        super(context, verbose, background, messageListener);
         this.secure = secure;
         this.bluetoothAdapter = bluetoothAdapter;
         this.device_uuid = device_uuid;
@@ -48,7 +48,7 @@ public class BluetoothServicePeer extends BluetoothServiceClient {
         }
     }
 
-    public void listenInBackground() throws NoConnectionException, IOException {
+    private void listenInBackground() throws NoConnectionException, IOException {
         if (v) Log.d(TAG, "listenInBackground()");
 
         this.waitPeers();
