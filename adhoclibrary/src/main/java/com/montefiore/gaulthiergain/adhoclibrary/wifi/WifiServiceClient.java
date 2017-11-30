@@ -27,17 +27,20 @@ public class WifiServiceClient extends WifiService implements Runnable {
     protected WifiNetwork wifiNetwork;
     protected WifiListenThread threadListening;
     private final int port;
+    private final boolean background;
     private final String remoteAddr;
 
-    public WifiServiceClient(Context context, boolean verbose, WifiMessageListener messageListener,
+
+    public WifiServiceClient(Context context, boolean verbose, boolean background, WifiMessageListener messageListener,
                              String remoteAddr, int port) {
         super(context, verbose, messageListener);
         this.remoteAddr = remoteAddr;
+        this.background = background;
         this.port = port;
     }
 
 
-    public void listenInBackground() throws NoConnectionException, IOException {
+    private void listenInBackground() throws NoConnectionException, IOException {
         if (v) Log.d(TAG, "listenInBackground()");
 
         if (state == STATE_NONE) {
@@ -126,8 +129,15 @@ public class WifiServiceClient extends WifiService implements Runnable {
 
                 // Update state
                 setState(STATE_CONNECTED);
+
+                // Listen in Background
+                if (background) {
+                    listenInBackground();
+                }
             } catch (IOException e) {
                 setState(STATE_NONE);
+                e.printStackTrace();
+            } catch (NoConnectionException e) {
                 e.printStackTrace();
             }
         }
