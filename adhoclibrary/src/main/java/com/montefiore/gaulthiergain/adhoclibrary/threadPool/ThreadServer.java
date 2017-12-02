@@ -99,8 +99,10 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    String messageHandle = isocket.getRemoteSocketAddress();
-                    handler.obtainMessage(WifiService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                    String messageHandle[] = new String[2];
+                    messageHandle[0] = isocket.getRemoteSocketAddress();
+                    messageHandle[1] = socket.getLocalAddress().toString().substring(1);
+                    handler.obtainMessage(BluetoothService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
                 } else {
                     Log.d(TAG, "Error while accepting client");
                 }

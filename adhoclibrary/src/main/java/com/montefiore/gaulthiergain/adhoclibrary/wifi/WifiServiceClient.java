@@ -112,14 +112,17 @@ public class WifiServiceClient extends WifiService implements Runnable {
             try {
                 // Connect to the remote host
                 Socket socket = new Socket();
-
                 socket.bind(null);
                 socket.connect((new InetSocketAddress(remoteAddr, port)), 5000);
 
                 wifiNetwork = new NetworkObject(new AdHocSocketWifi(socket));
 
                 // Notify handler
-                String messageHandle = socket.getRemoteSocketAddress().toString();
+                String[] messageHandle = new String[2];
+                // Set remote address
+                messageHandle[0] = socket.getRemoteSocketAddress().toString().split(":")[0].substring(1);
+                // Set local address
+                messageHandle[1] = socket.getLocalAddress().toString().substring(1);
                 handler.obtainMessage(WifiService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
 
                 // Update state

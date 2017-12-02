@@ -75,8 +75,8 @@ public class WifiService {
                     break;
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
-                    String handleConnectionPerformed = (String) msg.obj;
-                    messageListener.onConnection(handleConnectionPerformed);
+                    String[] handleConnectionPerformed = (String[]) msg.obj;
+                    messageListener.onConnection(handleConnectionPerformed[0], handleConnectionPerformed[1]);
                     break;
                 default:
                     if (v) Log.d(TAG, "default");

@@ -18,6 +18,6 @@ public interface WifiMessageListener {
 
     void onConnectionClosed(String deviceAddr);
 
-    void onConnection(String deviceAddr);
+    void onConnection(String remoteAddr, String localAddr);
 }
 
