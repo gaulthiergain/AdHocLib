@@ -17,18 +17,16 @@ import java.util.UUID;
  * Created by gaulthiergain on 28/10/17.
  */
 
-
 public class BluetoothServiceClient extends BluetoothService {
 
-    protected NetworkObject bluetoothNetwork;
-    protected boolean background;
-    protected BluetoothListenThread threadListening;
+    private NetworkObject bluetoothNetwork;
+    private boolean background;
+    private BluetoothListenThread threadListening;
 
     public BluetoothServiceClient(Context context, boolean verbose, boolean background, MessageListener messageListener) {
         super(context, verbose, messageListener);
         this.background = background;
     }
-
 
     public void connect(boolean secure, BluetoothAdHocDevice bluetoothAdHocDevice) throws NoConnectionException {
         if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName());
@@ -52,7 +50,6 @@ public class BluetoothServiceClient extends BluetoothService {
                 // Connect to the remote host
                 bluetoothSocket.connect();
                 bluetoothNetwork = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
-
 
                 // Notify handler
                 String messageHandle[] = new String[2];
@@ -95,7 +92,7 @@ public class BluetoothServiceClient extends BluetoothService {
         }
     }
 
-    protected void stopListeningInBackground() {
+    private void stopListeningInBackground() {
         if (v) Log.d(TAG, "stopListeningInBackground()");
 
         if (state == STATE_LISTENING_CONNECTED) {
@@ -134,7 +131,6 @@ public class BluetoothServiceClient extends BluetoothService {
             } else if (state == STATE_LISTENING_CONNECTED) {
                 stopListeningInBackground();
             }
-
             // Update the state of the connection
             setState(STATE_NONE);
         }

@@ -19,8 +19,8 @@ import java.net.Socket;
 
 public class WifiServiceClient extends WifiService implements Runnable {
 
-    protected NetworkObject wifiNetwork;
-    protected WifiListenThread threadListening;
+    private NetworkObject wifiNetwork;
+    private WifiListenThread threadListening;
     private final int port;
     private final boolean background;
     private final String remoteAddr;
@@ -55,7 +55,7 @@ public class WifiServiceClient extends WifiService implements Runnable {
         }
     }
 
-    protected void stopListeningInBackground() {
+    private void stopListeningInBackground() {
         if (v) Log.d(TAG, "stopListeningInBackground()");
 
         if (state == STATE_LISTENING_CONNECTED) {
