@@ -69,6 +69,9 @@ public class ThreadClient extends Thread {
                         handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                     }
 
+                    // Remove client from hashmap
+                    listSocketDevice.removeActiveConnexion(socketDevice);
+
                     // Close network
                     network.closeConnection();
                 }
