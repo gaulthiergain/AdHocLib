@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ListSocketDevice {
 
     private ArrayList<ISocket> listISockets;
+    // Mapping between the remote address and a networkObject (a socket).
     private ConcurrentHashMap<String, NetworkObject> hashMapNetwork;
 
     /**
@@ -61,12 +62,12 @@ public class ListSocketDevice {
     }
 
     /**
-     * Method allowing to return a concurrent hashmap, to get a mapping between the remote address
-     * and a networkObject (respectively a socket).
+     * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkObject>.
+     * @return a ConcurrentHashMap<String, NetworkObject> which maps a remote device with a
+     * NetworkObject (socket).
      */
-    synchronized ConcurrentHashMap<String, NetworkObject> getActiveConnexion() {
+    synchronized ConcurrentHashMap<String, NetworkObject> getActiveConnection() {
         return hashMapNetwork;
     }
 

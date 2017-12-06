@@ -40,7 +40,7 @@ public class WifiServiceServer extends WifiService {
         }
 
         // Start thread Listening
-        threadListen = new ThreadServer(handler, nbThreads, port, new ListSocketDevice());
+        threadListen = new ThreadServer(handler, nbThreads, true, port, new ListSocketDevice());
         threadListen.start();
 
         // Update state

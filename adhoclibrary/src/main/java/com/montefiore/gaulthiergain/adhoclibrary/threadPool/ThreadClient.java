@@ -34,7 +34,7 @@ public class ThreadClient extends Thread {
         while (!isInterrupted()) {
             try {
                 socketDevice = listSocketDevice.getSocketDevice();
-                network = listSocketDevice.getActiveConnexion().get(socketDevice.getRemoteSocketAddress());
+                network = listSocketDevice.getActiveConnection().get(socketDevice.getRemoteSocketAddress());
                 while (true) {
                     processRequest((MessageAdHoc) network.receiveObjectStream());
                 }
@@ -85,7 +85,7 @@ public class ThreadClient extends Thread {
         handler.obtainMessage(BluetoothService.MESSAGE_READ, request).sendToTarget();
     }
 
-    public String getNameThread() {
+    String getNameThread() {
         return name;
     }
 }

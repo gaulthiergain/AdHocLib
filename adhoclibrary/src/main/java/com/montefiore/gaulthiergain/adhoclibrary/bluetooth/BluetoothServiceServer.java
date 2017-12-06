@@ -43,7 +43,7 @@ public class BluetoothServiceServer extends BluetoothService {
         this.uuid = uuid;
 
         // Start thread Listening
-        threadListen = new ThreadServer(handler, nbThreads, secure, name, bluetoothAdapter, uuid,
+        threadListen = new ThreadServer(handler, nbThreads, true, secure, name, bluetoothAdapter, uuid,
                 new ListSocketDevice());
         threadListen.start();
 
