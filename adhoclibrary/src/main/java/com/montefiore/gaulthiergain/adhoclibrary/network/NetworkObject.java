@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,5 +65,9 @@ public class NetworkObject {
         } catch (IOException ex) {
             Log.d(TAG, "Error I/O: " + ex.getMessage());
         }
+    }
+
+    public OutputStream getOutputStream() {
+        return this.oos;
     }
 }

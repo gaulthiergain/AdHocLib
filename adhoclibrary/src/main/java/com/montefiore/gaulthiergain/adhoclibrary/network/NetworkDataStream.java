@@ -14,7 +14,6 @@ public class NetworkDataStream {
     private DataOutputStream dos;
 
     public NetworkDataStream(DataInputStream dis, DataOutputStream dos) {
-        //TODO socket
         this.dis = dis;
         this.dos = dos;
     }

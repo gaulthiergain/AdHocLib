@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -9,6 +10,7 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.ConnectionListener;
@@ -154,6 +156,16 @@ public class WifiManager {
                 connectionListener.onConnectionFailed(reasonCode);
             }
         });
+    }
+
+    public boolean isEnabled() {
+        return (wifiP2pManager != null && channel != null);
+    }
+
+    public void enable() {
+        Intent discoverableIntent =
+                new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+        context.startActivity(discoverableIntent);
     }
 
     public void unregisterConnection() {

@@ -48,8 +48,11 @@ public class ListSocketDevice {
         return hashMapNetwork;
     }
 
-    public void removeActiveConnexion(ISocket socket) {
-        hashMapNetwork.remove(socket.getRemoteSocketAddress());
+    public void removeActiveConnexion(ISocket isocket) {
+        String key = isocket.getRemoteSocketAddress();
+        if (hashMapNetwork.containsKey(key)) {
+            hashMapNetwork.remove(isocket.getRemoteSocketAddress());
+        }
     }
 
 }

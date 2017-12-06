@@ -41,12 +41,22 @@ public class WifiListenThread extends Thread {
                 handler.obtainMessage(BluetoothService.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
                 if (!network.getISocket().isConnected()) {
+
+
+                    String handleConnectionAborted = "";
+                    if(network.getISocket() != null) {
+                        handleConnectionAborted = network.getISocket().getRemoteSocketAddress();
+                    }
+
+                    // Notify handler
+                    handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+
                     network.closeConnection();
                 }
 
-                // Notify handler
-                String handleConnectionAborted = network.getISocket().getRemoteSocketAddress();
-                handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+
+
+
                 break;
             } catch (ClassNotFoundException e) {
                 e.printStackTrace(); //TODO update
