@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.wifiListener;
+package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 
 import java.net.InetAddress;
 

@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothDeviceException;
 
@@ -31,7 +30,7 @@ public class BluetoothManager {
 
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
 
-    private ConnectionListener connectionListener;
+    private DiscoveryListener discoveryListener;
 
     public BluetoothManager(Context context, boolean verbose)
             throws BluetoothDeviceException {
@@ -78,13 +77,13 @@ public class BluetoothManager {
         return hashMapBluetoothPairedDevice;
     }
 
-    public void discovery(ConnectionListener listener) {
+    public void discovery(DiscoveryListener listener) {
         if (v) Log.d(TAG, "discovery()");
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         cancelDiscovery();
 
-        connectionListener = listener;
+        discoveryListener = listener;
 
         // Start Discovery
         bluetoothAdapter.startDiscovery();
@@ -122,7 +121,7 @@ public class BluetoothManager {
 
                 // Get the BluetoothDevice object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                connectionListener.onDeviceFound(device);
+                discoveryListener.onDeviceFound(device);
 
                 // Add devices into the hashMap
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
@@ -136,18 +135,18 @@ public class BluetoothManager {
                 // Clear the hashMap
                 hashMapBluetoothDevice.clear();
                 // Listener onDiscoveryStarted
-                connectionListener.onDiscoveryStarted();
+                discoveryListener.onDiscoveryStarted();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener onDiscoveryFinished
-                connectionListener.onDiscoveryFinished(hashMapBluetoothDevice);
+                discoveryListener.onDiscoveryFinished(hashMapBluetoothDevice);
             } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
                 if (v) Log.d(TAG, "ACTION_SCAN_MODE_CHANGED");
                 // Get current and old mode
                 int currentMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
                 int oldMode = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE, 0);
                 // Listener onScanModeChange
-                connectionListener.onScanModeChange(currentMode, oldMode);
+                discoveryListener.onScanModeChange(currentMode, oldMode);
             }
         }
     };

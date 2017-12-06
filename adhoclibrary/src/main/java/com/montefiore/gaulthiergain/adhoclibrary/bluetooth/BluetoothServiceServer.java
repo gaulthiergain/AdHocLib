@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
@@ -166,6 +165,4 @@ public class BluetoothServiceServer extends BluetoothService {
             setState(STATE_NONE);
         }
     }
-
-
 }

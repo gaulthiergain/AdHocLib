@@ -5,12 +5,21 @@ import android.bluetooth.BluetoothServerSocket;
 import java.io.IOException;
 
 /**
- * Created by gaulthiergain on 30/11/17.
+ * <p>This class allows to encapsulate a BluetoothServerSocket object as a AdHocServerSocketBluetooth
+ * object and add an abstraction by implementing the IServerSocket interface({@link IServerSocket}).
+ * </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
 
 public class AdHocServerSocketBluetooth implements IServerSocket {
     private BluetoothServerSocket serverSocket;
 
+    /**
+     * Constructor
+     * @param serverSocket a serverSocket object which is similar to TCP sockets.
+     */
     public AdHocServerSocketBluetooth(BluetoothServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }

@@ -8,7 +8,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
 import java.io.IOException;
 import java.util.Map;

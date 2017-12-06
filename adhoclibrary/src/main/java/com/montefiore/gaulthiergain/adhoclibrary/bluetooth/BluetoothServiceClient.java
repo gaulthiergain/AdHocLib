@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;

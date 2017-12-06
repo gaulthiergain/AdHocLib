@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener;
+package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 

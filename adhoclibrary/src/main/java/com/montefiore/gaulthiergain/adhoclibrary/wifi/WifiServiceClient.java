@@ -7,7 +7,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionExceptio
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

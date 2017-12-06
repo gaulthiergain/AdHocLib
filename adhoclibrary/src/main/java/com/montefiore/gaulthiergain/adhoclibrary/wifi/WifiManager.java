@@ -13,9 +13,6 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.DiscoveryListener;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

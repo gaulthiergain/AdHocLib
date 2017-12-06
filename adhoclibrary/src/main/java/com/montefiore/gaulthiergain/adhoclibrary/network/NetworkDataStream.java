@@ -18,10 +18,6 @@ public class NetworkDataStream {
         this.dos = dos;
     }
 
-    public void sendJSONObject(Json json){
-
-    }
-
     public void sendDataStream(String msg) throws IOException {
         dos.writeInt(msg.length());
         dos.flush();

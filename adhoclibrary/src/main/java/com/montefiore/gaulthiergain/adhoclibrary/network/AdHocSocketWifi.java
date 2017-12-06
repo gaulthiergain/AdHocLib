@@ -5,10 +5,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+/**
+ * <p>This class allows to encapsulate a Socket object as a AdHocSocketWifi object and add
+ * an abstraction by implementing the IServerSocket interface({@link IServerSocket}).</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class AdHocSocketWifi implements ISocket {
 
     private Socket socket;
 
+    /**
+     * @param socket a Socket object which is an endpoint for communication
+     *               between two machines.
+     */
     public AdHocSocketWifi(Socket socket) {
         this.socket = socket;
     }
