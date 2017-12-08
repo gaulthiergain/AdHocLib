@@ -64,8 +64,6 @@ public abstract class ServiceClient extends Service {
                 threadListening.cancel();
                 threadListening = null;
             }
-            // Update the state of the connection
-            setState(STATE_CONNECTED);
         }
     }
 
@@ -81,11 +79,12 @@ public abstract class ServiceClient extends Service {
                 threadListening = null;
             }
 
-            setState(STATE_LISTENING_CONNECTED);
-
             // Start the thread to connect with the given device
-            threadListening = new ListenServiceThread(network, handler);
+            threadListening = new ListenServiceThread(v, network, handler);
             threadListening.start();
+
+            // Update the state
+            setState(STATE_LISTENING_CONNECTED);
         }
     }
 }

@@ -171,10 +171,10 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    String messageHandle[] = new String[2];
+                    String messageHandle[] = new String[3];
                     messageHandle[0] = socket.getRemoteDevice().getName();
                     messageHandle[1] = socket.getRemoteDevice().getAddress();
-                    messageHandle[3] = uuid.toString();
+                    messageHandle[2] = uuid.toString();
                     handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");

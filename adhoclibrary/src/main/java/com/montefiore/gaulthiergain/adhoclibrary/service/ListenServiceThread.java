@@ -15,29 +15,29 @@ import java.io.IOException;
  */
 
 class ListenServiceThread extends Thread {
-    private static final String TAG = "[AdHoc]";
+    private static final String TAG = "[AdHoc][ListenService]";
+    private final boolean v;
     private final NetworkObject network;
     private final Handler handler;
 
-    public ListenServiceThread(NetworkObject network, Handler handler) {
+    ListenServiceThread(boolean verbose, NetworkObject network, Handler handler) {
+        this.v = verbose;
         this.network = network;
         this.handler = handler;
     }
 
     @Override
     public void run() {
-        Log.d(TAG, "start Listening ...");
+        if (v) Log.d(TAG, "start Listening ...");
         MessageAdHoc message;
         while (true) {
             // Read response
             try {
-
-                Log.d(TAG, "Waiting response from server ...");
+                if (v) Log.d(TAG, "Waiting response from server ...");
 
                 // Get response MessageAdHoc
                 message = (MessageAdHoc) network.receiveObjectStream();
-
-                Log.d(TAG, "---> Response: " + message);
+                if (v) Log.d(TAG, "Response: " + message);
                 handler.obtainMessage(Service.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
                 if (network.getISocket() != null) {
@@ -72,8 +72,8 @@ class ListenServiceThread extends Thread {
         }
     }
 
-    public void cancel() {
-        if (network != null) { //TODO !network.getSocket().isConnected()
+    void cancel() {
+        if (network.getISocket() != null) { //TODO !network.getSocket().isConnected()
             network.closeConnection();
         }
     }

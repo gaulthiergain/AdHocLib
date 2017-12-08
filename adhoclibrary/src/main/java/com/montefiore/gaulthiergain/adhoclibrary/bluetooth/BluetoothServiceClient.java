@@ -67,6 +67,7 @@ public class BluetoothServiceClient extends ServiceClient {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
+                e.printStackTrace();
                 throw new NoConnectionException("No remote connection");
             }
         }
