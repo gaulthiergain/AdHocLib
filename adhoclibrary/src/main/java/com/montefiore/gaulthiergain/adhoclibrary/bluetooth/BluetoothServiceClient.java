@@ -10,24 +10,40 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.service.ServiceClient;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Created by gaulthiergain on 28/10/17.
+ * <p>This class defines the client's logic for bluetooth implementation. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public class BluetoothServiceClient extends ServiceClient {
 
-    private boolean background;
-
+    /**
+     * Constructor
+     *
+     * @param verbose         a boolean value to set the debug/verbose mode.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param messageListener a messageListener object which serves as callback functions.
+     * @param background      a boolean value which defines if the service must listen messages
+     *                        to background.
+     */
     public BluetoothServiceClient(boolean verbose, Context context, MessageListener messageListener, boolean background) {
         super(verbose, context, messageListener, background);
-        this.background = background;
     }
 
+    /**
+     * Method allowing to connect to a remote bluetooth device.
+     *
+     * @param secure               a boolean value which represents the state of the connection.
+     * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
+     *                             device.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
     public void connect(boolean secure, BluetoothAdHocDevice bluetoothAdHocDevice) throws NoConnectionException {
         if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName());
 
@@ -38,9 +54,9 @@ public class BluetoothServiceClient extends ServiceClient {
             // Change the state
             setState(STATE_CONNECTING);
 
-            // Get a BluetoothSocket to connect with the given BluetoothDevice.
-            BluetoothSocket bluetoothSocket;
             try {
+                // Get a BluetoothSocket to connect with the given BluetoothDevice.
+                BluetoothSocket bluetoothSocket;
                 if (secure) {
                     bluetoothSocket = bluetoothAdHocDevice.getDevice().createRfcommSocketToServiceRecord(uuid);
                 } else {
@@ -51,12 +67,12 @@ public class BluetoothServiceClient extends ServiceClient {
                 bluetoothSocket.connect();
                 network = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
 
-                // Notify handler TODO
-                String messageHandle[] = new String[2];
+                // Notify handler
+                String messageHandle[] = new String[3];
                 messageHandle[0] = bluetoothSocket.getRemoteDevice().getName();
                 messageHandle[1] = bluetoothSocket.getRemoteDevice().getAddress();
+                messageHandle[2] = bluetoothAdHocDevice.getUuid();
                 handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
-
 
                 // Update state
                 setState(STATE_CONNECTED);
@@ -67,7 +83,6 @@ public class BluetoothServiceClient extends ServiceClient {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                e.printStackTrace();
                 throw new NoConnectionException("No remote connection");
             }
         }

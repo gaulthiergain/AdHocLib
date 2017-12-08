@@ -45,7 +45,7 @@ public abstract class Service {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
-     * @param messageListener a messageListener object which serves as callback function.
+     * @param messageListener a messageListener object which serves as callback functions.
      */
     Service(boolean verbose, Context context, MessageListener messageListener) {
         this.v = verbose;
@@ -94,7 +94,7 @@ public abstract class Service {
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
                     String handleConnectionPerformed[] = (String[]) msg.obj;
-                    messageListener.onConnection(handleConnectionPerformed[0], handleConnectionPerformed[1], handleConnectionPerformed[1]);
+                    messageListener.onConnection(handleConnectionPerformed[0], handleConnectionPerformed[1], handleConnectionPerformed[2]);
                     break;
                 case FORWARD:
                     if (v) Log.d(TAG, "FORWARD");

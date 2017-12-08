@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
@@ -25,17 +24,25 @@ public class BluetoothManager {
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
-    private boolean registered = false;
     private final String TAG = "[AdHoc][" + getClass().getName() + "]";
 
+    private boolean registered = false;
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
-
     private DiscoveryListener discoveryListener;
 
-    public BluetoothManager(Context context, boolean verbose)
+    /**
+     * Constructor
+     *
+     * @param verbose a boolean value to set the debug/verbose mode.
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     * @throws BluetoothDeviceException Signals that a Bluetooth Device Exception exception
+     *                                  has occurred.
+     */
+    public BluetoothManager(boolean verbose, Context context)
             throws BluetoothDeviceException {
-        this.context = context;
         this.v = verbose;
+        this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -47,18 +54,39 @@ public class BluetoothManager {
         }
     }
 
+    /**
+     * Method allowing to check if the bluetooth adapter is enabled.
+     *
+     * @return a boolean value which represents the status of the bluetooth adapter.
+     */
     public boolean isEnabled() {
         return bluetoothAdapter.isEnabled();
     }
 
+    /**
+     * Method allowing to enable the bluetooth adapter.
+     *
+     * @return a boolean value which represents the status of the operation.
+     */
     public boolean enable() {
         return bluetoothAdapter.enable();
     }
 
+    /**
+     * Method allowing to disable the bluetooth adapter.
+     *
+     * @return a boolean value which represents the status of the operation.
+     */
     public boolean disable() {
         return bluetoothAdapter.disable();
     }
 
+    /**
+     * Method allowing to get all the paired Bluetooth devices.
+     *
+     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
+     * BluetoothAdHocDevice object.
+     */
     public HashMap<String, BluetoothAdHocDevice> getPairedDevices() {
         if (v) Log.d(TAG, "getPairedDevices()");
 
@@ -77,13 +105,18 @@ public class BluetoothManager {
         return hashMapBluetoothPairedDevice;
     }
 
-    public void discovery(DiscoveryListener listener) {
+    /**
+     * Method allowing to discover other bluetooth devices.
+     *
+     * @param discoveryListener a discoveryListener object which serves as callback functions.
+     */
+    public void discovery(DiscoveryListener discoveryListener) {
         if (v) Log.d(TAG, "discovery()");
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         cancelDiscovery();
 
-        discoveryListener = listener;
+        this.discoveryListener = discoveryListener;
 
         // Start Discovery
         bluetoothAdapter.startDiscovery();
@@ -104,6 +137,23 @@ public class BluetoothManager {
                 BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
     }
 
+    /**
+     * Method allowing to unregister the discovery broadcast.
+     *
+     * @throws IllegalArgumentException Signals that a method has been passed an illegal or
+     *                                  inappropriate argument.
+     */
+    public void unregisterDiscovery() throws IllegalArgumentException {
+        if (v) Log.d(TAG, "unregisterDiscovery()");
+        if (registered) {
+            context.getApplicationContext().unregisterReceiver(mReceiver);
+            registered = false;
+        }
+    }
+
+    /**
+     * Method allowing to cancel the discovery process.
+     */
     public void cancelDiscovery() {
         if (v) Log.d(TAG, "cancelDiscovery()");
 
@@ -113,6 +163,38 @@ public class BluetoothManager {
         }
     }
 
+    /**
+     * Method allowing to set the device into a discovery mode.
+     *
+     * @param duration an integer value between 0 and 3600 which represents the time of
+     *                 the discovery mode.
+     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
+     */
+    public void enableDiscovery(int duration) throws BluetoothBadDuration {
+        if (duration < 0 || duration > 3600) {
+            throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
+        }
+
+        Intent discoverableIntent =
+                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
+        context.startActivity(discoverableIntent);
+    }
+
+    /**
+     * Method allowing to get the all the BluetoothAdHoc devices.
+     *
+     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
+     * BluetoothAdHocDevice object.
+     */
+    public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
+        return hashMapBluetoothDevice;
+    }
+
+    /**
+     * Base class for code that receives and handles broadcast intents sent by
+     * {@link android.content.Context#sendBroadcast(Intent)}.
+     */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -138,8 +220,8 @@ public class BluetoothManager {
                 discoveryListener.onDiscoveryStarted();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
-                // Listener onDiscoveryFinished
-                discoveryListener.onDiscoveryFinished(hashMapBluetoothDevice);
+                // Listener onDiscoveryCompleted
+                discoveryListener.onDiscoveryCompleted(hashMapBluetoothDevice);
             } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
                 if (v) Log.d(TAG, "ACTION_SCAN_MODE_CHANGED");
                 // Get current and old mode
@@ -150,27 +232,4 @@ public class BluetoothManager {
             }
         }
     };
-
-    public void unregisterDiscovery() throws IllegalArgumentException {
-        if (v) Log.d(TAG, "unregisterDiscovery()");
-        if (registered) {
-            context.getApplicationContext().unregisterReceiver(mReceiver);
-            registered = false;
-        }
-    }
-
-    public void enableDiscovery(int duration) throws BluetoothBadDuration {
-        if (duration < 0 || duration > 3600) {
-            throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
-        }
-
-        Intent discoverableIntent =
-                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
-        context.startActivity(discoverableIntent);
-    }
-
-    public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
-        return hashMapBluetoothDevice;
-    }
 }

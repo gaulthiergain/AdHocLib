@@ -19,9 +19,10 @@ import java.io.IOException;
  */
 public abstract class ServiceClient extends Service {
 
-    protected NetworkObject network;
     private ListenServiceThread threadListening;
+    protected static final String TAG = "[AdHoc][ServiceClient]";
     protected final boolean background;
+    protected NetworkObject network;
 
     /**
      * Constructor
@@ -29,7 +30,7 @@ public abstract class ServiceClient extends Service {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
-     * @param messageListener a messageListener object which serves as callback function.
+     * @param messageListener a messageListener object which serves as callback functions.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
      */

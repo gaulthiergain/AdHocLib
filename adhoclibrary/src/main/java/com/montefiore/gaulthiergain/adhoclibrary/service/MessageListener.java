@@ -3,7 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 /**
- * <p>This interface allows to define callback functions for messages and connection handling</p>
+ * <p>This interface allows to define callback functions for messages and connection handling.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0

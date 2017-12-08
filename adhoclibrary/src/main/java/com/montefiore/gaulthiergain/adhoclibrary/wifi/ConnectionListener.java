@@ -3,15 +3,37 @@ package com.montefiore.gaulthiergain.adhoclibrary.wifi;
 import java.net.InetAddress;
 
 /**
- * Created by gaulthiergain on 26/10/17.
+ * <p>This interface allows to define callback functions for the wifi connection process.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public interface ConnectionListener {
+    /**
+     * Callback when the connection is started.
+     */
     void onConnectionStarted();
 
+    /**
+     * Callback when the connection fails.
+     *
+     * @param reasonCode an integer value which represents the status of the discovery.
+     */
     void onConnectionFailed(int reasonCode);
 
-    void onGroupOwner(InetAddress groupOwnerAddr);
+    /**
+     * Callback when the device is the groupOwner.
+     *
+     * @param groupOwnerAddress an InetAddress object which represents the current address'
+     *                          group owner.
+     */
+    void onGroupOwner(InetAddress groupOwnerAddress);
 
-    void onClient(InetAddress groupOwnerAddr);
+    /**
+     * Callback when the device is a client.
+     *
+     * @param groupOwnerAddress an InetAddress object which represents the current address'
+     *                          group owner.
+     */
+    void onClient(InetAddress groupOwnerAddress);
 }

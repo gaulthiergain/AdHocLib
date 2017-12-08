@@ -12,13 +12,38 @@ import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
 import java.io.IOException;
 import java.util.UUID;
 
-
+/**
+ * <p>This class defines the server's logic for bluetooth implementation. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class BluetoothServiceServer extends ServiceServer {
 
+    /**
+     * Constructor
+     *
+     * @param verbose         a boolean value to set the debug/verbose mode.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param messageListener a messageListener object which serves as callback functions.
+     */
     public BluetoothServiceServer(boolean verbose, Context context, MessageListener messageListener) {
         super(verbose, context, messageListener);
     }
 
+    /**
+     * Method allowing to listen for incoming bluetooth connections.
+     *
+     * @param nbThreads        an integer value to determine the number of threads managed by the
+     *                         server.
+     * @param secure           a boolean value to determine if the connection is secure.
+     * @param name             a String value which represents the connection's name.
+     * @param bluetoothAdapter a BluetoothAdapter object which represents the local device Bluetooth
+     *                         adapter.
+     * @param uuid             an UUID object which identify the physical device.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     public void listen(int nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
                        UUID uuid) throws IOException {
         if (v) Log.d(TAG, "Listening()");

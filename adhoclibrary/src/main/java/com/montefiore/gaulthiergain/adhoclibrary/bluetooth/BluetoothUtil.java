@@ -1,18 +1,30 @@
 package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 /**
- * Created by gaulthiergain on 8/12/17.
+ * <p>This class allows to get the current name and the current MAC address of the bluetoothAdapter,
+ * and defines the common UUID.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public class BluetoothUtil {
 
-    public static String UUID = "e0917680-d427-11e4-8830-";
+    public final static String UUID = "e0917680-d427-11e4-8830-";
 
-
+    /**
+     * Method allowing to get the current MAC address of the bluetoothAdapter.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     * @return a String value which represents the current MAC address of the bluetoothAdapter.
+     */
+    @SuppressLint("HardwareIds")
     public static String getCurrentMac(Context context) {
 
         String mac;
@@ -25,6 +37,12 @@ public class BluetoothUtil {
         return mac;
     }
 
+    /**
+     * Method allowing to get the current name of the bluetoothAdapter.
+     *
+     * @return a String value which represents the current name of the bluetoothAdapter.
+     */
+    @Nullable
     public static String getCurrentName() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter != null) {

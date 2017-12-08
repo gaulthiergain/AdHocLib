@@ -45,14 +45,14 @@ public class ThreadServer extends Thread {
     /**
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
-     * @param nbThreads        a integer value to determine the number of threads managed by the
+     * @param nbThreads        an integer value to determine the number of threads managed by the
      *                         server.
      * @param verbose          a boolean value to set the debug/verbose mode.
      * @param secure           a boolean value to determine if the connection is secure.
      * @param name             a String value which represents the connection's name.
      * @param mAdapter         a BluetoothAdapter object which represents the local device Bluetooth
      *                         adapter.
-     * @param uuid             a UUID object which identify the physical device.
+     * @param uuid             an UUID object which identify the physical device.
      * @param listSocketDevice a listSocketDevice object which contains the clients managed by the
      *                         threadPool.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
@@ -77,10 +77,10 @@ public class ThreadServer extends Thread {
     /**
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
-     * @param nbThreads        a integer value to determine the number of threads managed by the
+     * @param nbThreads        an integer value to determine the number of threads managed by the
      *                         server.
      * @param verbose          a boolean value to set the debug/verbose mode.
-     * @param port             a integer value to set the listening port number.
+     * @param port             an integer value to set the listening port number.
      * @param listSocketDevice a listSocketDevice object which contains the clients managed by the
      *                         threadPool.
      * @throws IOException Signals that an I/O exception of some sort has occurred.

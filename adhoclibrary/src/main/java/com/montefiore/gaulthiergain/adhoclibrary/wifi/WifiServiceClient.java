@@ -9,34 +9,48 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.service.ServiceClient;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
- * Created by gaulthiergain on 28/10/17.
+ * <p>This class defines the client's logic for bluetooth implementation. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public class WifiServiceClient extends ServiceClient implements Runnable {
 
     private final int port;
-    private final boolean background;
-    private final String remoteAddr;
+    private final int timeOut;
+    private final String remoteAddress;
 
-
-    public WifiServiceClient(Context context, boolean verbose, boolean background, MessageListener messageListener,
-                             String remoteAddr, int port) {
+    /**
+     * Constructor
+     *
+     * @param verbose         a boolean value to set the debug/verbose mode.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param background      a boolean value which defines if the service must listen messages
+     *                        to background.
+     * @param messageListener a messageListener object which serves as callback functions.
+     * @param timeOut         an integer value which represents the timeout of a connection.
+     */
+    public WifiServiceClient(Context context, boolean verbose, MessageListener messageListener,
+                             boolean background, String remoteAddress, int port, int timeOut) {
         super(verbose, context, messageListener, background);
-        this.remoteAddr = remoteAddr;
-        this.background = background;
+        this.remoteAddress = remoteAddress;
         this.port = port;
+        this.timeOut = timeOut;
     }
 
+    /**
+     * Method allowing to connect to a remote bluetooth device.
+     */
     @Override
     public void run() {
-        if (v) Log.d(TAG, "connect to: " + remoteAddr + ":" + port);
+        if (v) Log.d(TAG, "connect to: " + remoteAddress + ":" + port);
 
         if (state == STATE_NONE) {
 
@@ -47,16 +61,18 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 // Connect to the remote host
                 Socket socket = new Socket();
                 socket.bind(null);
-                socket.connect((new InetSocketAddress(remoteAddr, port)), 5000);
+                socket.connect((new InetSocketAddress(remoteAddress, port)), timeOut);
 
                 network = new NetworkObject(new AdHocSocketWifi(socket));
 
                 // Notify handler
-                String[] messageHandle = new String[2];
+                String[] messageHandle = new String[3];
+                messageHandle[0] = "name"; //TODO
                 // Set remote address
-                messageHandle[0] = socket.getRemoteSocketAddress().toString().split(":")[0].substring(1);
+                messageHandle[1] = socket.getRemoteSocketAddress().toString()
+                        .split(":")[0].substring(1);
                 // Set local address
-                messageHandle[1] = socket.getLocalAddress().toString().substring(1);
+                messageHandle[2] = socket.getLocalAddress().toString().substring(1);
                 handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
 
                 // Update state

@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class ServiceServer extends Service {
 
+    protected static final String TAG = "[AdHoc][ServiceServer]";
     protected ThreadServer threadListen;
 
     /**
@@ -30,7 +31,7 @@ public abstract class ServiceServer extends Service {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
-     * @param messageListener a messageListener object which serves as callback function.
+     * @param messageListener a messageListener object which serves as callback functions.
      */
     public ServiceServer(boolean verbose, Context context, MessageListener messageListener) {
         super(verbose, context, messageListener);
