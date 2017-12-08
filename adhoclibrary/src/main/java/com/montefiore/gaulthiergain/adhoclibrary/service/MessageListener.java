@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.bluetooth;
+package com.montefiore.gaulthiergain.adhoclibrary.service;
 
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -15,5 +15,5 @@ public interface MessageListener {
 
     void onConnectionClosed(String deviceName, String deviceAddr);
 
-    void onConnection(String deviceName, String deviceAddr);
+    void onConnection(String deviceName, String deviceAddr, String localAddr);
 }

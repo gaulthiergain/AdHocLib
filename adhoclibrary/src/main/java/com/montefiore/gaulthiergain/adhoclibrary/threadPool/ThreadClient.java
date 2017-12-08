@@ -4,12 +4,11 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiService;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -53,20 +52,23 @@ public class ThreadClient extends Thread {
                 if (network != null) {
                     if (socketDevice instanceof AdHocSocketWifi) {
                         // Notify handler
-                        String messageHandle = network.getISocket().getRemoteSocketAddress();
-                        handler.obtainMessage(WifiService.CONNECTION_ABORTED, messageHandle).sendToTarget();
+                        String handleConnectionAborted[] = new String[2];
+                        // Get remote device name
+                        handleConnectionAborted[0] = "name"; //TODO
+                        // Get remote device address
+                        handleConnectionAborted[1] = network.getISocket().getRemoteSocketAddress();
+                        handler.obtainMessage(Service.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                     } else {
 
                         // Get Socket
                         BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
-
                         String handleConnectionAborted[] = new String[2];
                         // Get remote device name
                         handleConnectionAborted[0] = socket.getRemoteDevice().getName();
                         // Get remote device address
                         handleConnectionAborted[1] = socket.getRemoteDevice().getAddress();
                         // Notify handler
-                        handler.obtainMessage(BluetoothService.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+                        handler.obtainMessage(Service.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
                     }
 
                     // Remove client from hashmap
@@ -82,7 +84,7 @@ public class ThreadClient extends Thread {
 
     private void processRequest(MessageAdHoc request) throws IOException {
         Log.d(TAG, "Processing request " + request);
-        handler.obtainMessage(BluetoothService.MESSAGE_READ, request).sendToTarget();
+        handler.obtainMessage(Service.MESSAGE_READ, request).sendToTarget();
     }
 
     String getNameThread() {

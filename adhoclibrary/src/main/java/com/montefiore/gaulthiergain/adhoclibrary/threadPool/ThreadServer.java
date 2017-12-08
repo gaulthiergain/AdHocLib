@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothService;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocServerSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocServerSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketBluetooth;
@@ -14,6 +13,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.network.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.service.Service;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -35,6 +35,7 @@ public class ThreadServer extends Thread {
 
     private final int nbThreads;
     private final boolean v;
+    private UUID uuid;
     private final Handler handler;
     private final ListSocketDevice listSocketDevice;
     private final IServerSocket serverSocket;
@@ -62,6 +63,7 @@ public class ThreadServer extends Thread {
         this.handler = handler;
         this.nbThreads = nbThreads;
         this.v = verbose;
+        this.uuid = uuid;
         this.listSocketDevice = listSocketDevice;
         this.arrayThreadClients = new ArrayList<>();
 
@@ -136,8 +138,9 @@ public class ThreadServer extends Thread {
                     // Notify handler
                     String messageHandle[] = new String[2];
                     messageHandle[0] = isocket.getRemoteSocketAddress();
-                    messageHandle[1] = socket.getLocalAddress().toString().substring(1);
-                    handler.obtainMessage(BluetoothService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                    messageHandle[1] = "name"; //TODO
+                    messageHandle[2] = socket.getLocalAddress().toString().substring(1);
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
@@ -171,7 +174,8 @@ public class ThreadServer extends Thread {
                     String messageHandle[] = new String[2];
                     messageHandle[0] = socket.getRemoteDevice().getName();
                     messageHandle[1] = socket.getRemoteDevice().getAddress();
-                    handler.obtainMessage(BluetoothService.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                    messageHandle[3] = uuid.toString();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
