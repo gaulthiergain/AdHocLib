@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * <p>This interface must be implemented by the AdHocSocketBluetooth and AdHocSocketWifi classes.
+ * <p>This interface must be implemented by the {@link AdHocSocketBluetooth} and
+ * {@link AdHocSocketWifi} classes.
  * </p>
  *
  * @author Gaulthier Gain
@@ -51,9 +52,9 @@ public interface ISocket {
     boolean isConnected();
 
     /**
-     * Method allowing to return remote socket address.
+     * Method allowing to return remote the socket address.
      *
-     * @return a String value which reprensents the remote socket address.
+     * @return a String value which represents the remote socket address.
      */
     String getRemoteSocketAddress();
 }

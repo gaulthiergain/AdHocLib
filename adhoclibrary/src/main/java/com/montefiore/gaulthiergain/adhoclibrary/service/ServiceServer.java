@@ -13,17 +13,34 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by gaulthiergain on 8/12/17.
+ * <p>This class defines the server's logic and methods and aims to serve as a common interface for
+ * {@link com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer} and
+ * {@link com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiServiceServer} classes. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public abstract class ServiceServer extends Service {
 
     protected ThreadServer threadListen;
 
+    /**
+     * Constructor
+     *
+     * @param verbose         a boolean value to set the debug/verbose mode.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param messageListener a messageListener object which serves as callback function.
+     */
     public ServiceServer(boolean verbose, Context context, MessageListener messageListener) {
         super(verbose, context, messageListener);
     }
 
+    /**
+     * Method allowing to stop the listening thread.
+     *
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     public void stopListening() throws IOException {
 
         if (threadListen != null) {
@@ -33,7 +50,17 @@ public abstract class ServiceServer extends Service {
         }
     }
 
-    private boolean _sendtoAllExcept(MessageAdHoc msg, String senderAddr) throws NoConnectionException, IOException {
+    /**
+     * Method allowing to send a message to all connected devices except a particular one.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @param address a String value which represents the sender's address.
+     * @return a boolean value which represents the result of the sending.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    private boolean _sendtoAllExcept(MessageAdHoc message, String address)
+            throws NoConnectionException, IOException {
 
         // Get remote connection
         ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
@@ -45,16 +72,24 @@ public abstract class ServiceServer extends Service {
 
         // Send message to all connected devices
         for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
-            if (!pairs.getKey().equals(senderAddr)) {
-                pairs.getValue().sendObjectStream(msg);
-                if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());
+            if (!pairs.getKey().equals(address)) {
+                pairs.getValue().sendObjectStream(message);
+                if (v) Log.d(TAG, "Send " + message + " to " + pairs.getKey());
             }
         }
 
         return true;
     }
 
-    private boolean _sendtoAll(MessageAdHoc msg) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to send a message to all connected devices.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @return a boolean value which represents the result of the sending.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    private boolean _sendtoAll(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get remote connection
         ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
@@ -65,15 +100,23 @@ public abstract class ServiceServer extends Service {
 
         // Send message to all connected devices
         for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
-            pairs.getValue().sendObjectStream(msg);
-            if (v) Log.d(TAG, "Send " + msg + " to " + pairs.getKey());
+            pairs.getValue().sendObjectStream(message);
+            if (v) Log.d(TAG, "Send " + message + " to " + pairs.getKey());
         }
 
         return true;
     }
 
-    public void sendto(MessageAdHoc msg, String address) throws NoConnectionException, IOException {
-        if (v) Log.d(TAG, "sendto()");
+    /**
+     * Method allowing to send a message to a particular devices.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @param address a String value which represents the sender's address.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    public void sendTo(MessageAdHoc message, String address) throws NoConnectionException, IOException {
+        if (v) Log.d(TAG, "sendTo()");
 
         // Get remote connection
         ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
@@ -84,56 +127,86 @@ public abstract class ServiceServer extends Service {
             throw new NoConnectionException("No remote connexion with " + address);
         } else {
             // Send message to connected device
-            network.sendObjectStream(msg);
+            network.sendObjectStream(message);
             if (v)
-                Log.d(TAG, "Send " + msg + " to " + address);
+                Log.d(TAG, "Send " + message + " to " + address);
 
             // Notify handler
-            handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
+            handler.obtainMessage(Service.MESSAGE_WRITE, message).sendToTarget();
         }
     }
 
-    public void broadcasttoAllExcept(MessageAdHoc msg, String senderAddr) throws IOException, NoConnectionException {
-        if (v) Log.d(TAG, "broadcasttoAllExcept()");
+    /**
+     * Method allowing to forward a message to all connected devices except a particular one.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @param address a String value which represents the sender's address.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    public void forwardToAllExcept(MessageAdHoc message, String address) throws IOException, NoConnectionException {
+        if (v) Log.d(TAG, "forwardToAllExcept()");
 
-        if (!_sendtoAllExcept(msg, senderAddr)) {
+        if (!_sendtoAllExcept(message, address)) {
             throw new NoConnectionException("No remote connection");
         }
 
         // Notify handler
-        handler.obtainMessage(Service.BROADCAST_WRITE, msg).sendToTarget();
+        handler.obtainMessage(Service.FORWARD, message).sendToTarget();
     }
 
-    public void broadcast(MessageAdHoc msg) throws IOException, NoConnectionException {
-        if (v) Log.d(TAG, "broadcast()");
+    /**
+     * Method allowing to forward a message to all connected devices.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    public void forwardToAll(MessageAdHoc message) throws IOException, NoConnectionException {
+        if (v) Log.d(TAG, "forwardToAll()");
 
-        if (!_sendtoAll(msg)) {
+        if (!_sendtoAll(message)) {
             throw new NoConnectionException("No remote connection");
         }
 
         // Notify handler
-        handler.obtainMessage(Service.BROADCAST_WRITE, msg).sendToTarget();
+        handler.obtainMessage(Service.FORWARD, message).sendToTarget();
     }
 
-    public void sendtoAllExcept(MessageAdHoc msg, String senderAddr) throws IOException, NoConnectionException {
-        if (v) Log.d(TAG, "sendtoAllExcept()");
+    /**
+     * Method allowing to send a message to all connected devices except a particular one.
+     *
+     * @param message a MessageAdHoc object which defines the message..
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    public void sendToAllExcept(MessageAdHoc message, String senderAddr)
+            throws IOException, NoConnectionException {
+        if (v) Log.d(TAG, "sendToAllExcept()");
 
-        if (!_sendtoAllExcept(msg, senderAddr)) {
+        if (!_sendtoAllExcept(message, senderAddr)) {
             throw new NoConnectionException("No remote connection");
         }
 
         // Notify handler
-        handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
+        handler.obtainMessage(Service.MESSAGE_WRITE, message).sendToTarget();
     }
 
-    public void sendtoAll(MessageAdHoc msg) throws IOException, NoConnectionException {
-        if (v) Log.d(TAG, "sendtoAll()");
+    /**
+     * Method allowing to send a message to all connected devices.
+     *
+     * @param message a MessageAdHoc object which defines the message.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     */
+    public void sendToAll(MessageAdHoc message) throws IOException, NoConnectionException {
+        if (v) Log.d(TAG, "sendToAll()");
 
-        if (!_sendtoAll(msg)) {
+        if (!_sendtoAll(message)) {
             throw new NoConnectionException("No remote connection");
         }
 
         // Notify handler
-        handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
+        handler.obtainMessage(Service.MESSAGE_WRITE, message).sendToTarget();
     }
 }

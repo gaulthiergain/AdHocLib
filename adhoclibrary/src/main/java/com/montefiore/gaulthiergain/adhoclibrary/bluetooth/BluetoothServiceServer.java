@@ -4,22 +4,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by gaulthiergain on 28/10/17.
- */
 
 public class BluetoothServiceServer extends ServiceServer {
 

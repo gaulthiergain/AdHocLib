@@ -173,25 +173,4 @@ public class BluetoothManager {
     public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
         return hashMapBluetoothDevice;
     }
-
-    public static String getCurrentMac(Context context) {
-
-        String mac;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mac = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
-        } else {
-            mac = BluetoothAdapter.getDefaultAdapter().getAddress();
-        }
-
-        return mac;
-    }
-
-    public static String getCurrentName() {
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter != null) {
-            return mBluetoothAdapter.getName();
-        }
-        return null;
-    }
-
 }

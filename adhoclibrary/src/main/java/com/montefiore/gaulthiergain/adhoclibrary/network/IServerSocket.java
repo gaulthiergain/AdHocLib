@@ -3,8 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network;
 import java.io.IOException;
 
 /**
- * <p>This interface must be implemented by the AdHocServerSocketBluetooth and AdHocServerSocketWifi
- * classes.</p>
+ * <p>This interface must be implemented by the {@link AdHocServerSocketBluetooth} and
+ * {@link AdHocServerSocketWifi} classes.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0
