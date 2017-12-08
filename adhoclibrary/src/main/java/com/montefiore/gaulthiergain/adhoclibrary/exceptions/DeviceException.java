@@ -6,13 +6,13 @@ package com.montefiore.gaulthiergain.adhoclibrary.exceptions;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothDeviceException extends Exception {
+public class DeviceException extends Exception {
     /**
      * Constructor
      *
      * @param message a String values which represents the cause of the exception
      */
-    public BluetoothDeviceException(String message) {
+    public DeviceException(String message) {
         super(message);
     }
 }

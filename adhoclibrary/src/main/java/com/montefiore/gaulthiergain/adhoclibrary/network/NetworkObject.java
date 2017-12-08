@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 public class NetworkObject {
 
-    private static final String TAG = "[AdHoc]";
+    private static final String TAG = "[AdHoc][Network]";
 
     private ISocket isocket;
     private ObjectInputStream ois;

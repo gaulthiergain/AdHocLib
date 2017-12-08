@@ -9,7 +9,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothDeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -24,7 +24,7 @@ public class BluetoothManager {
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
-    private final String TAG = "[AdHoc][" + getClass().getName() + "]";
+    private final String TAG = "[AdHoc][Bluet.Manager]";
 
     private boolean registered = false;
     private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
@@ -36,21 +36,21 @@ public class BluetoothManager {
      * @param verbose a boolean value to set the debug/verbose mode.
      * @param context a Context object which gives global information about an application
      *                environment.
-     * @throws BluetoothDeviceException Signals that a Bluetooth Device Exception exception
-     *                                  has occurred.
+     * @throws DeviceException Signals that a Bluetooth Device Exception exception
+     *                         has occurred.
      */
     public BluetoothManager(boolean verbose, Context context)
-            throws BluetoothDeviceException {
-        this.v = verbose;
-        this.context = context;
+            throws DeviceException {
+
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
-            throw new BluetoothDeviceException("Error device does not support Bluetooth");
-            //TODO add flag
+            throw new DeviceException("Error device does not support Bluetooth");
         } else {
             // Device supports Bluetooth
-            hashMapBluetoothDevice = new HashMap<>();
+            this.v = verbose;
+            this.context = context;
+            this.hashMapBluetoothDevice = new HashMap<>();
         }
     }
 

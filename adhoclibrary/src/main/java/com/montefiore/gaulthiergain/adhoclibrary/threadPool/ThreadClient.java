@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class ThreadClient extends Thread {
 
-    private static final String TAG = "[AdHoc]";
+    private static final String TAG = "[AdHoc][ThreadClient]";
 
     private final ListSocketDevice listSocketDevice;
     private final String name;
@@ -83,7 +83,7 @@ public class ThreadClient extends Thread {
     }
 
     private void processRequest(MessageAdHoc request) throws IOException {
-        Log.d(TAG, "Processing request " + request);
+        Log.d(TAG, "Processing request: " + request);
         handler.obtainMessage(Service.MESSAGE_READ, request).sendToTarget();
     }
 

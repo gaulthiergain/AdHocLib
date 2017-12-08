@@ -13,6 +13,8 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +28,7 @@ public class WifiManager {
     private final String TAG = "[AdHoc][WifiManager]";
     private final WifiP2pManager wifiP2pManager;
     private final Channel channel;
-    private final HashMap<String, WifiP2pDevice> peers;
+    private final HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
     private boolean discoveryRegistered = false;
     private boolean connectionRegistered = false;
@@ -40,16 +42,24 @@ public class WifiManager {
      * @param context a Context object which gives global information about an application
      *                environment.
      */
-    public WifiManager(boolean verbose, final Context context) {
-        this.v = verbose;
-        this.context = context;
+    public WifiManager(boolean verbose, final Context context) throws DeviceException {
+
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
-        this.channel = wifiP2pManager != null ? wifiP2pManager.initialize(context, getMainLooper(), null) : null;
-        this.peers = new HashMap<>();
+        if (wifiP2pManager == null) {
+            // Device does not support Wifi Direct
+            throw new DeviceException("Error device does not support Bluetooth");
+        } else {
+            // Device supports Wifi Direct
+            this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
+            this.v = verbose;
+            this.context = context;
+            this.hashMapWifiDevices = new HashMap<>();
+        }
+
     }
 
     /**
-     * Method allowing to discover other wifi Direct peers.
+     * Method allowing to discover other wifi Direct hashMapWifiDevices.
      *
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */
@@ -59,7 +69,7 @@ public class WifiManager {
 
         //  Indicates a change in the Wi-Fi P2P status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates a change in the list of available peers.
+        // Indicates a change in the list of available hashMapWifiDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         // Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
@@ -74,19 +84,19 @@ public class WifiManager {
                 refreshedPeers.addAll(peerList.getDeviceList());
 
                 for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
-                    if (!peers.containsKey(wifiP2pDevice.deviceAddress)) {
-                        peers.put(wifiP2pDevice.deviceAddress, wifiP2pDevice);
-                        if (v) Log.d(TAG, "Size: " + peers.size());
+                    if (!hashMapWifiDevices.containsKey(wifiP2pDevice.deviceAddress)) {
+                        hashMapWifiDevices.put(wifiP2pDevice.deviceAddress, wifiP2pDevice);
+                        if (v) Log.d(TAG, "Size: " + hashMapWifiDevices.size());
                         if (v)
                             Log.d(TAG, "Devices found: " +
-                                    peers.get(wifiP2pDevice.deviceAddress).deviceName);
-                        discoveryListener.onDiscoveryCompleted(peers);
+                                    hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
+                        discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
                 }
 
-                if (peers.size() == 0) {
+                if (hashMapWifiDevices.size() == 0) {
                     if (v) Log.d(TAG, "No devices found");
                 }
             }
@@ -150,7 +160,7 @@ public class WifiManager {
         context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
 
         // Get The device from its address
-        WifiP2pDevice device = peers.get(address);
+        WifiP2pDevice device = hashMapWifiDevices.get(address);
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
