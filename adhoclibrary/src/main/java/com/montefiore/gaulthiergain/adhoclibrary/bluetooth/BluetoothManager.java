@@ -24,10 +24,11 @@ public class BluetoothManager {
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
-    private final String TAG = "[AdHoc][Bluet.Manager]";
+    private final String TAG = "[AdHoc][Blue.Manager]";
+    private final HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
 
+    private String initName;
     private boolean registered = false;
-    private HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
     private DiscoveryListener discoveryListener;
 
     /**
@@ -55,7 +56,7 @@ public class BluetoothManager {
     }
 
     /**
-     * Method allowing to check if the bluetooth adapter is enabled.
+     * Method allowing to check if the Bluetooth adapter is enabled.
      *
      * @return a boolean value which represents the status of the bluetooth adapter.
      */
@@ -64,7 +65,7 @@ public class BluetoothManager {
     }
 
     /**
-     * Method allowing to enable the bluetooth adapter.
+     * Method allowing to enable the Bluetooth adapter.
      *
      * @return a boolean value which represents the status of the operation.
      */
@@ -73,7 +74,7 @@ public class BluetoothManager {
     }
 
     /**
-     * Method allowing to disable the bluetooth adapter.
+     * Method allowing to disable the Bluetooth adapter.
      *
      * @return a boolean value which represents the status of the operation.
      */
@@ -103,6 +104,17 @@ public class BluetoothManager {
             }
         }
         return hashMapBluetoothPairedDevice;
+    }
+
+    public void updateDeviceName(String name) {
+
+        if (initName == null) {
+            initName = bluetoothAdapter.getName();
+        }
+
+        if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
+        bluetoothAdapter.setName(name);
+        if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
     }
 
     /**
@@ -175,10 +187,13 @@ public class BluetoothManager {
             throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
         }
 
-        Intent discoverableIntent =
-                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
-        context.startActivity(discoverableIntent);
+        if (bluetoothAdapter != null) {
+
+            Intent discoverableIntent =
+                    new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
+            context.startActivity(discoverableIntent);
+        }
     }
 
     /**
@@ -232,4 +247,27 @@ public class BluetoothManager {
             }
         }
     };
+
+    /**
+     * Method allowing to set the Bluetooth adapter name.
+     *
+     * @param name a String value which represents the name of the Bluetooth adapter.
+     */
+    public void setAdapterName(String name) {
+        if (bluetoothAdapter != null) {
+            bluetoothAdapter.setName(name);
+        }
+    }
+
+    /**
+     * Method allowing to get the Bluetooth adapter name.
+     *
+     * @return a String value which represents the name of the Bluetooth adapter.
+     */
+    public String getAdapterName() {
+        if (bluetoothAdapter != null) {
+            return bluetoothAdapter.getName();
+        }
+        return null;
+    }
 }
