@@ -8,14 +8,21 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothPeer;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.util.UtilBattery;
 import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiManager;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AutoManager {
@@ -53,9 +60,45 @@ public class AutoManager {
 
     public void discovery(int duration) {
         btDiscovery(duration);
-        wifiDiscovery();
+        //wifiDiscovery();
     }
 
+    private void mesh() {
+        BluetoothPeer bluetoothPeer = new BluetoothPeer(true, context, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onConnectionClosed(String deviceName, String deviceAddress) {
+
+            }
+
+            @Override
+            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+
+            }
+        });
+        try {
+            bluetoothPeer.listen(smartDeviceHashMap.size(), false, "test", bluetoothManager.getBluetoothAdapter(),
+                    UUID.fromString(BluetoothUtil.UUID + BluetoothUtil.getCurrentMac(context).replace(":", "")));
+        } catch (NoConnectionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void btDiscovery(int duration) {
         try {
@@ -89,6 +132,8 @@ public class AutoManager {
                             Log.d(TAG, "BLUETOOTH_DISCOVERY : " + entry.getValue().getDevice().getAddress());
                         }
                         bluetoothManager.unregisterDiscovery();
+                        Log.d(TAG, "SIZE : " + smartDeviceHashMap.size());
+                        mesh();
                     }
 
                     @Override
