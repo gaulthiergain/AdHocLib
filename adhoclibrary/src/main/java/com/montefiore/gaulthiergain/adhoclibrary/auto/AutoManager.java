@@ -56,45 +56,6 @@ public class AutoManager {
         wifiDiscovery();
     }
 
-    private void wifiDiscovery() {
-        try {
-            wifiManager = new WifiManager(true, context);
-            if (!wifiManager.isEnabled()) {
-                wifiManager.enable();
-            }
-
-        } catch (DeviceException e) {
-            e.printStackTrace();
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                wifiManager.discover(new com.montefiore.gaulthiergain.adhoclibrary.wifi.DiscoveryListener() {
-                    @Override
-                    public void onDiscoveryStarted() {
-                        Log.d(TAG, "WIFI START");
-                    }
-
-                    @Override
-                    public void onDiscoveryFailed(int reasonCode) {
-                        Log.d(TAG, "WIFI FAIL" + reasonCode);
-                    }
-
-                    @Override
-                    public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
-                        for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
-                            WifiP2pDevice device = entry.getValue();
-                            smartDeviceHashMap.put(device.deviceAddress,
-                                    new SmartWifiDevice(device, -1));
-                            Log.d(TAG, "WIFI_DISCOVERY : " + entry.getValue().deviceAddress);
-                        }
-                    }
-                });
-            }
-        }).start();
-    }
-
 
     private void btDiscovery(int duration) {
         try {
@@ -141,6 +102,45 @@ public class AutoManager {
 
                     @Override
                     public void onScanModeChange(int currentMode, int oldMode) {
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void wifiDiscovery() {
+        try {
+            wifiManager = new WifiManager(true, context);
+            if (!wifiManager.isEnabled()) {
+                wifiManager.enable();
+            }
+
+        } catch (DeviceException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                wifiManager.discover(new com.montefiore.gaulthiergain.adhoclibrary.wifi.DiscoveryListener() {
+                    @Override
+                    public void onDiscoveryStarted() {
+                        Log.d(TAG, "WIFI START");
+                    }
+
+                    @Override
+                    public void onDiscoveryFailed(int reasonCode) {
+                        Log.d(TAG, "WIFI FAIL" + reasonCode);
+                    }
+
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
+                        for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
+                            WifiP2pDevice device = entry.getValue();
+                            smartDeviceHashMap.put(device.deviceAddress,
+                                    new SmartWifiDevice(device, -1));
+                            Log.d(TAG, "WIFI_DISCOVERY : " + entry.getValue().deviceAddress);
+                        }
                     }
                 });
             }

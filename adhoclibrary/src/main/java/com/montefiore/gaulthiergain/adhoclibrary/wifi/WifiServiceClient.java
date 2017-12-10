@@ -88,6 +88,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
             } catch (NoConnectionException e) {
                 e.printStackTrace();
             }
+            //TODO run() exception
         }
     }
 }
