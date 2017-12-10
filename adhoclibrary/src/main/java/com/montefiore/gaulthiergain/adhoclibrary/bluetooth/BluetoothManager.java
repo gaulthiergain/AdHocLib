@@ -270,4 +270,8 @@ public class BluetoothManager {
         }
         return null;
     }
+
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
+    }
 }
