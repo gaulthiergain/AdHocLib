@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.auto;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Build;
 import android.util.Log;
 
@@ -11,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.UtilBattery;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,8 @@ public class AutoManager {
     private final ConcurrentHashMap<String, SmartDevice> smartDeviceHashMap;
 
     private BluetoothManager bluetoothManager;
+    private WifiManager wifiManager;
+
     private boolean bluetooth_support;
 
     public AutoManager(boolean verbose, Context context) {
@@ -46,8 +50,53 @@ public class AutoManager {
         return 1;
     }
 
-    public void discovery(int duration) {
 
+    public void discovery(int duration) {
+        btDiscovery(duration);
+        wifiDiscovery();
+    }
+
+    private void wifiDiscovery() {
+        try {
+            wifiManager = new WifiManager(true, context);
+            if (!wifiManager.isEnabled()) {
+                wifiManager.enable();
+            }
+
+        } catch (DeviceException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                wifiManager.discover(new com.montefiore.gaulthiergain.adhoclibrary.wifi.DiscoveryListener() {
+                    @Override
+                    public void onDiscoveryStarted() {
+                        Log.d(TAG, "WIFI START");
+                    }
+
+                    @Override
+                    public void onDiscoveryFailed(int reasonCode) {
+                        Log.d(TAG, "WIFI FAIL" + reasonCode);
+                    }
+
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
+                        for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
+                            WifiP2pDevice device = entry.getValue();
+                            smartDeviceHashMap.put(device.deviceAddress,
+                                    new SmartWifiDevice(device, -1));
+                            Log.d(TAG, "WIFI_DISCOVERY : " + entry.getValue().deviceAddress);
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+
+    private void btDiscovery(int duration) {
         try {
             bluetoothManager = new BluetoothManager(true, context);
             if (!bluetoothManager.isEnabled()) {
@@ -65,8 +114,10 @@ public class AutoManager {
             e2.printStackTrace();
         }
 
-        ThreadDiscoveryBluetooth threadDiscoveryBluetooth =
-                new ThreadDiscoveryBluetooth(bluetoothManager, new DiscoveryListener() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                bluetoothManager.discovery(new DiscoveryListener() {
                     @Override
                     public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                         Log.d(TAG, "onDiscoveryCompleted()");
@@ -74,30 +125,25 @@ public class AutoManager {
                             BluetoothAdHocDevice device = entry.getValue();
                             smartDeviceHashMap.put(device.getDevice().getAddress(),
                                     new SmartBluetoothDevice(device.getDevice(), device.getRssi()));
-                            Log.d(TAG, "DISCOVERY : " + entry.getValue().getDevice().getAddress());
+                            Log.d(TAG, "BLUETOOTH_DISCOVERY : " + entry.getValue().getDevice().getAddress());
                         }
                         bluetoothManager.unregisterDiscovery();
                     }
 
                     @Override
                     public void onDiscoveryStarted() {
-                        Log.d(TAG, "onDiscoveryStarted()");
+
                     }
 
                     @Override
                     public void onDeviceFound(BluetoothDevice device) {
-                        Log.d(TAG, "onDeviceFound()");
                     }
 
                     @Override
                     public void onScanModeChange(int currentMode, int oldMode) {
-                        Log.d(TAG, "onScanModeChange()");
                     }
                 });
-        threadDiscoveryBluetooth.start();
-        
-
+            }
+        }).start();
     }
-
-
 }

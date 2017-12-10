@@ -167,10 +167,10 @@ public class BluetoothManager {
      * Method allowing to cancel the discovery process.
      */
     public void cancelDiscovery() {
-        if (v) Log.d(TAG, "cancelDiscovery()");
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         if (bluetoothAdapter.isDiscovering()) {
+            if (v) Log.d(TAG, "cancelDiscovery()");
             bluetoothAdapter.cancelDiscovery();
         }
     }

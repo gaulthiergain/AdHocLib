@@ -12,7 +12,7 @@ import android.util.Log;
 public class WiFiDirectBroadcastDiscovery extends BroadcastReceiver {
 
     private final boolean v;
-    private final String TAG = "[AdHoc][" + getClass().getName() + "]";
+    private final static String TAG = "[AdHoc][WifiDiscovery]";
     private WifiP2pManager manager;
     private Channel channel;
     private PeerListListener peerListListener;
