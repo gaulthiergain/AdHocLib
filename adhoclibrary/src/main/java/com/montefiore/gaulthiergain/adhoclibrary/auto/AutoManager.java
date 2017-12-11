@@ -30,7 +30,7 @@ public class AutoManager {
     private final boolean v;
     private final Context context;
     private final String TAG = "[AdHoc][AutoManager]";
-    private final ConcurrentHashMap<String, SmartDevice> smartDeviceHashMap;
+    private final ConcurrentHashMap<String, SmartBluetoothDevice> smartDeviceHashMap;
 
     private BluetoothManager bluetoothManager;
     private WifiManager wifiManager;
@@ -93,6 +93,16 @@ public class AutoManager {
         try {
             bluetoothPeer.listen(smartDeviceHashMap.size(), false, "test", bluetoothManager.getBluetoothAdapter(),
                     UUID.fromString(BluetoothUtil.UUID + BluetoothUtil.getCurrentMac(context).replace(":", "")));
+
+            for (final Map.Entry<String, SmartBluetoothDevice> smartDevice : smartDeviceHashMap.entrySet()) {
+                if (!smartDevice.getValue().getName().contains("[AV] Samsung Soundbar K450 K-Series")) { //TODO update
+                    Log.d(TAG, smartDevice.getValue().getName() + " : " + smartDevice.getValue().getUuid());
+                    bluetoothPeer.connect(false, smartDevice.getValue().getBluetoothDevice(),
+                            UUID.fromString(smartDevice.getValue().getUuid()));
+                }
+
+            }
+
         } catch (NoConnectionException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -128,7 +138,7 @@ public class AutoManager {
                         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                             BluetoothAdHocDevice device = entry.getValue();
                             smartDeviceHashMap.put(device.getDevice().getAddress(),
-                                    new SmartBluetoothDevice(device.getDevice(), device.getRssi()));
+                                    new SmartBluetoothDevice(device.getDevice(), device.getRssi(), device.getUuid()));
                             Log.d(TAG, "BLUETOOTH_DISCOVERY : " + entry.getValue().getDevice().getAddress());
                         }
                         bluetoothManager.unregisterDiscovery();
@@ -182,9 +192,9 @@ public class AutoManager {
                     public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
                         for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
                             WifiP2pDevice device = entry.getValue();
-                            smartDeviceHashMap.put(device.deviceAddress,
+                            /*smartDeviceHashMap.put(device.deviceAddress,
                                     new SmartWifiDevice(device, -1));
-                            Log.d(TAG, "WIFI_DISCOVERY : " + entry.getValue().deviceAddress);
+                            Log.d(TAG, "WIFI_DISCOVERY : " + entry.getValue().deviceAddress);*/
                         }
                     }
                 });
