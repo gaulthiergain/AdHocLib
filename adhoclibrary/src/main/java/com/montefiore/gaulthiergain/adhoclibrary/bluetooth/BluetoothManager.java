@@ -21,6 +21,9 @@ import java.util.Set;
 
 public class BluetoothManager {
 
+    long startTime = 0;
+    long estimatedTime;
+
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
@@ -112,9 +115,28 @@ public class BluetoothManager {
             initName = bluetoothAdapter.getName();
         }
 
+        //TODO le faire dans automanager
+        if(initName.contains("#e091#")){
+            if (initName.split("#").length > 2) {
+                initName = initName.split("#")[2];
+            }
+        }
+
         if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
-        bluetoothAdapter.setName(name);
-        if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
+        bluetoothAdapter.setName(name + initName); //TODO le faire dans automanager
+        if (v) Log.i(TAG, "localdevicename : " + name + initName);
+    }
+
+    public void resetDeviceName() throws DeviceException {
+        if (initName != null && !initName.contains("#e091#")) {
+            bluetoothAdapter.setName(initName);
+        } else if (initName != null && initName.contains("#e091#")) {
+            if (initName.split("#").length > 2) {
+                bluetoothAdapter.setName(initName.split("#")[2]);
+            } else {
+                throw new DeviceException("No initial name found");
+            }
+        }
     }
 
     /**
@@ -212,6 +234,8 @@ public class BluetoothManager {
      */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
+
+
             String action = intent.getAction();
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -220,6 +244,7 @@ public class BluetoothManager {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 discoveryListener.onDeviceFound(device);
 
+                if (v) Log.d(TAG, "DeviceName: " + device.getName());
                 // Add devices into the hashMap
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
                     if (v) Log.d(TAG, "DeviceName: " + device.getName() +
@@ -228,12 +253,15 @@ public class BluetoothManager {
                             intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)));
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                startTime = System.currentTimeMillis();
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_STARTED");
                 // Clear the hashMap
                 hashMapBluetoothDevice.clear();
                 // Listener onDiscoveryStarted
                 discoveryListener.onDiscoveryStarted();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                estimatedTime = System.currentTimeMillis() - startTime;
+                Log.d(TAG, "TIME NEED (nano):" + estimatedTime);
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener onDiscoveryCompleted
                 discoveryListener.onDiscoveryCompleted(hashMapBluetoothDevice);

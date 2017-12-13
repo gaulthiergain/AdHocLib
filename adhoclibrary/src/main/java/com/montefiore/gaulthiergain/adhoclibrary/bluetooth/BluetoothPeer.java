@@ -7,32 +7,28 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.auto.SmartBluetoothDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.auto.SmartDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class BluetoothPeer extends BluetoothServiceClient {
 
 
+    private BluetoothServerSocket serverSocket;
+
     public BluetoothPeer(boolean verbose, Context context, MessageListener messageListener) {
-        super(verbose, context, messageListener, false);
+        super(verbose, context, messageListener, false, false, null);
+        //TODO UPDATE
     }
 
     private void connectPeers(boolean secure, BluetoothDevice bluetoothDevice, UUID uuid) throws IOException {
 
-        if (v) Log.d(TAG, "connect to: " + uuid);
 
         // Get a BluetoothSocket to connect with the given BluetoothDevice.
         BluetoothSocket bluetoothSocket;
@@ -45,36 +41,46 @@ public class BluetoothPeer extends BluetoothServiceClient {
         // Connect to the remote host
         bluetoothSocket.connect();
         network = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
+        if (v) Log.d(TAG, "connect to: " + uuid);
     }
 
     public void connect(final boolean secure, final BluetoothDevice bluetoothDevice,
                         final UUID uuid) throws NoConnectionException {
 
 
-        new Thread(new Runnable() {
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    if (v) Log.d(TAG, "CONNECT PEERS...");
                     connectPeers(secure, bluetoothDevice, uuid);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
-
+        });
+        if (v) Log.d(TAG, "CONNECTION TO PEERS on thread: " + t.getName());
+        t.start();
 
     }
 
     public void listen(final int nbPeers, final boolean secure, final String name, final BluetoothAdapter mAdapter,
                        final UUID uuid) throws NoConnectionException, IOException {
+
+
         for (int i = 0; i < nbPeers; i++) {
+            if (secure) {
+                serverSocket = mAdapter.listenUsingRfcommWithServiceRecord(name, uuid);
+            } else {
+                serverSocket = mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid);
+            }
+
+            if (v) Log.d(TAG, "WAITING PEERS on thread: " + Thread.currentThread().getName());
+            final BluetoothSocket socket = serverSocket.accept();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        if (v) Log.d(TAG, "WAITING PEERS...");
-                        listenPeers(secure, name, mAdapter, uuid);
+                        listenPeers(socket, secure, name + Thread.currentThread().getName(), mAdapter, uuid);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -83,17 +89,11 @@ public class BluetoothPeer extends BluetoothServiceClient {
         }
     }
 
-    private void listenPeers(boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) throws IOException {
-        BluetoothServerSocket serverSocket;
-        if (secure) {
-            serverSocket = mAdapter.listenUsingRfcommWithServiceRecord(name, uuid);
-        } else {
-            serverSocket = mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid);
-        }
+    private void listenPeers(BluetoothSocket socket, boolean secure, String name, BluetoothAdapter mAdapter, UUID uuid) throws IOException {
 
-        BluetoothSocket socket = serverSocket.accept();
-        NetworkObject networkObject = new NetworkObject(new AdHocSocketBluetooth(socket));
+
         if (v) Log.d(TAG, "Accept peers: " + socket.getRemoteDevice());
+        NetworkObject networkObject = new NetworkObject(new AdHocSocketBluetooth(socket));
 
         while (true) {
             try {

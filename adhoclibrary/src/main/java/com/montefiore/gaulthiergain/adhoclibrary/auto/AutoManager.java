@@ -5,10 +5,16 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Build;
 import android.util.Log;
+import android.widget.ActionMenuView;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothPeer;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
@@ -37,10 +43,28 @@ public class AutoManager {
 
     private boolean bluetooth_support;
 
-    public AutoManager(boolean verbose, Context context) {
+
+    //todo remove
+    private int type;
+    public final static int TYPE_FULL_MESH = 0;
+    public final static int TYPE_RANDOM_GROUP = 1;
+    public final static int TYPE_COVER_CHANNEL_GROUP = 2;
+
+    public ListenerGUI listenerGUI;
+
+    public AutoManager(boolean verbose, Context context) throws DeviceException {
         this.v = verbose;
         this.context = context;
         this.smartDeviceHashMap = new ConcurrentHashMap<>();
+        this.bluetoothManager = new BluetoothManager(true, context);
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public void setListenerGUI(ListenerGUI listenerGUI) {
+        this.listenerGUI = listenerGUI;
     }
 
     public int computeMagicNumber() {
@@ -57,14 +81,91 @@ public class AutoManager {
         return 1;
     }
 
-
     public void discovery(int duration) {
         btDiscovery(duration);
         //wifiDiscovery();
     }
 
-    private void mesh() {
-        BluetoothPeer bluetoothPeer = new BluetoothPeer(true, context, new MessageListener() {
+
+    private void discoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+        boolean conn = false;
+
+        switch (type) {
+            case TYPE_FULL_MESH:
+                conn = true;
+                break;
+            case TYPE_RANDOM_GROUP:
+                break;
+            case TYPE_COVER_CHANNEL_GROUP:
+                break;
+        }
+
+        Log.d(TAG, "onDiscoveryCompleted()");
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
+            BluetoothAdHocDevice device = entry.getValue();
+            Log.d(TAG, "BLUETOOTH_DISCOVERY: " + device.getDevice().getName());
+
+            if (device.getDevice().getName().contains(Code.ID_APP)) {
+                if (conn) {
+                    connect(false, device);
+                }
+            }
+        }
+        bluetoothManager.unregisterDiscovery();
+    }
+
+    private void btDiscovery(int duration) {
+        try {
+            if (!bluetoothManager.isEnabled()) {
+                // Enable Bluetooth and enable the discovery
+                bluetoothManager.enable();
+                bluetoothManager.enableDiscovery(duration);
+
+            }
+            // Bluetooth is supported on this device
+            bluetooth_support = true;
+        } catch (BluetoothBadDuration e2) {
+            e2.printStackTrace();
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                bluetoothManager.discovery(new DiscoveryListener() {
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                        discoveryCompleted(hashMapBluetoothDevice);
+                    }
+
+                    @Override
+                    public void onDiscoveryStarted() {
+                        switch (type) {
+                            case TYPE_FULL_MESH:
+                                listen();
+                                break;
+                            case TYPE_RANDOM_GROUP:
+                                break;
+                            case TYPE_COVER_CHANNEL_GROUP:
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public void onDeviceFound(BluetoothDevice device) {
+                        listenerGUI.deviceDiscover(device.getName(), device.getAddress());
+                    }
+
+                    @Override
+                    public void onScanModeChange(int currentMode, int oldMode) {
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void listen() {
+        BluetoothServiceServer bluetoothServiceServer = new BluetoothServiceServer(true, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
 
@@ -87,80 +188,16 @@ public class AutoManager {
 
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-
+                //Toast.makeText(context, "Connected with " + deviceName, Toast.LENGTH_LONG).show();
+                listenerGUI.deviceConnection(deviceName, deviceAddress);
             }
         });
         try {
-            bluetoothPeer.listen(smartDeviceHashMap.size(), false, "test", bluetoothManager.getBluetoothAdapter(),
+            bluetoothServiceServer.listen(8, false, "test", bluetoothManager.getBluetoothAdapter(),
                     UUID.fromString(BluetoothUtil.UUID + BluetoothUtil.getCurrentMac(context).replace(":", "")));
-
-            for (final Map.Entry<String, SmartBluetoothDevice> smartDevice : smartDeviceHashMap.entrySet()) {
-                if (!smartDevice.getValue().getName().contains("[AV] Samsung Soundbar K450 K-Series")) { //TODO update
-                    Log.d(TAG, smartDevice.getValue().getName() + " : " + smartDevice.getValue().getUuid());
-                    bluetoothPeer.connect(false, smartDevice.getValue().getBluetoothDevice(),
-                            UUID.fromString(smartDevice.getValue().getUuid()));
-                }
-
-            }
-
-        } catch (NoConnectionException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void btDiscovery(int duration) {
-        try {
-            bluetoothManager = new BluetoothManager(true, context);
-            if (!bluetoothManager.isEnabled()) {
-                // Enable Bluetooth and enable the discovery
-                bluetoothManager.enable();
-                bluetoothManager.enableDiscovery(duration);
-
-            }
-            // Bluetooth is supported on this device
-            bluetooth_support = true;
-        } catch (DeviceException e1) {
-            e1.printStackTrace();
-            bluetooth_support = false;
-        } catch (BluetoothBadDuration e2) {
-            e2.printStackTrace();
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                bluetoothManager.discovery(new DiscoveryListener() {
-                    @Override
-                    public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
-                        Log.d(TAG, "onDiscoveryCompleted()");
-                        for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                            BluetoothAdHocDevice device = entry.getValue();
-                            smartDeviceHashMap.put(device.getDevice().getAddress(),
-                                    new SmartBluetoothDevice(device.getDevice(), device.getRssi(), device.getUuid()));
-                            Log.d(TAG, "BLUETOOTH_DISCOVERY : " + entry.getValue().getDevice().getAddress());
-                        }
-                        bluetoothManager.unregisterDiscovery();
-                        Log.d(TAG, "SIZE : " + smartDeviceHashMap.size());
-                        mesh();
-                    }
-
-                    @Override
-                    public void onDiscoveryStarted() {
-
-                    }
-
-                    @Override
-                    public void onDeviceFound(BluetoothDevice device) {
-                    }
-
-                    @Override
-                    public void onScanModeChange(int currentMode, int oldMode) {
-                    }
-                });
-            }
-        }).start();
     }
 
     private void wifiDiscovery() {
@@ -200,5 +237,50 @@ public class AutoManager {
                 });
             }
         }).start();
+    }
+
+
+    public void connect(final boolean secure, final BluetoothAdHocDevice bluetoothAdHocDevice) {
+
+        BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(true, context, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void onConnectionClosed(String deviceName, String deviceAddress) {
+
+            }
+
+            @Override
+            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                listenerGUI.deviceConnection(deviceName, deviceAddress);
+            }
+        }, false, secure, bluetoothAdHocDevice);
+        new Thread(bluetoothServiceClient).start();
+    }
+
+    public BluetoothManager getBluetoothManager() {
+        return bluetoothManager;
+    }
+
+    public SmartBluetoothDevice getSmartDeviceByAddr(String addr) {
+
+        if (smartDeviceHashMap.containsKey(addr)) {
+            return smartDeviceHashMap.get(addr);
+        }
+
+        return null;
     }
 }
