@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ListSocketDevice;
@@ -11,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.threadPool.ThreadServer;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>This class defines the server's logic for bluetooth implementation. </p>
@@ -63,5 +65,10 @@ public class BluetoothServiceServer extends ServiceServer {
         setState(STATE_LISTENING);
 
         if (v) Log.d(TAG, "Listening on device: " + uuid.toString());
+    }
+
+    //TODO added
+    public ConcurrentHashMap<String, NetworkObject> getActiveConnexion() {
+        return threadListen.getActiveConnexion();
     }
 }
