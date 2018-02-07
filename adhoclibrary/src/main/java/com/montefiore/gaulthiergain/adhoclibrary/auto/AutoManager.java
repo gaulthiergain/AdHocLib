@@ -74,9 +74,9 @@ public class AutoManager {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (entry.getKey().equals(Code.ID_APP)) {
+                    if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                         hashMapDevices.put(entry.getKey(), entry.getValue());
-                        Log.d(TAG, "Add " + entry.getKey() + " into Hashmap");
+                        if (v) Log.d(TAG, "Add " + entry.getKey() + " into Hashmap");
                     }
                 }
                 bluetoothManager.unregisterDiscovery();
@@ -97,6 +97,20 @@ public class AutoManager {
 
             }
         });
+    }
+
+    public void connect() {
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
+
+            if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getUuid())) {
+                _connect(entry.getValue());
+            } else {
+                if (v) Log.d(TAG, entry.getValue().getUuid() + " is already connected");
+            }
+        }
+    }
+
+    private void _connect(BluetoothAdHocDevice value) {
     }
 
     public void stopListening() throws IOException {
