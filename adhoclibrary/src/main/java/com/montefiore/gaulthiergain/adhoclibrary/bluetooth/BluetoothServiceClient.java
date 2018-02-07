@@ -92,20 +92,12 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 // Update state
                 setState(STATE_CONNECTED);
 
-                //TODO remove
-                try {
-                    network.receiveObjectStream();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-
                 // Listen in Background
                 if (background) {
                     listenInBackground();
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                //e.printStackTrace();
                 throw new NoConnectionException("No remote connection");
             }
         }
@@ -117,11 +109,12 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
         do {
             try {
                 connect();
+                i = attempts;
             } catch (NoConnectionException e) {
                 i++;
                 try {
                     long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
-                    Thread.sleep((long) (result));
+                    Thread.sleep((result));
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
