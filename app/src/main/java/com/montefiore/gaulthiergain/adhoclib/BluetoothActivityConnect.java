@@ -13,11 +13,11 @@ import android.widget.TextView;
 
 
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -58,7 +58,7 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                 if (!onClickListen) {
                     // Listen on a particular thread
                     try {
-                        bluetoothServiceServer = new BluetoothServiceServer(getApplicationContext(), true, new MessageListener() {
+                        bluetoothServiceServer = new BluetoothServiceServer(true, getApplicationContext(), new MessageListener() {
                             @Override
                             public void onMessageReceived(MessageAdHoc message) {
                                 //Update GUI
@@ -69,29 +69,31 @@ public class BluetoothActivityConnect extends AppCompatActivity {
 
                             @Override
                             public void onMessageSent(MessageAdHoc message) {
-
+                                Log.d(TAG, "Message sent " + message.getPdu());
                             }
 
                             @Override
-                            public void onBroadcastSend(MessageAdHoc message) {
+                            public void onForward(MessageAdHoc message) {
 
                             }
+
 
                             @Override
                             public void onConnectionClosed(String deviceName, String deviceAddr) {
-
+                                Log.d(TAG, "onConnectionClosed: " + deviceAddr);
                             }
 
                             @Override
-                            public void onConnection(String deviceName, String deviceAddr) {
-
+                            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                                Log.d(TAG, "onConnection: " + deviceAddress);
                             }
+
 
                         });
                         bluetoothServiceServer.listen(3, true, "test",
                                 BluetoothAdapter.getDefaultAdapter(),
                                 UUID.fromString("e0917680-d427-11e4-8830-" +
-                                        BluetoothManager.getCurrentMac(
+                                        BluetoothUtil.getCurrentMac(
                                                 getApplicationContext()).replace(":", "")));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -120,11 +122,11 @@ public class BluetoothActivityConnect extends AppCompatActivity {
 
                 if (!onClickConnect) {
                     // Start the thread to connect with the given device
-                    bluetoothServiceClient = new BluetoothServiceClient(getApplicationContext(), true, new MessageListener() {
+                    bluetoothServiceClient = new BluetoothServiceClient(true, getApplicationContext(), new MessageListener() {
 
                         @Override
                         public void onMessageReceived(MessageAdHoc message) {
-
+                            Log.d(TAG, "Message received " + message.getPdu());
                         }
 
                         @Override
@@ -133,30 +135,25 @@ public class BluetoothActivityConnect extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onBroadcastSend(MessageAdHoc message) {
+                        public void onForward(MessageAdHoc message) {
 
                         }
 
                         @Override
                         public void onConnectionClosed(String deviceName, String deviceAddr) {
-
+                            Log.d(TAG, "onConnectionClosed: " + deviceAddr);
                         }
 
                         @Override
-                        public void onConnection(String deviceName, String deviceAddr) {
-
+                        public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                            Log.d(TAG, "onConnection: " + deviceAddress);
                         }
-                    });
-                    try {
-                        bluetoothServiceClient.connect(true, adHocDevice);
-                        bluetoothServiceClient.listenInBackground();
-                    } catch (NoConnectionException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
 
+                    }, true, true, 3, adHocDevice);
+
+                    new Thread(bluetoothServiceClient).start();
                     onClickConnect = true;
+
                     buttonConnect.setText(R.string.stop);
 
                 } else {
@@ -177,17 +174,11 @@ public class BluetoothActivityConnect extends AppCompatActivity {
             public void onClick(View v) {
                 final EditText editTextChat = (EditText) findViewById(R.id.editTextChat);
 
-
                 if (!server) {
                     try {
-                        String msg = "";
-                        for (int i = 0; i < 200; i++) {
-                            msg = "VALUE :" + i;
-                            bluetoothServiceClient.send(new MessageAdHoc(
-                                    new Header("Object", BluetoothManager.getCurrentMac(getApplicationContext()),
-                                            BluetoothManager.getCurrentName()), msg));
-                        }
-
+                        bluetoothServiceClient.send(new MessageAdHoc(
+                                new Header("Object", BluetoothUtil.getCurrentMac(getApplicationContext()),
+                                        BluetoothUtil.getCurrentName()), editTextChat.getText().toString()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (NoConnectionException e) {

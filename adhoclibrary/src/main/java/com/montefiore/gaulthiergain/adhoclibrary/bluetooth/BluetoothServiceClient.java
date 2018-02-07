@@ -23,7 +23,11 @@ import java.util.UUID;
  */
 public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
-    private boolean secure; //TODO set final
+    private static final int LOW = 500;
+    private static final int HIGH = 2500;
+
+    private final boolean secure;
+    private final int attempts;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
 
     /**
@@ -36,13 +40,16 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * @param background           a boolean value which defines if the service must listen messages
      *                             to background.
      * @param secure               a boolean value which represents the state of the connection.
+     * @param attempts             an integer value which represents the number of attempts.
      * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
      *                             device.
      */
     public BluetoothServiceClient(boolean verbose, Context context, MessageListener messageListener,
-                                  boolean background, boolean secure, BluetoothAdHocDevice bluetoothAdHocDevice) {
+                                  boolean background, boolean secure, int attempts,
+                                  BluetoothAdHocDevice bluetoothAdHocDevice) {
         super(verbose, context, messageListener, background);
         this.secure = secure;
+        this.attempts = attempts;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }
 
@@ -55,10 +62,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
         if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName()
                 + " (" + bluetoothAdHocDevice.getUuid() + ")");
 
-        if (state == STATE_NONE) {
-
-            //TODO remove
-            secure = false;
+        if (state == STATE_NONE || state == STATE_CONNECTING) {
 
             // Get the UUID
             UUID uuid = UUID.fromString(bluetoothAdHocDevice.getUuid());
@@ -109,25 +113,20 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
     @Override
     public void run() {
-        //TODO change this
-        int attempts = 0;
+        int i = 0;
         do {
             try {
                 connect();
             } catch (NoConnectionException e) {
-                //e.printStackTrace();
-                attempts++;
+                i++;
                 try {
-                    int Low = 500;
-                    int High = 2500;
-                    long result = (long) new Random().nextInt(High-Low) + Low;
-                    Log.e(TAG, "WAIT in ms " + result);
-                    Thread.sleep((long)(result));
+                    long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
+                    Thread.sleep((long) (result));
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
-                Log.e(TAG, "ATTEMPTS: " + attempts + "FAILED in thread " + Thread.currentThread().getName());
+                Log.e(TAG, "Attempts: " + attempts + "FAILED in thread " + Thread.currentThread().getName());
             }
-        } while (attempts < 3);
+        } while (i < this.attempts);
     }
 }

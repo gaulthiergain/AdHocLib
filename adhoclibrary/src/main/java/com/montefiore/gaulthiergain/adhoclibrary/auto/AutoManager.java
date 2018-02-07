@@ -267,7 +267,7 @@ public class AutoManager {
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
                 listenerGUI.deviceConnection(deviceName, deviceAddress);
             }
-        }, false, secure, bluetoothAdHocDevice);
+        }, false, secure, 3, bluetoothAdHocDevice);
         new Thread(bluetoothServiceClient).start();
     }
 

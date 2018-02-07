@@ -3,9 +3,6 @@ package com.montefiore.gaulthiergain.adhoclib.fragment;
 
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,27 +14,29 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.montefiore.gaulthiergain.adhoclib.R;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.wifi.WifiManager;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.wifiListener.WifiMessageListener;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-
 public class TabFragment3 extends Fragment {
+
+    public static final int PORT = 8888;
+    public static final int TIME_OUT = 5000;
 
     private View fragmentView;
     private WifiManager wifiManager;
     private String TAG = "[AdHoc]";
-    private final int PORT = 8888;
 
     private WifiServiceClient wifiServiceClient;
     private WifiServiceServer wifiServiceServer;
@@ -50,109 +49,31 @@ public class TabFragment3 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentView = inflater.inflate(R.layout.fragment_tab_fragment3, container, false);
 
-        wifiManager = new WifiManager(getContext(), true, new DiscoveryListener() {
-            @Override
-            public void onDiscoveryStarted() {
-                Log.d(TAG, "Discovery onSuccess");
-            }
-
-            @Override
-            public void onDiscoveryFailed(int reasonCode) {
-                Log.d(TAG, "Discovery failed. Retry." + reasonCode);
-            }
-
-            @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
-                updateGUI(fragmentView, peers);
-            }
+        try {
+            wifiManager = new WifiManager(true, getContext());
+        } catch (DeviceException e) {
+            e.printStackTrace();
         }
-                , new ConnectionListener() {
-            @Override
-            public void onConnectionStarted() {
-                Log.d(TAG, "Connect onSuccess");
-            }
-
-            @Override
-            public void onConnectionFailed(int reasonCode) {
-                Log.d(TAG, "Connect failed. Retry." + reasonCode);
-            }
-
-            @Override
-            public void onGroupOwner(InetAddress groupOwnerAddr) {
-                Log.d(TAG, "I am the groupOwner" + groupOwnerAddr.toString());
-                addTextChat(fragmentView);
-                wifiServiceServer = new WifiServiceServer(getContext(), true, new WifiMessageListener() {
-                    @Override
-                    public void onMessageReceived(MessageAdHoc message) {
-                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onMessageSent(MessageAdHoc message) {
-                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onBroadcastSend(MessageAdHoc message) {
-                        Log.d(TAG, "onBroadcastSend EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onConnectionClosed(String deviceAddr) {
-                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddr);
-                    }
-
-                    @Override
-                    public void onConnection(String deviceAddr) {
-                        Log.d(TAG, "onConnection EVENT: " + deviceAddr);
-                    }
-                });
-                try {
-                    wifiServiceServer.listen(3, PORT);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onClient(InetAddress groupOwnerAddr) {
-                addTextChat(fragmentView);
-                Log.d(TAG, "The groupOwner is " + groupOwnerAddr.toString());
-                wifiServiceClient = new WifiServiceClient(getContext(), true, new WifiMessageListener() {
-                    @Override
-                    public void onMessageReceived(MessageAdHoc message) {
-                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onMessageSent(MessageAdHoc message) {
-                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onBroadcastSend(MessageAdHoc message) {
-                        Log.d(TAG, "onBroadcastSend EVENT: " + message.getPdu());
-                    }
-
-                    @Override
-                    public void onConnectionClosed(String deviceAddr) {
-                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddr);
-                    }
-
-                    @Override
-                    public void onConnection(String deviceAddr) {
-                        Log.d(TAG, "onConnection EVENT: " + deviceAddr);
-                    }
-                }, groupOwnerAddr.getHostAddress(), PORT);
-                (new Thread(wifiServiceClient)).start();
-            }
-        });
 
         Button button = fragmentView.findViewById(R.id.buttonDiscoveryWifi);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                wifiManager.discover();
+                wifiManager.discover(new DiscoveryListener() {
+                    @Override
+                    public void onDiscoveryStarted() {
+                        Log.d(TAG, "Discovery onSuccess");
+                    }
 
+                    @Override
+                    public void onDiscoveryFailed(int reasonCode) {
+                        Log.d(TAG, "Discovery failed. Retry." + reasonCode);
+                    }
+
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
+                        updateGUI(fragmentView, peers);
+                    }
+                });
             }
         });
 
@@ -180,7 +101,87 @@ public class TabFragment3 extends Fragment {
                 btnTag.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         // wifiManager.unregister();
-                        wifiManager.connect(wifiP2pDevice.deviceAddress);
+                        wifiManager.connect(wifiP2pDevice.deviceAddress, new ConnectionListener() {
+                            @Override
+                            public void onConnectionStarted() {
+                                Log.d(TAG, "Connect onSuccess");
+                            }
+
+                            @Override
+                            public void onConnectionFailed(int reasonCode) {
+                                Log.d(TAG, "Connect failed. Retry." + reasonCode);
+                            }
+
+                            @Override
+                            public void onGroupOwner(InetAddress groupOwnerAddr) {
+                                Log.d(TAG, "I am the groupOwner" + groupOwnerAddr.toString());
+                                addTextChat(fragmentView);
+                                wifiServiceServer = new WifiServiceServer(true, getContext(), new MessageListener() {
+                                    @Override
+                                    public void onMessageReceived(MessageAdHoc message) {
+                                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
+                                    }
+
+                                    @Override
+                                    public void onMessageSent(MessageAdHoc message) {
+                                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
+                                    }
+
+                                    @Override
+                                    public void onForward(MessageAdHoc message) {
+
+                                    }
+
+                                    @Override
+                                    public void onConnectionClosed(String deviceName, String deviceAddress) {
+                                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddress);
+                                    }
+
+                                    @Override
+                                    public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                                        Log.d(TAG, "onConnection EVENT: " + deviceAddress);
+                                    }
+                                });
+                                try {
+                                    wifiServiceServer.listen(3, PORT);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onClient(InetAddress groupOwnerAddr) {
+                                addTextChat(fragmentView);
+                                Log.d(TAG, "The groupOwner is " + groupOwnerAddr.toString());
+                                wifiServiceClient = new WifiServiceClient(getContext(), true, new MessageListener() {
+                                    @Override
+                                    public void onMessageReceived(MessageAdHoc message) {
+                                        Log.d(TAG, "onMessageReceived EVENT: " + message.getPdu());
+                                    }
+
+                                    @Override
+                                    public void onMessageSent(MessageAdHoc message) {
+                                        Log.d(TAG, "onMessageSent EVENT: " + message.getPdu());
+                                    }
+
+                                    @Override
+                                    public void onForward(MessageAdHoc message) {
+
+                                    }
+
+                                    @Override
+                                    public void onConnectionClosed(String deviceName, String deviceAddress) {
+                                        Log.d(TAG, "onConnectionClosed EVENT: " + deviceAddress);
+                                    }
+
+                                    @Override
+                                    public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                                        Log.d(TAG, "onConnection EVENT: " + deviceAddress);
+                                    }
+                                }, true, groupOwnerAddr.getHostAddress(), PORT, TIME_OUT);
+                                (new Thread(wifiServiceClient)).start();
+                            }
+                        });
                         removeBtnGUI(fragmentView, peers);
                     }
                 });
@@ -273,13 +274,15 @@ public class TabFragment3 extends Fragment {
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
-        wifiManager.unregister();
+        wifiManager.unregisterDiscovery();
+        wifiManager.unregisterConnection();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
-        wifiManager.unregister();
+        wifiManager.unregisterDiscovery();
+        wifiManager.unregisterConnection();
     }
 }

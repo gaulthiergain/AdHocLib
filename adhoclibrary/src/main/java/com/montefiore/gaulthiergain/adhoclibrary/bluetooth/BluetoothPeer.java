@@ -23,7 +23,7 @@ public class BluetoothPeer extends BluetoothServiceClient {
     private BluetoothServerSocket serverSocket;
 
     public BluetoothPeer(boolean verbose, Context context, MessageListener messageListener) {
-        super(verbose, context, messageListener, false, false, null);
+        super(verbose, context, messageListener, false, false, 3, null);
         //TODO UPDATE
     }
 

@@ -16,8 +16,8 @@ import com.montefiore.gaulthiergain.adhoclib.BluetoothActivityConnect;
 import com.montefiore.gaulthiergain.adhoclib.R;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
-import com.montefiore.gaulthiergain.adhoclibrary.bluetoothListener.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothDeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
 
 import java.util.HashMap;
 
@@ -32,8 +32,8 @@ public class TabFragment2 extends Fragment {
         final View fragmentView = inflater.inflate(R.layout.fragment_tab_fragment2, container, false);
 
         try {
-            bluetoothManager = new BluetoothManager(getContext(), true);
-        } catch (BluetoothDeviceException e) {
+            bluetoothManager = new BluetoothManager(true, getContext());
+        } catch (DeviceException e) {
             e.printStackTrace();
         }
 
@@ -53,9 +53,9 @@ public class TabFragment2 extends Fragment {
                     HashMap<String, BluetoothAdHocDevice> peers = bluetoothManager.getPairedDevices();
 
                     if (peers.size() == 0) {
-                        bluetoothManager.discovery(new ConnectionListener() {
+                        bluetoothManager.discovery(new DiscoveryListener() {
                             @Override
-                            public void onDiscoveryFinished(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                            public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                                 if (bluetoothManager.getHashMapBluetoothDevice().size() != 0) {
                                     updateGUI(fragmentView, bluetoothManager.getHashMapBluetoothDevice());
                                 }
