@@ -183,6 +183,9 @@ public class AutoManager {
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
                 Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
+                if(listenerGUI != null){
+                    listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
+                }
             }
         }, true, true, ATTEMPTS, bluetoothAdHocDevice);
 
@@ -265,6 +268,9 @@ public class AutoManager {
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
                 Log.d(TAG, "Connected to client: " + deviceAddress);
+                if(listenerGUI != null){
+                    listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
+                }
             }
         });
         try {
