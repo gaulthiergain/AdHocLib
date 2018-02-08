@@ -1,10 +1,14 @@
 package com.montefiore.gaulthiergain.adhoclibrary.auto;
+
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
+
+import java.util.HashMap;
+
 /**
  * Created by gaulthiergain on 12/12/17.
  */
 
 public interface ListenerGUI {
-    void deviceDiscover(String deviceName, String deviceAddress);
 
-    void deviceConnection(String deviceName, String deviceAddress);
+    void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice);
 }

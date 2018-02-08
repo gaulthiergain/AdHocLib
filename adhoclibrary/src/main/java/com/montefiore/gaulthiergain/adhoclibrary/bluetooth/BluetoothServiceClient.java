@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.auto.ListenerAutoConnect;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
@@ -29,6 +30,8 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
     private final boolean secure;
     private final int attempts;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
+
+    private ListenerAutoConnect listenerAutoConnect;
 
     /**
      * Constructor
@@ -81,6 +84,9 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 // Connect to the remote host
                 bluetoothSocket.connect();
                 network = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
+                if(listenerAutoConnect != null){
+                    listenerAutoConnect.connected(uuid, network);
+                }
 
                 // Notify handler
                 String messageHandle[] = new String[3];
@@ -118,8 +124,16 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
-                Log.e(TAG, "Attempts: " + attempts + "FAILED in thread " + Thread.currentThread().getName());
+                Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
             }
         } while (i < this.attempts);
+    }
+
+    public NetworkObject getNetwork() {
+        return network;
+    }
+
+    public void setListenerAutoConnect(ListenerAutoConnect listenerAutoConnect) {
+        this.listenerAutoConnect = listenerAutoConnect;
     }
 }

@@ -7,7 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AutoConnectionActives {
-    private static final String TAG = "[AdHoc][AutoConnectionActives]";
+    private static final String TAG = "[AdHoc][AutoConActives]";
     private ConcurrentHashMap<String, NetworkObject> activesConnections;
 
     private ConcurrentHashMap<String, Long> activesDataPath; //todo update with DataPath object?
