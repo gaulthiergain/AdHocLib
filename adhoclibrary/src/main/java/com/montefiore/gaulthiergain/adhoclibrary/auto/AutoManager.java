@@ -55,6 +55,7 @@ public class AutoManager {
         }
         this.ownStringUUID = ownUUID.toString();
         this.autoConnectionActives = new AutoConnectionActives();
+        this.hashMapDevices = new HashMap<>();
         this.listenServer(ownUUID);
         this.updateName();
     }
@@ -82,7 +83,14 @@ public class AutoManager {
             }
         }
 
-        hashMapDevices = bluetoothManager.getPairedDevices();
+        // Paired devices
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+            if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
+                hashMapDevices.put(entry.getValue().getUuid(), entry.getValue());
+                if (v) Log.d(TAG, "Add paired " + entry.getValue().getUuid() + " into Hashmap");
+            }
+        }
+
         // Start Discovery
         bluetoothManager.discovery(new DiscoveryListener() {
             @Override
@@ -90,7 +98,7 @@ public class AutoManager {
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getUuid(), entry.getValue());
-                        if (v) Log.d(TAG, "Add " + entry.getValue().getUuid() + " into Hashmap");
+                        if (v) Log.d(TAG, "Add not paired" + entry.getValue().getUuid() + " into Hashmap");
                     }
                 }
                 bluetoothManager.unregisterDiscovery();
