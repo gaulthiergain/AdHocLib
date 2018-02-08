@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
@@ -32,10 +33,9 @@ public class AutoManager {
 
     private final boolean v;
     private final Context context;
+    private final String ownStringUUID;
     private final String TAG = "[AdHoc][AutoManager]";
     private ListenerGUI listenerGUI;
-
-    private ListenerAutoConnect listenerAutoConnect;
 
     private final AutoConnectionActives autoConnectionActives;
 
@@ -53,8 +53,15 @@ public class AutoManager {
         } catch (DeviceException e) {
             e.printStackTrace();
         }
+        this.ownStringUUID = ownUUID.toString();
         this.autoConnectionActives = new AutoConnectionActives();
         this.listenServer(ownUUID);
+        this.updateName();
+    }
+
+    private void updateName() {
+        //TODO update this
+        //bluetoothManager.updateDeviceName(Code.ID_APP );
     }
 
     public void discovery() {
@@ -121,8 +128,8 @@ public class AutoManager {
         }
     }
 
-    private void _connect(BluetoothAdHocDevice bluetoothAdHocDevice) {
-        BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(true, context, new MessageListener() {
+    private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
+        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(true, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 processMsgReceived(message);
@@ -173,22 +180,19 @@ public class AutoManager {
         bluetoothServiceClient.setListenerAutoConnect(new ListenerAutoConnect() {
             @Override
             public void connected(UUID uuid, NetworkObject network) {
-                autoConnectionActives.addConnection(uuid.toString(), network);
+                autoConnectionActives.addConnection(uuid.toString().toLowerCase(), network);
+                try {
+                    bluetoothServiceClient.send(new MessageAdHoc(
+                            new Header("CONNECT", BluetoothUtil.getCurrentMac(context),
+                                    BluetoothUtil.getCurrentName()), ownStringUUID));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
+                    e.printStackTrace();
+                }
             }
         });
         new Thread(bluetoothServiceClient).start();
-        try {
-            Thread.sleep(3000); //TODO remove
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-            /*bluetoothServiceClient.send(new MessageAdHoc(
-                    new Header("CONNECT", "/" + selfDevice.getAddr() + ":" + localPort, ownUUID.toString())
-                    , ""));*/
-        // add network client
-
-
-
     }
 
 
@@ -263,6 +267,53 @@ public class AutoManager {
     }
 
     private void processMsgReceived(MessageAdHoc message) {
+        Log.d(TAG, "Message received: " + message.getPdu().toString());
+        switch (message.getHeader().getType()) {
+            case "CONNECT":
+                NetworkObject networkObject = bluetoothServiceServer.getActiveConnexion().get(message.getHeader().getSenderAddr());
+                if (networkObject != null) {
+                    String remoteUUID = (String) message.getPdu();
+                    autoConnectionActives.addConnection(remoteUUID, networkObject);
+                }
+                break;
+            case "RREP":
+                processRREP(message);
+                break;
+            case "RREQ":
+                processRREQ(message);
+                break;
+            case "RERR":
+                processRERR(message);
+                break;
+            case "DATA":
+                processData(message);
+                break;
+            case "DATA_ACK":
+                processDataAck(message);
+                break;
+
+            default:
+                Log.e(TAG, "DEFAULT MSG");
+        }
+    }
+
+    private void processRREQ(MessageAdHoc message) {
+    }
+
+    private void processRREP(MessageAdHoc message) {
+        
+    }
+
+    private void processRERR(MessageAdHoc message) {
+        
+    }
+
+    private void processData(MessageAdHoc message) {
+        
+    }
+
+    private void processDataAck(MessageAdHoc message) {
+        
     }
 
     public void setListenerGUI(ListenerGUI listenerGUI) {

@@ -67,9 +67,6 @@ public class ThreadServer extends Thread {
         this.listSocketDevice = listSocketDevice;
         this.arrayThreadClients = new ArrayList<>();
 
-        //TODO remove
-        secure = false;
-
         if (secure) {
             this.serverSocket = new AdHocServerSocketBluetooth(mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
         } else {
