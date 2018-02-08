@@ -534,7 +534,28 @@ public class AutoManager {
     }
 
     private void processDataAck(MessageAdHoc message) {
+        // Check if dest otherwise forward to path
+        Data dataAck = (Data) message.getPdu();
 
+        // Update the connexion
+        autoConnectionActives.updateDataPath(dataAck.getDestIpAddress());
+
+        Log.d(TAG, "DataAck message received from: " + message.getHeader().getSenderAddr());
+
+        if (dataAck.getDestIpAddress().equals(ownStringUUID)) {
+            Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
+        } else {
+            EntryRoutingTable destNext = aodv.getNextfromDest(dataAck.getDestIpAddress());
+            if (destNext == null) {
+                Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
+            } else {
+                try {
+                    send(message, destNext.getNext());
+                } catch (IOException | NoConnectionException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public void setListenerGUI(ListenerGUI listenerGUI) {
