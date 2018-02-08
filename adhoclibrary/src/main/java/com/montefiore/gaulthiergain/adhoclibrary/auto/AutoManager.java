@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Aodv;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.EntryRoutingTable;
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREQ;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
@@ -144,7 +145,12 @@ public class AutoManager {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
 
             if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getUuid())) {
-                _connect(entry.getValue());
+                //TODO remove
+                if(ownName.equals("#eO91#Huawei") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")){
+
+                }else{
+                    _connect(entry.getValue());
+                }
             } else {
                 if (v) Log.d(TAG, entry.getValue().getUuid() + " is already connected");
             }
@@ -219,7 +225,6 @@ public class AutoManager {
         });
         new Thread(bluetoothServiceClient).start();
     }
-
 
     public void stopListening() throws IOException {
         bluetoothServiceServer.stopListening();
@@ -338,23 +343,23 @@ public class AutoManager {
         }
     }
 
-    private void send(MessageAdHoc messageAdHoc, String uuid) throws IOException, NoConnectionException{
+    private void send(MessageAdHoc messageAdHoc, String uuidString) throws IOException, NoConnectionException{
 
         String remoteDeviceName = "";
-        if(hashMapDevices.containsKey(uuid)){
-            remoteDeviceName = hashMapDevices.get(uuid).getDevice().getName();
+        if(hashMapDevices.containsKey(uuidString)){
+            remoteDeviceName = hashMapDevices.get(uuidString).getDevice().getName();
         }
 
-        if (autoConnectionActives.getActivesConnections().containsKey(uuid)) {
+        if (autoConnectionActives.getActivesConnections().containsKey(uuidString)) {
             // Destinations directly connected
-            NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(uuid);
+            NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(uuidString);
             networkObject.sendObjectStream(messageAdHoc);
-            Log.d(TAG, "Send to " + uuid + " (" + remoteDeviceName + ")");
-        } else if (aodv.containsDest(uuid)) {
+            Log.d(TAG, "Send to " + uuidString + " (" + remoteDeviceName + ")");
+        } else if (aodv.containsDest(uuidString)) {
             // Destinations learned from neighbors -> send to next by checking the routing table
-            EntryRoutingTable destNext = aodv.getNextfromDest(uuid);
+            EntryRoutingTable destNext = aodv.getNextfromDest(uuidString);
             if (destNext == null) {
-                Log.d(TAG, "No destNext found in the routing Table for " + uuid
+                Log.d(TAG, "No destNext found in the routing Table for " + uuidString
                         + " (" + remoteDeviceName + ")");
             } else {
                 try {
@@ -362,8 +367,7 @@ public class AutoManager {
                             + " (" + remoteDeviceName + ")");
 
                     // Update the connexion
-                    autoConnectionActives.updateDataPath(uuid);
-
+                    autoConnectionActives.updateDataPath(uuidString);
 
                     send(messageAdHoc, destNext.getNext());
                 } catch (IOException | NoConnectionException e) {
@@ -375,6 +379,26 @@ public class AutoManager {
         } else {
             //RREQ
             //TODO startTimerRREQ(uuid, Aodv.RREQ_RETRIES);
+            Log.d(TAG, "No connection to " + uuidString + "-> send RREQ message");
+            broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
+                    new RREQ(TypeAodv.RREQ.getType(), Aodv.INIT_HOP_COUNT, aodv.getIncrementRreqId(), uuidString,
+                            1, ownStringUUID, 1)));
+        }
+    }
+
+    private void broadcastMsg(MessageAdHoc messageAdHoc) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
+            entry.getValue().sendObjectStream(messageAdHoc);
+            Log.d(TAG, "Broadcast Message to " + entry.getKey());
+        }
+    }
+
+    private void broadcastMsgExcept(MessageAdHoc messageAdHoc, String address) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
+            if (!entry.getKey().equals(address)) {
+                entry.getValue().sendObjectStream(messageAdHoc);
+                Log.d(TAG, "Broadcast Message to " + entry.getKey());
+            }
         }
     }
 
