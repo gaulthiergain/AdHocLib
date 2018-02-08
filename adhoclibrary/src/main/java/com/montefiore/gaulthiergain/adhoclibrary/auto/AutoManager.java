@@ -403,6 +403,59 @@ public class AutoManager {
     }
 
     private void processRREQ(MessageAdHoc message) {
+        RREQ rreq = (RREQ) message.getPdu();
+        // Get previous hop
+        int hop = rreq.getHopCount();
+        // Get previous src
+        String originateAddr = message.getHeader().getSenderAddr();
+
+        Log.d(TAG, "Received RREQ from " + originateAddr);
+
+        if (rreq.getDestIpAddress().equals(ownStringUUID)) {
+            Log.d(TAG, ownStringUUID + " is the destination (stop RREQ broadcast)");
+
+            //Update routing table
+            EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
+                    originateAddr, hop, rreq.getOriginSeqNum());
+            if (entry != null) {
+
+                //Generate RREP
+                /*RREP rrep = new RREP(TypeAodv.RREP.getType(), Aodv.INIT_HOP_COUNT, rreq.getOriginIpAddress(),
+                        1, ownUUID.toString(), Aodv.LIFE_TIME);
+
+                try {
+
+                    Log.d(TAG, "Destination reachable via " + entry.getNext());
+
+                    send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName), rrep),
+                            entry.getNext());
+                } catch (IOException | NoConnectionException e) {
+                    e.printStackTrace();
+                }*/
+            }
+        } else {
+            if (aodv.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
+                try {
+                    Log.d(TAG, "Received RREQ from " + rreq.getOriginIpAddress());
+
+                    rreq.incrementHopCount();
+                    message.setPdu(rreq);
+
+                    message.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
+
+                    broadcastMsgExcept(message, originateAddr);
+
+                    //Update routing table
+                    EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
+                            originateAddr, hop, rreq.getOriginSeqNum());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.d(TAG, "Already received this RREQ from " + rreq.getOriginIpAddress());
+            }
+        }
     }
 
     private void processRREP(MessageAdHoc message) {

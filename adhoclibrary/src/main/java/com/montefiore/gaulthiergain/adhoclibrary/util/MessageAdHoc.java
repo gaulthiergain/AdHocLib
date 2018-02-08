@@ -1,5 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.util;
 
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREQ;
+
 import java.io.Serializable;
 
 /**
@@ -29,5 +31,13 @@ public class MessageAdHoc implements Serializable {
                 "header=" + header +
                 ", pdu=" + pdu +
                 '}';
+    }
+
+    public void setPdu(Serializable pdu) {
+        this.pdu = pdu;
+    }
+
+    public void setHeader(Header header) {
+        this.header = header;
     }
 }
