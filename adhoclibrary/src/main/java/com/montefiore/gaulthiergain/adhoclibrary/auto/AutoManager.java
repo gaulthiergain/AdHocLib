@@ -96,7 +96,8 @@ public class AutoManager {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
+                    if (entry.getValue().getDevice().getName() != null &&
+                            entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add not paired" + entry.getValue().getUuid() + " into Hashmap");
                     }

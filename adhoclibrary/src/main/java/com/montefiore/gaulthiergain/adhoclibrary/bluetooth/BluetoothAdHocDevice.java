@@ -38,7 +38,7 @@ public class BluetoothAdHocDevice implements Parcelable {
      * @param rssi   an integer value which represents the rssi of the remote Bluetooth device.
      */
     BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
-        this.uuid = BluetoothUtil.UUID + device.getAddress().replace(":", "");
+        this.uuid = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.rssi = rssi;
         this.device = device;
     }
