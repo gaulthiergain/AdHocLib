@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Aodv;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.EntryRoutingTable;
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREP;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREQ;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
@@ -420,8 +421,8 @@ public class AutoManager {
             if (entry != null) {
 
                 //Generate RREP
-                /*RREP rrep = new RREP(TypeAodv.RREP.getType(), Aodv.INIT_HOP_COUNT, rreq.getOriginIpAddress(),
-                        1, ownUUID.toString(), Aodv.LIFE_TIME);
+                RREP rrep = new RREP(TypeAodv.RREP.getType(), Aodv.INIT_HOP_COUNT, rreq.getOriginIpAddress(),
+                        1, ownStringUUID, Aodv.LIFE_TIME);
 
                 try {
 
@@ -431,7 +432,7 @@ public class AutoManager {
                             entry.getNext());
                 } catch (IOException | NoConnectionException e) {
                     e.printStackTrace();
-                }*/
+                }
             }
         } else {
             if (aodv.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
