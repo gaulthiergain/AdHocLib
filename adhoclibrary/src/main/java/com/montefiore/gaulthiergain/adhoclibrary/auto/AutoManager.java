@@ -498,7 +498,39 @@ public class AutoManager {
     }
 
     private void processData(MessageAdHoc message) {
+        // Check if dest otherwise forward to path
+        Data data = (Data) message.getPdu();
 
+        // Update the connexion
+        autoConnectionActives.updateDataPath(data.getDestIpAddress());
+
+
+        Log.d(TAG, "Data message received from: " + message.getHeader().getSenderAddr());
+
+        if (data.getDestIpAddress().equals(ownStringUUID)) {
+            Log.d(TAG, ownStringUUID + " is the destination (stop data message)");
+            Log.d(TAG, "send DATA-ACK");
+
+            try {
+                String destinationAck = message.getHeader().getSenderAddr();
+                message.setPdu(new Data(destinationAck, "ACK"));
+                message.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
+                send(message, destinationAck);
+            } catch (IOException | NoConnectionException e) {
+                e.printStackTrace();
+            }
+        } else {
+            EntryRoutingTable destNext = aodv.getNextfromDest(data.getDestIpAddress());
+            if (destNext == null) {
+                Log.d(TAG, "No destNext found in the routing Table for " + data.getDestIpAddress());
+            } else {
+                try {
+                    send(message, destNext.getNext());
+                } catch (IOException | NoConnectionException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void processDataAck(MessageAdHoc message) {
