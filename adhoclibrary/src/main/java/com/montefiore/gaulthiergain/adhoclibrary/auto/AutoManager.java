@@ -6,7 +6,9 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.Aodv;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.EntryRoutingTable;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
@@ -42,6 +44,7 @@ public class AutoManager {
     private final String ownName;
     private final String ownMac;
 
+    private final Aodv aodv;
     private final AutoConnectionActives autoConnectionActives;
 
     private BluetoothManager bluetoothManager;
@@ -51,20 +54,24 @@ public class AutoManager {
 
 
     public AutoManager(boolean v, Context context, UUID ownUUID) {
-        this.v = v;
-        this.context = context;
         try {
             this.bluetoothManager = new BluetoothManager(true, context);
         } catch (DeviceException e) {
             e.printStackTrace();
         }
-        this.ownStringUUID = ownUUID.toString();
+
+        this.v = v;
+        this.context = context;
         this.autoConnectionActives = new AutoConnectionActives();
         this.hashMapDevices = new HashMap<>();
+        this.ownStringUUID = ownUUID.toString();
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
+
         this.listenServer(ownUUID);
         this.updateName();
+
+        this.aodv = new Aodv();
     }
 
     private void updateName() {
@@ -331,6 +338,39 @@ public class AutoManager {
     }
 
     private void send(MessageAdHoc messageAdHoc, String uuid) throws IOException, NoConnectionException{
+
+        String remoteDeviceName = hashMapDevices.get(uuid).getDevice().getName();
+        if (autoConnectionActives.getActivesConnections().containsKey(uuid)) {
+            // Destinations directly connected
+            NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(uuid);
+            networkObject.sendObjectStream(messageAdHoc);
+            Log.d(TAG, "Send to " + uuid + " (" + remoteDeviceName + ")");
+        } else if (aodv.containsDest(uuid)) {
+            // Destinations learned from neighbors -> send to next by checking the routing table
+            EntryRoutingTable destNext = aodv.getNextfromDest(uuid);
+            if (destNext == null) {
+                Log.d(TAG, "No destNext found in the routing Table for " + uuid
+                        + " (" + remoteDeviceName + ")");
+            } else {
+                try {
+                    Log.d(TAG, "Routing table contains " + destNext.getNext()
+                            + " (" + remoteDeviceName + ")");
+
+                    // Update the connexion
+                    autoConnectionActives.updateDataPath(uuid);
+
+
+                    send(messageAdHoc, destNext.getNext());
+                } catch (IOException | NoConnectionException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (messageAdHoc.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
+            Log.d(TAG, ">>>>>RERR");
+        } else {
+            //RREQ
+            //TODO startTimerRREQ(uuid, Aodv.RREQ_RETRIES);
+        }
     }
 
     private void processRREQ(MessageAdHoc message) {
