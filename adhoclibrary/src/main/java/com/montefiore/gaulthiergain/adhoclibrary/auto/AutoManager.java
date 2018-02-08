@@ -6,6 +6,8 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClient;
@@ -33,9 +35,12 @@ public class AutoManager {
 
     private final boolean v;
     private final Context context;
-    private final String ownStringUUID;
     private final String TAG = "[AdHoc][AutoManager]";
     private ListenerGUI listenerGUI;
+
+    private final String ownStringUUID;
+    private final String ownName;
+    private final String ownMac;
 
     private final AutoConnectionActives autoConnectionActives;
 
@@ -56,6 +61,8 @@ public class AutoManager {
         this.ownStringUUID = ownUUID.toString();
         this.autoConnectionActives = new AutoConnectionActives();
         this.hashMapDevices = new HashMap<>();
+        this.ownName = BluetoothUtil.getCurrentName();
+        this.ownMac = BluetoothUtil.getCurrentMac(context);
         this.listenServer(ownUUID);
         this.updateName();
     }
@@ -195,8 +202,7 @@ public class AutoManager {
                 autoConnectionActives.addConnection(uuid.toString().toLowerCase(), network);
                 try {
                     bluetoothServiceClient.send(new MessageAdHoc(
-                            new Header("CONNECT", BluetoothUtil.getCurrentMac(context),
-                                    BluetoothUtil.getCurrentName()), ownStringUUID));
+                            new Header("CONNECT", ownMac, ownName), ownStringUUID));
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (NoConnectionException e) {
@@ -310,6 +316,21 @@ public class AutoManager {
             default:
                 Log.e(TAG, "DEFAULT MSG");
         }
+    }
+
+    public void sendMessage(String uuid, String message) {
+
+        Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
+        MessageAdHoc messageAdHoc = new MessageAdHoc(header, new Data(uuid, message));
+
+        try {
+            send(messageAdHoc, uuid);
+        } catch (IOException | NoConnectionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void send(MessageAdHoc messageAdHoc, String uuid) throws IOException, NoConnectionException{
     }
 
     private void processRREQ(MessageAdHoc message) {
