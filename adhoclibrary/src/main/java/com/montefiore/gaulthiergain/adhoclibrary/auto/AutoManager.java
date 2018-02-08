@@ -284,6 +284,7 @@ public class AutoManager {
                 if(listenerGUI != null){
                     listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
                 }
+
             }
         });
         try {
@@ -339,7 +340,11 @@ public class AutoManager {
 
     private void send(MessageAdHoc messageAdHoc, String uuid) throws IOException, NoConnectionException{
 
-        String remoteDeviceName = hashMapDevices.get(uuid).getDevice().getName();
+        String remoteDeviceName = "";
+        if(hashMapDevices.containsKey(uuid)){
+            remoteDeviceName = hashMapDevices.get(uuid).getDevice().getName();
+        }
+
         if (autoConnectionActives.getActivesConnections().containsKey(uuid)) {
             // Destinations directly connected
             NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(uuid);
