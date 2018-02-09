@@ -10,11 +10,13 @@ public enum TypeAodv {
     /**
      * Represents the different types used in AODV protocol
      */
-    DATA(0, "DATA", "Data"),
     RREQ(1, "RREQ", "Route Request"),
     RREP(2, "RREP", "Route Reply"),
     RERR(3, "RERR", "Route Error"),
-    RREP_ACK(4, "RREP_ACK", "Route Reply Acknowledgment");
+    RREP_ACK(4, "RREP_ACK", "Route Reply Acknowledgment"),
+
+    DATA(8, "DATA", "Data"),
+    DATA_ACK(9, "DATA_ACK", "Data Acknowledgment");
 
     private final int type;
     private final String code;

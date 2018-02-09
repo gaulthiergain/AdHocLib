@@ -356,14 +356,14 @@ public class AutoManager {
             case "DATA_ACK":
                 processDataAck(message);
                 break;
-
             default:
-                if (v) Log.e(TAG, "DEFAULT MSG");
+                if (v) Log.e(TAG, "Default Message");
         }
     }
 
     public void sendMessage(String address, Serializable serializable) throws IOException, NoConnectionException {
 
+        // Create MessageAdHoc object
         Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
         MessageAdHoc msg = new MessageAdHoc(header, new Data(address, serializable));
 
@@ -455,14 +455,15 @@ public class AutoManager {
                 try {
                     if (v) Log.d(TAG, "Received RREQ from " + rreq.getOriginIpAddress());
 
+                    // Update PDU and Header
                     rreq.incrementHopCount();
                     msg.setPdu(rreq);
-
                     msg.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
 
+                    // Broadcast message to all directly connected devices
                     broadcastMsgExcept(msg, originateAddr);
 
-                    //Update routing table
+                    // Update routing table
                     EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
                             originateAddr, hop, rreq.getOriginSeqNum());
 
@@ -530,8 +531,8 @@ public class AutoManager {
 
             // Update PDU and Header
             String destinationAck = msg.getHeader().getSenderAddr();
-            msg.setPdu(new Data(destinationAck, "ACK"));
-            msg.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
+            msg.setPdu(new Data(destinationAck, TypeAodv.DATA_ACK.getCode()));
+            msg.setHeader(new Header(TypeAodv.DATA_ACK.getCode(), ownStringUUID, ownName));
 
             // Send message to the destination
             send(msg, destinationAck);
@@ -566,7 +567,7 @@ public class AutoManager {
             EntryRoutingTable destNext = aodv.getNextfromDest(dataAck.getDestIpAddress());
             if (destNext == null) {
                 if (v)
-                    Log.d(TAG, "No  destNext found in the routing Table for " +
+                    Log.d(TAG, "No destNext found in the routing Table for " +
                             dataAck.getDestIpAddress());
             } else {
                 if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
