@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.aodv.Aodv;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
@@ -26,10 +25,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 public class AutoManager {
@@ -194,7 +190,7 @@ public class AutoManager {
                 // Get the remote UUID
                 String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
 
-                aodvManager.getRemoteConnections(remoteUuid);
+                aodvManager.removeRemoteConnection(remoteUuid);
             }
 
             @Override
@@ -268,7 +264,7 @@ public class AutoManager {
                         }
                     }
 
-                    aodvManager.getRemoteConnections(remoteUuid);
+                    aodvManager.removeRemoteConnection(remoteUuid);
                 } else {
                     if (v) Log.e(TAG, "onConnectionClosed >>> Not Found");
                 }
