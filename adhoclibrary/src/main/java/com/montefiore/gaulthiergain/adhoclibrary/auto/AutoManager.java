@@ -37,7 +37,6 @@ public class AutoManager {
     private final static int LOW = 24;
     private final static int END = 36;
 
-    private final static int DURATION = 10;
     private final static int NB_THREAD = 8;
     private final static int ATTEMPTS = 3;
 
@@ -86,25 +85,20 @@ public class AutoManager {
         //bluetoothManager.updateDeviceName(Code.ID_APP );
     }
 
-    public void discovery() {
-        try {
-            bluetoothManager = new BluetoothManager(true, context);
-        } catch (DeviceException e) {
-            e.printStackTrace();
-        }
+    public void discovery(int duration) throws DeviceException, BluetoothBadDuration {
 
+        // Create instance of Bluetooth Manager
+        bluetoothManager = new BluetoothManager(true, context);
+
+        // Check if Bluetooth is enabled
         if (!bluetoothManager.isEnabled()) {
 
-            // Enable bluetooth and enable the discovery
-            try {
-                bluetoothManager.enable();
-                bluetoothManager.enableDiscovery(DURATION);
-            } catch (BluetoothBadDuration bluetoothBadDuration) {
-                bluetoothBadDuration.printStackTrace();
-            }
+            // If not, enable bluetooth and enable the discovery
+            bluetoothManager.enable();
+            bluetoothManager.enableDiscovery(duration);
         }
 
-        // Paired devices
+        // Add paired devices into the hashMapDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
             if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                 hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
@@ -113,38 +107,48 @@ public class AutoManager {
             }
         }
 
-        // Start Discovery
+        // Start the discovery process
         bluetoothManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName() != null &&
                             entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v)
-                            Log.d(TAG, "Add not paired" + entry.getValue().getShortUuid() + " into Hashmap");
+                            Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid() + " into Hashmap");
                     }
                 }
+                // Stop the discovery process
                 bluetoothManager.unregisterDiscovery();
+
+                // Execute onDiscoveryCompleted GUI
                 if (listenerGUI != null) {
-                    // Listener on GUI
                     listenerGUI.onDiscoveryCompleted(hashMapBluetoothDevice);
                 }
             }
 
             @Override
             public void onDiscoveryStarted() {
-
+                // Execute onDiscoveryCompleted GUI
+                if (listenerGUI != null) {
+                    listenerGUI.onDiscoveryStarted();
+                }
             }
 
             @Override
             public void onDeviceFound(BluetoothDevice device) {
-                Toast.makeText(context, "New devices found: " + device.getName(), Toast.LENGTH_SHORT).show();
+                if (listenerGUI != null) {
+                    listenerGUI.onDeviceFound(device);
+                }
             }
 
             @Override
             public void onScanModeChange(int currentMode, int oldMode) {
-
+                if (listenerGUI != null) {
+                    listenerGUI.onScanModeChange(currentMode, oldMode);
+                }
             }
         });
     }
