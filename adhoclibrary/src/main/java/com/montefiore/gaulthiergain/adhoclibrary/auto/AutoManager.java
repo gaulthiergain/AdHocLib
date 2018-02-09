@@ -33,6 +33,10 @@ import java.util.UUID;
 
 public class AutoManager {
 
+    //Helper
+    private final static int LOW = 24;
+    private final static int END = 36;
+
     private final static int DURATION = 10;
     private final static int NB_THREAD = 8;
     private final static int ATTEMPTS = 3;
@@ -66,7 +70,8 @@ public class AutoManager {
         this.context = context;
         this.autoConnectionActives = new AutoConnectionActives();
         this.hashMapDevices = new HashMap<>();
-        this.ownStringUUID = ownUUID.toString();
+        // Take only the last part (24-36) to optimize the process
+        this.ownStringUUID = ownUUID.toString().substring(LOW, END);
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
 
@@ -102,8 +107,9 @@ public class AutoManager {
         // Paired devices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
             if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
-                hashMapDevices.put(entry.getValue().getUuid(), entry.getValue());
-                if (v) Log.d(TAG, "Add paired " + entry.getValue().getUuid() + " into Hashmap");
+                hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
+                if (v)
+                    Log.d(TAG, "Add paired " + entry.getValue().getShortUuid() + " into Hashmap");
             }
         }
 
@@ -114,9 +120,9 @@ public class AutoManager {
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName() != null &&
                             entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
-                        hashMapDevices.put(entry.getValue().getUuid(), entry.getValue());
+                        hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v)
-                            Log.d(TAG, "Add not paired" + entry.getValue().getUuid() + " into Hashmap");
+                            Log.d(TAG, "Add not paired" + entry.getValue().getShortUuid() + " into Hashmap");
                     }
                 }
                 bluetoothManager.unregisterDiscovery();
@@ -146,7 +152,7 @@ public class AutoManager {
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
 
-            if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getUuid())) {
+            if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
                 //TODO remove
                 if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
 
@@ -154,7 +160,7 @@ public class AutoManager {
                     _connect(entry.getValue());
                 }
             } else {
-                if (v) Log.d(TAG, entry.getValue().getUuid() + " is already connected");
+                if (v) Log.d(TAG, entry.getValue().getShortUuid() + " is already connected");
             }
         }
     }
@@ -214,7 +220,8 @@ public class AutoManager {
         bluetoothServiceClient.setListenerAutoConnect(new ListenerAutoConnect() {
             @Override
             public void connected(UUID uuid, NetworkObject network) {
-                autoConnectionActives.addConnection(uuid.toString().toLowerCase(), network);
+                autoConnectionActives.addConnection(uuid.toString().substring(LOW, END).toLowerCase()
+                        , network);
                 try {
                     bluetoothServiceClient.send(new MessageAdHoc(
                             new Header("CONNECT", ownMac, ownName), ownStringUUID));
@@ -333,13 +340,13 @@ public class AutoManager {
         }
     }
 
-    public void sendMessage(String uuid, String message) {
+    public void sendMessage(String remoteUuidString, String message) {
 
         Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
-        MessageAdHoc messageAdHoc = new MessageAdHoc(header, new Data(uuid, message));
+        MessageAdHoc messageAdHoc = new MessageAdHoc(header, new Data(remoteUuidString, message));
 
         try {
-            send(messageAdHoc, uuid);
+            send(messageAdHoc, remoteUuidString);
         } catch (IOException | NoConnectionException e) {
             e.printStackTrace();
         }
@@ -548,7 +555,8 @@ public class AutoManager {
         } else {
             EntryRoutingTable destNext = aodv.getNextfromDest(dataAck.getDestIpAddress());
             if (destNext == null) {
-                if (v) Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
+                if (v)
+                    Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
             } else {
                 // Send message to the next destination
                 try {

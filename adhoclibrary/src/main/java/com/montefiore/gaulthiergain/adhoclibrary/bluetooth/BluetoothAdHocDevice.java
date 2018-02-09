@@ -145,5 +145,5 @@ public class BluetoothAdHocDevice implements Parcelable {
     public String toString() {
         return device.getAddress() + " - " + device.getName();
     }
-    
+
 }
