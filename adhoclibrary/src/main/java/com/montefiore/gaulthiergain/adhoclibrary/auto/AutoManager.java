@@ -148,7 +148,7 @@ public class AutoManager {
 
             if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getUuid())) {
                 //TODO remove
-                if (ownName.equals("#eO91#Huawei") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
+                if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
 
                 } else {
                     _connect(entry.getValue());
@@ -534,21 +534,23 @@ public class AutoManager {
     }
 
     private void processDataAck(MessageAdHoc message) {
-        // Check if dest otherwise forward to path
+
+        // Get the ACK
         Data dataAck = (Data) message.getPdu();
 
-        // Update the connexion
+        // Update the data path
         autoConnectionActives.updateDataPath(dataAck.getDestIpAddress());
 
-        Log.d(TAG, "DataAck message received from: " + message.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "DataAck message received from: " + message.getHeader().getSenderAddr());
 
         if (dataAck.getDestIpAddress().equals(ownStringUUID)) {
-            Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
+            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
         } else {
             EntryRoutingTable destNext = aodv.getNextfromDest(dataAck.getDestIpAddress());
             if (destNext == null) {
-                Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
+                if (v) Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
             } else {
+                // Send message to the next destination
                 try {
                     send(message, destNext.getNext());
                 } catch (IOException | NoConnectionException e) {
