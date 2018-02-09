@@ -374,18 +374,23 @@ public class AodvManager {
     public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException {
         switch (message.getHeader().getType()) {
             case "RREP":
+                if (listenerAodv != null) listenerAodv.receivedRREP(message);
                 processRREP(message);
                 break;
             case "RREQ":
+                if (listenerAodv != null) listenerAodv.receivedRREQ(message);
                 processRREQ(message);
                 break;
             case "RERR":
+                if (listenerAodv != null) listenerAodv.receivedRERR(message);
                 processRERR(message);
                 break;
             case "DATA":
+                if (listenerAodv != null) listenerAodv.receivedDATA(message);
                 processData(message);
                 break;
             case "DATA_ACK":
+                if (listenerAodv != null) listenerAodv.receivedDATA_ACK(message);
                 processDataAck(message);
                 break;
             default:
