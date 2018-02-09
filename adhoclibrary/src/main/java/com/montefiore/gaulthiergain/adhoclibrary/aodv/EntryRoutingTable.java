@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
-class EntryRoutingTable {
+public class EntryRoutingTable {
     private final String destIpAddress;
     private final String next;
     private final int hop;

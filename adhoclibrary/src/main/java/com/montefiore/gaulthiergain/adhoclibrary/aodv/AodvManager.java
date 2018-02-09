@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.auto.AutoConnectionActives;
+import com.montefiore.gaulthiergain.adhoclibrary.auto.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -24,9 +25,10 @@ public class AodvManager {
     private final String ownStringUUID;
     private final Timer timerRoutingTable;
     private final String TAG = "[AdHoc][AodvManager]";
+    private final ListenerAodv listenerAodv;
     private final AutoConnectionActives autoConnectionActives;
 
-    public AodvManager(boolean v, String ownStringUUID, String ownName) {
+    public AodvManager(boolean v, String ownStringUUID, String ownName, ListenerAodv listenerAodv) {
         this.v = v;
         this.autoConnectionActives = new AutoConnectionActives();
         this.timerRoutingTable = new Timer();
@@ -34,6 +36,7 @@ public class AodvManager {
         this.aodvHelper = new AodvHelper(v);
         this.ownStringUUID = ownStringUUID;
         this.ownName = ownName;
+        this.listenerAodv = listenerAodv;
     }
 
     public void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {

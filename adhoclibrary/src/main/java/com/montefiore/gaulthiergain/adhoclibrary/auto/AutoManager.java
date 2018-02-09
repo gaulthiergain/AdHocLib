@@ -40,6 +40,7 @@ public class AutoManager {
     private final boolean v;
     private final Context context;
     private final String TAG = "[AdHoc][AutoManager]";
+    private ListenerAodv listenerAodv;
     private ListenerDiscoveryGUI listenerDiscoveryGUI;
 
     private final String ownStringUUID;
@@ -55,7 +56,8 @@ public class AutoManager {
     private BluetoothServiceServer bluetoothServiceServer;
 
 
-    public AutoManager(boolean v, Context context, UUID ownUUID) throws IOException, DeviceException {
+    public AutoManager(boolean v, Context context, UUID ownUUID, ListenerAodv listenerAodv)
+            throws IOException, DeviceException {
 
         this.bluetoothManager = new BluetoothManager(true, context);
         this.v = v;
@@ -66,7 +68,7 @@ public class AutoManager {
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
         this.listenServer(ownUUID); // Listen on server threads
-        this.aodvManager = new AodvManager(v, ownStringUUID, ownName);
+        this.aodvManager = new AodvManager(v, ownStringUUID, ownName, listenerAodv);
     }
 
     private void updateName() {
