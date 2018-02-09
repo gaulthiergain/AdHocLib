@@ -7,7 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothAdHocDevice;
 import java.util.HashMap;
 
 
-public interface ListenerGUI {
+public interface ListenerDiscoveryGUI {
 
     void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice);
 

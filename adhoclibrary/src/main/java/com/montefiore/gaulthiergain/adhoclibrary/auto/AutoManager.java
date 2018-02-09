@@ -31,16 +31,16 @@ import java.util.UUID;
 public class AutoManager {
 
     //Helper
+    public static final String ID_APP = "#e091#";
     private final static int LOW = 24;
     private final static int END = 36;
-
     private final static int NB_THREAD = 8;
     private final static int ATTEMPTS = 3;
 
     private final boolean v;
     private final Context context;
     private final String TAG = "[AdHoc][AutoManager]";
-    private ListenerGUI listenerGUI;
+    private ListenerDiscoveryGUI listenerDiscoveryGUI;
 
     private final String ownStringUUID;
     private final String ownName;
@@ -89,7 +89,7 @@ public class AutoManager {
 
         // Add paired devices into the hashMapDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
-            if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
+            if (entry.getValue().getDevice().getName().contains(AutoManager.ID_APP)) {
                 hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
                         + " into hashMapDevices");
@@ -103,7 +103,7 @@ public class AutoManager {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName() != null &&
-                            entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
+                            entry.getValue().getDevice().getName().contains(AutoManager.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into hashMapDevices");
@@ -113,32 +113,32 @@ public class AutoManager {
                 bluetoothManager.unregisterDiscovery();
 
                 // Execute onDiscoveryCompleted in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onDiscoveryCompleted(hashMapBluetoothDevice);
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onDiscoveryCompleted(hashMapBluetoothDevice);
                 }
             }
 
             @Override
             public void onDiscoveryStarted() {
                 // Execute onDiscoveryStarted in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onDiscoveryStarted();
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onDiscoveryStarted();
                 }
             }
 
             @Override
             public void onDeviceFound(BluetoothDevice device) {
                 // Execute onDeviceFound in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onDeviceFound(device);
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onDeviceFound(device);
                 }
             }
 
             @Override
             public void onScanModeChange(int currentMode, int oldMode) {
                 // Execute onScanModeChange in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onScanModeChange(currentMode, oldMode);
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onScanModeChange(currentMode, oldMode);
                 }
             }
         });
@@ -198,8 +198,8 @@ public class AutoManager {
                 if (v) Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
 
                 // Execute onConnection in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
                 }
             }
         }, true, true, ATTEMPTS, bluetoothAdHocDevice);
@@ -275,8 +275,8 @@ public class AutoManager {
                 if (v) Log.d(TAG, "Connected to client: " + deviceAddress);
 
                 // Execute onConnection in the GUI
-                if (listenerGUI != null) {
-                    listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
+                if (listenerDiscoveryGUI != null) {
+                    listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
                 }
 
             }
@@ -314,7 +314,7 @@ public class AutoManager {
         aodvManager.send(msg, address);
     }
 
-    public void setListenerGUI(ListenerGUI listenerGUI) {
-        this.listenerGUI = listenerGUI;
+    public void setListenerDiscoveryGUI(ListenerDiscoveryGUI listenerDiscoveryGUI) {
+        this.listenerDiscoveryGUI = listenerDiscoveryGUI;
     }
 }
