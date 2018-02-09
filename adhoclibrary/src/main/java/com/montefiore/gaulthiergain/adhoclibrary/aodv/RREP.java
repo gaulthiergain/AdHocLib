@@ -25,9 +25,9 @@ public class RREP implements Serializable {
         return "RREP{" +
                 "type=" + type +
                 ", hopCount=" + hopCount +
-                ", destIpAddress='" + destIpAddress.substring(24, 36) + '\'' +
+                ", destIpAddress='" + destIpAddress + '\'' +
                 ", destSeqNum=" + destSeqNum +
-                ", originIpAddress='" + originIpAddress.substring(24, 36) + '\'' +
+                ", originIpAddress='" + originIpAddress + '\'' +
                 ", lifetime=" + lifetime +
                 '}';
     }
