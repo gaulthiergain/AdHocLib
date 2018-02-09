@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class AutoManager {
@@ -396,12 +398,7 @@ public class AutoManager {
             if (v) Log.d(TAG, ">>>>>RERR");
             // TODO change message displayed here
         } else {
-            //RREQ
-            //TODO startTimerRREQ(uuid, Aodv.RREQ_RETRIES);
-            if (v) Log.d(TAG, "No connection to " + address + "-> send RREQ message");
-            broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
-                    new RREQ(TypeAodv.RREQ.getType(), Aodv.INIT_HOP_COUNT, aodv.getIncrementRreqId(), address,
-                            1, ownStringUUID, 1)));
+            startTimerRREQ(address, Aodv.RREQ_RETRIES);
         }
     }
 
@@ -575,6 +572,42 @@ public class AutoManager {
                 send(msg, destNext.getNext());
             }
         }
+    }
+
+    private void startTimerRREQ(final String address, final int retry) throws IOException {
+
+        // No destination was found, send RREQ request (with timer)
+        Log.d(TAG, "No connection to " + address + "-> send RREQ message");
+
+        // Broadcast message to all directly connected devices
+        broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
+                new RREQ(TypeAodv.RREQ.getType(), Aodv.INIT_HOP_COUNT, aodv.getIncrementRreqId(), address,
+                        1, ownStringUUID, 1)));
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                EntryRoutingTable entry = aodv.getNextfromDest(address);
+                if (entry != null) {
+                    //test seq num here todo
+                } else {
+                    if (retry == 0) {
+                        if (v) Log.d(TAG, "Expired time: no RREP received for " + address);
+                        //todo event here
+                    } else {
+                        if (v) Log.d(TAG, "Expired time: no RREP received for " + address +
+                                " Retry: " + retry);
+
+                        try {
+                            startTimerRREQ(address, retry - 1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }, Aodv.NET_TRANVERSAL_TIME);
     }
 
     public void setListenerGUI(ListenerGUI listenerGUI) {
