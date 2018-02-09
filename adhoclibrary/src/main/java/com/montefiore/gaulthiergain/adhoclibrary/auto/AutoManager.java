@@ -4,11 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Aodv;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.Data;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.EntryRoutingTable;
+import com.montefiore.gaulthiergain.adhoclibrary.aodv.RERR;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREP;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREQ;
 import com.montefiore.gaulthiergain.adhoclibrary.aodv.TypeAodv;
@@ -198,25 +198,34 @@ public class AutoManager {
 
                 if (v) Log.d(TAG, "Link broken with " + deviceAddress);
 
-                //remove remote connections
-                /*
+                // Get the remote UUID
+                String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
+
+                // Remove remote connections
                 if (autoConnectionActives.getActivesConnections().containsKey(remoteUuid)) {
                     if (v) Log.d(TAG, "Remove active connection with " + remoteUuid);
                     NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(remoteUuid);
                     autoConnectionActives.getActivesConnections().remove(remoteUuid);
                     networkObject.closeConnection();
-                    networkObject = null;
                 }
 
+                // Remote entry from routing table
                 if (aodv.getRoutingTable().containsDest(remoteUuid)) {
                     if (v) Log.d(TAG, "Remove " + remoteUuid + " entry from RIB");
                     aodv.getRoutingTable().removeEntry(remoteUuid);
                 }
 
+                // Send RRER
                 if (aodv.getRoutingTable().getRoutingTable().size() > 0) {
                     if (v) Log.d(TAG, "Send RRER ");
-                    sendRRER(remoteUuid);
-                }*/
+                    try {
+                        sendRRER(remoteUuid);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (NoConnectionException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
@@ -297,15 +306,21 @@ public class AutoManager {
                         autoConnectionActives.getActivesConnections().remove(remoteUuid);
                     }
 
-                    /*if (aodv.getRoutingTable().containsDest(remoteUuid)) {
-                        Log.traceAodv(TAG, "Remote " + remoteUuid.substring(LOW, END) + " from RIB");
+                    if (aodv.getRoutingTable().containsDest(remoteUuid)) {
+                        if (v) Log.d(TAG, "Remote " + remoteUuid + " from RIB");
                         aodv.getRoutingTable().removeEntry(remoteUuid);
                     }
 
                     if (aodv.getRoutingTable().getRoutingTable().size() > 0) {
-                        Log.traceAodv(TAG, "Send RRER ");
-                        sendRRER(remoteUuid);
-                    }*/
+                        if (v) Log.d(TAG, "Send RRER ");
+                        try {
+                            sendRRER(remoteUuid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (NoConnectionException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     networkObject.closeConnection();
                     networkObject = null;
@@ -450,7 +465,6 @@ public class AutoManager {
         } else {
             if (aodv.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
                 try {
-                    if (v) Log.d(TAG, "Received RREQ from " + rreq.getOriginIpAddress());
 
                     // Update PDU and Header
                     rreq.incrementHopCount();
@@ -608,6 +622,27 @@ public class AutoManager {
                 }
             }
         }, Aodv.NET_TRANVERSAL_TIME);
+    }
+
+    private void sendRRER(String remoteUuid) throws IOException, NoConnectionException {
+
+        if (aodv.getRoutingTable().containsNext(remoteUuid)) {
+            String dest = aodv.getRoutingTable().getDestFromNext(remoteUuid);
+
+            if (dest.equals(ownStringUUID)) {
+                if (v) Log.d(TAG, "RERR received on the destination (stop forward)");
+            } else {
+                // Remove the destination from Routing table
+                aodv.getRoutingTable().removeEntry(dest);
+                // Send RERR message
+                RERR rrer = new RERR(TypeAodv.RERR.getType(), 0, dest, 1);
+                for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
+                    send(new MessageAdHoc(
+                                    new Header(TypeAodv.RERR.getCode(), ownStringUUID, ownName), rrer),
+                            entry.getKey());
+                }
+            }
+        }
     }
 
     public void setListenerGUI(ListenerGUI listenerGUI) {
