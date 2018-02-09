@@ -172,7 +172,13 @@ public class AutoManager {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(true, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
-                processMsgReceived(message);
+                try {
+                    processMsgReceived(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -249,7 +255,13 @@ public class AutoManager {
         bluetoothServiceServer = new BluetoothServiceServer(true, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
-                processMsgReceived(message);
+                try {
+                    processMsgReceived(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -319,7 +331,7 @@ public class AutoManager {
 
     }
 
-    private void processMsgReceived(MessageAdHoc message) {
+    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException {
         Log.d(TAG, "Message received: " + message.getPdu().toString());
         switch (message.getHeader().getType()) {
             case "CONNECT":
@@ -409,12 +421,13 @@ public class AutoManager {
         }
     }
 
-    private void processRREQ(MessageAdHoc msg) {
+    private void processRREQ(MessageAdHoc msg) throws IOException, NoConnectionException {
 
+        // Get the RREQ message
         RREQ rreq = (RREQ) msg.getPdu();
-        // Get previous hop
+
+        // Get previous hop and previous source address
         int hop = rreq.getHopCount();
-        // Get previous src
         String originateAddr = msg.getHeader().getSenderAddr();
 
         if (v) Log.d(TAG, "Received RREQ from " + originateAddr);
@@ -422,23 +435,20 @@ public class AutoManager {
         if (rreq.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop RREQ broadcast)");
 
-            //Update routing table
+            // Update routing table
             EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
                     originateAddr, hop, rreq.getOriginSeqNum());
             if (entry != null) {
 
-                //Generate RREP
+                // Generate RREP
                 RREP rrep = new RREP(TypeAodv.RREP.getType(), Aodv.INIT_HOP_COUNT, rreq.getOriginIpAddress(),
                         1, ownStringUUID, Aodv.LIFE_TIME);
 
-                try {
-                    if (v) Log.d(TAG, "Destination reachable via " + entry.getNext());
+                if (v) Log.d(TAG, "Destination reachable via " + entry.getNext());
 
-                    send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName), rrep),
-                            entry.getNext());
-                } catch (IOException | NoConnectionException e) {
-                    e.printStackTrace();
-                }
+                // Send message to the next destination
+                send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName), rrep),
+                        entry.getNext());
             }
         } else {
             if (aodv.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
@@ -465,105 +475,103 @@ public class AutoManager {
         }
     }
 
-    private void processRREP(MessageAdHoc msg) {
-        RREP rrepRcv = (RREP) msg.getPdu();
-        // Get previous hop
-        int hopRcv = rrepRcv.getHopCount();
-        // Get previous src
+    private void processRREP(MessageAdHoc msg) throws IOException, NoConnectionException {
+
+        // Get the RREP message
+        RREP rrep = (RREP) msg.getPdu();
+
+        // Get previous hop and previous source address
+        int hopRcv = rrep.getHopCount();
         String originateAddrRcv = msg.getHeader().getSenderAddr();
 
         if (v) Log.d(TAG, "Received RREP from " + originateAddrRcv);
-        if (rrepRcv.getDestIpAddress().equals(ownStringUUID)) {
+
+        if (rrep.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop RREP)");
             //todo boolean with timer to manage the LIFE TIME of the entry
         } else {
-            //Forward message depending the next entry on the routing table
-            EntryRoutingTable destNext = aodv.getNextfromDest(rrepRcv.getDestIpAddress());
+            // Forward the RREP message to the destination by checking the routing table
+            EntryRoutingTable destNext = aodv.getNextfromDest(rrep.getDestIpAddress());
             if (destNext == null) {
                 if (v) Log.d(TAG, "No destNext found in the routing Table for "
-                        + rrepRcv.getDestIpAddress());
+                        + rrep.getDestIpAddress());
             } else {
                 if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
-                try {
-                    rrepRcv.incrementHopCount();
-                    send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName)
-                            , rrepRcv), destNext.getNext());
-                } catch (IOException | NoConnectionException e) {
-                    e.printStackTrace();
-                }
+                // Increment HopCount and send message to the next destination
+                rrep.incrementHopCount();
+                send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName)
+                        , rrep), destNext.getNext());
+
             }
         }
 
-        //Update routing table
-        EntryRoutingTable entryRRep = aodv.addEntryRoutingTable(rrepRcv.getOriginIpAddress(),
-                originateAddrRcv, hopRcv, rrepRcv.getDestSeqNum());
+        // Update routing table
+        EntryRoutingTable entryRRep = aodv.addEntryRoutingTable(rrep.getOriginIpAddress(),
+                originateAddrRcv, hopRcv, rrep.getDestSeqNum());
     }
 
     private void processRERR(MessageAdHoc msg) {
 
     }
 
-    private void processData(MessageAdHoc msg) {
-        // Check if dest otherwise forward to path
+    private void processData(MessageAdHoc msg) throws IOException, NoConnectionException {
+
+        // Get the DATA message
         Data data = (Data) msg.getPdu();
 
-        // Update the connexion
+        // Update the data path
         autoConnectionActives.updateDataPath(data.getDestIpAddress());
-
 
         if (v) Log.d(TAG, "Data message received from: " + msg.getHeader().getSenderAddr());
 
         if (data.getDestIpAddress().equals(ownStringUUID)) {
-            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data message)");
-            if (v) Log.d(TAG, "send DATA-ACK");
+            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop DATA message " +
+                    "and send ACK)");
 
-            try {
-                String destinationAck = msg.getHeader().getSenderAddr();
-                msg.setPdu(new Data(destinationAck, "ACK"));
-                msg.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
-                send(msg, destinationAck);
-            } catch (IOException | NoConnectionException e) {
-                e.printStackTrace();
-            }
+            // Update PDU and Header
+            String destinationAck = msg.getHeader().getSenderAddr();
+            msg.setPdu(new Data(destinationAck, "ACK"));
+            msg.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
+
+            // Send message to the destination
+            send(msg, destinationAck);
         } else {
+            // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodv.getNextfromDest(data.getDestIpAddress());
             if (destNext == null) {
-                if (v)
-                    Log.d(TAG, "No destNext found in the routing Table for " + data.getDestIpAddress());
+                if (v) Log.d(TAG, "No destNext found in the routing Table for " +
+                        data.getDestIpAddress());
             } else {
-                try {
-                    send(msg, destNext.getNext());
-                } catch (IOException | NoConnectionException e) {
-                    e.printStackTrace();
-                }
+                if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
+                // Send message to the next destination
+                send(msg, destNext.getNext());
             }
         }
     }
 
-    private void processDataAck(MessageAdHoc msg) {
+    private void processDataAck(MessageAdHoc msg) throws IOException, NoConnectionException {
 
-        // Get the ACK
+        // Get the ACK message
         Data dataAck = (Data) msg.getPdu();
 
         // Update the data path
         autoConnectionActives.updateDataPath(dataAck.getDestIpAddress());
 
-        if (v) Log.d(TAG, "DataAck message received from: " + msg.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "ACK message received from: " + msg.getHeader().getSenderAddr());
 
         if (dataAck.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
         } else {
+            // Forward the ACK message to the destination by checking the routing table
             EntryRoutingTable destNext = aodv.getNextfromDest(dataAck.getDestIpAddress());
             if (destNext == null) {
                 if (v)
-                    Log.d(TAG, "No  destNext found in the routing Table for " + dataAck.getDestIpAddress());
+                    Log.d(TAG, "No  destNext found in the routing Table for " +
+                            dataAck.getDestIpAddress());
             } else {
+                if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
                 // Send message to the next destination
-                try {
-                    send(msg, destNext.getNext());
-                } catch (IOException | NoConnectionException e) {
-                    e.printStackTrace();
-                }
+                send(msg, destNext.getNext());
             }
         }
     }
