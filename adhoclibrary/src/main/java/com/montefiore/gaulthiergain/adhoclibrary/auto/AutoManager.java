@@ -27,6 +27,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,12 +59,9 @@ public class AutoManager {
     private BluetoothServiceServer bluetoothServiceServer;
 
 
-    public AutoManager(boolean v, Context context, UUID ownUUID) {
-        try {
-            this.bluetoothManager = new BluetoothManager(true, context);
-        } catch (DeviceException e) {
-            e.printStackTrace();
-        }
+    public AutoManager(boolean v, Context context, UUID ownUUID) throws IOException, DeviceException {
+
+        this.bluetoothManager = new BluetoothManager(true, context);
 
         this.v = v;
         this.context = context;
@@ -102,8 +100,8 @@ public class AutoManager {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
             if (entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                 hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
-                if (v)
-                    Log.d(TAG, "Add paired " + entry.getValue().getShortUuid() + " into Hashmap");
+                if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
+                        + " into hashMapDevices");
             }
         }
 
@@ -116,14 +114,14 @@ public class AutoManager {
                     if (entry.getValue().getDevice().getName() != null &&
                             entry.getValue().getDevice().getName().contains(Code.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
-                        if (v)
-                            Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid() + " into Hashmap");
+                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
+                                + " into hashMapDevices");
                     }
                 }
-                // Stop the discovery process
+                // Stop and unregister to the discovery process
                 bluetoothManager.unregisterDiscovery();
 
-                // Execute onDiscoveryCompleted GUI
+                // Execute onDiscoveryCompleted in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onDiscoveryCompleted(hashMapBluetoothDevice);
                 }
@@ -131,7 +129,7 @@ public class AutoManager {
 
             @Override
             public void onDiscoveryStarted() {
-                // Execute onDiscoveryCompleted GUI
+                // Execute onDiscoveryStarted in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onDiscoveryStarted();
                 }
@@ -139,6 +137,7 @@ public class AutoManager {
 
             @Override
             public void onDeviceFound(BluetoothDevice device) {
+                // Execute onDeviceFound in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onDeviceFound(device);
                 }
@@ -146,6 +145,7 @@ public class AutoManager {
 
             @Override
             public void onScanModeChange(int currentMode, int oldMode) {
+                // Execute onScanModeChange in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onScanModeChange(currentMode, oldMode);
                 }
@@ -155,7 +155,6 @@ public class AutoManager {
 
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
-
             if (!autoConnectionActives.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
                 //TODO remove
                 if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
@@ -178,23 +177,23 @@ public class AutoManager {
 
             @Override
             public void onMessageSent(MessageAdHoc message) {
-                Log.d(TAG, "Message sent: " + message.getPdu().toString());
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
             }
 
             @Override
             public void onForward(MessageAdHoc message) {
-                Log.d(TAG, "OnForward: " + message.getPdu().toString());
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
             }
 
             @Override
             public void onConnectionClosed(String deviceName, String deviceAddress) {
 
-                Log.d(TAG, "Link broken with " + deviceAddress);
+                if (v) Log.d(TAG, "Link broken with " + deviceAddress);
 
                 //remove remote connections
                 /*
                 if (autoConnectionActives.getActivesConnections().containsKey(remoteUuid)) {
-                    Log.d(TAG, "Remove active connection with " + remoteUuid.substring(LOW, END));
+                    if (v) Log.d(TAG, "Remove active connection with " + remoteUuid);
                     NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(remoteUuid);
                     autoConnectionActives.getActivesConnections().remove(remoteUuid);
                     networkObject.closeConnection();
@@ -202,19 +201,21 @@ public class AutoManager {
                 }
 
                 if (aodv.getRoutingTable().containsDest(remoteUuid)) {
-                    Log.traceAodv(TAG, "Remove " + remoteUuid.substring(LOW, END) + " entry from RIB");
+                    if (v) Log.d(TAG, "Remove " + remoteUuid + " entry from RIB");
                     aodv.getRoutingTable().removeEntry(remoteUuid);
                 }
 
                 if (aodv.getRoutingTable().getRoutingTable().size() > 0) {
-                    Log.traceAodv(TAG, "Send RRER ");
+                    if (v) Log.d(TAG, "Send RRER ");
                     sendRRER(remoteUuid);
                 }*/
             }
 
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-                Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
+                if (v) Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
+
+                // Execute onConnection in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
                 }
@@ -223,19 +224,20 @@ public class AutoManager {
 
         bluetoothServiceClient.setListenerAutoConnect(new ListenerAutoConnect() {
             @Override
-            public void connected(UUID uuid, NetworkObject network) {
+            public void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException {
+
+                // Add the active connection into the autoConnectionActives object
                 autoConnectionActives.addConnection(uuid.toString().substring(LOW, END).toLowerCase()
                         , network);
-                try {
-                    bluetoothServiceClient.send(new MessageAdHoc(
-                            new Header("CONNECT", ownMac, ownName), ownStringUUID));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NoConnectionException e) {
-                    e.printStackTrace();
-                }
+
+                // Send CONNECT message to establish the pairing
+                bluetoothServiceClient.send(new MessageAdHoc(
+                        new Header("CONNECT", ownMac, ownName), ownStringUUID));
+
             }
         });
+
+        // Start the bluetoothServiceClient thread
         new Thread(bluetoothServiceClient).start();
     }
 
@@ -243,7 +245,7 @@ public class AutoManager {
         bluetoothServiceServer.stopListening();
     }
 
-    private void listenServer(UUID ownUUID) {
+    private void listenServer(UUID ownUUID) throws IOException {
         bluetoothServiceServer = new BluetoothServiceServer(true, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -252,29 +254,32 @@ public class AutoManager {
 
             @Override
             public void onMessageSent(MessageAdHoc message) {
-                Log.d(TAG, "Message sent: " + message.getPdu().toString());
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
             }
 
             @Override
             public void onForward(MessageAdHoc message) {
-                Log.d(TAG, "OnForward: " + message.getPdu().toString());
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
             }
 
             @Override
             public void onConnectionClosed(String deviceName, String deviceAddress) {
-                Log.d(TAG, "onConnectionClosed");
+                if (v) Log.d(TAG, "onConnectionClosed");
+
                 String remoteUuid = "";
                 NetworkObject networkObject = bluetoothServiceServer.getActiveConnexion().get(deviceAddress);
                 if (networkObject != null) {
                     for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
                         if (entry.getValue().equals(networkObject)) {
                             remoteUuid = entry.getKey();
-                            Log.d(TAG, "Link broken with " + remoteUuid);
+                            if (v) Log.d(TAG, "Link broken with " + remoteUuid);
+                            break;
                         }
                     }
-                    //remove remote connections
+
+                    // Remove remote connections
                     if (autoConnectionActives.getActivesConnections().containsKey(remoteUuid)) {
-                        Log.d(TAG, "Remote active connection with " + remoteUuid);
+                        if (v) Log.d(TAG, "Remove active connection with " + remoteUuid);
                         autoConnectionActives.getActivesConnections().remove(remoteUuid);
                     }
 
@@ -291,26 +296,27 @@ public class AutoManager {
                     networkObject.closeConnection();
                     networkObject = null;
                 } else {
-                    Log.e(TAG, "onConnectionClosed >>> Not Found");
+                    if (v) Log.e(TAG, "onConnectionClosed >>> Not Found");
                 }
 
             }
 
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-                Log.d(TAG, "Connected to client: " + deviceAddress);
+                if (v) Log.d(TAG, "Connected to client: " + deviceAddress);
+
+                // Execute onConnection in the GUI
                 if (listenerGUI != null) {
                     listenerGUI.onConnection(deviceName, deviceAddress, localAddress);
                 }
 
             }
         });
-        try {
-            bluetoothServiceServer.listen(NB_THREAD, true, "secure",
-                    BluetoothAdapter.getDefaultAdapter(), ownUUID);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        // Start the bluetoothServiceServer listening process
+        bluetoothServiceServer.listen(NB_THREAD, true, "secure",
+                BluetoothAdapter.getDefaultAdapter(), ownUUID);
+
     }
 
     private void processMsgReceived(MessageAdHoc message) {
@@ -319,8 +325,8 @@ public class AutoManager {
             case "CONNECT":
                 NetworkObject networkObject = bluetoothServiceServer.getActiveConnexion().get(message.getHeader().getSenderAddr());
                 if (networkObject != null) {
-                    String remoteUUID = (String) message.getPdu();
-                    autoConnectionActives.addConnection(remoteUUID, networkObject);
+                    // Add the active connection into the autoConnectionActives object
+                    autoConnectionActives.addConnection((String) message.getPdu(), networkObject);
                 }
                 break;
             case "RREP":
@@ -340,92 +346,81 @@ public class AutoManager {
                 break;
 
             default:
-                Log.e(TAG, "DEFAULT MSG");
+                if (v) Log.e(TAG, "DEFAULT MSG");
         }
     }
 
-    public void sendMessage(String remoteUuidString, String message) {
+    public void sendMessage(String address, Serializable serializable) throws IOException, NoConnectionException {
 
         Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
-        MessageAdHoc messageAdHoc = new MessageAdHoc(header, new Data(remoteUuidString, message));
+        MessageAdHoc msg = new MessageAdHoc(header, new Data(address, serializable));
 
-        try {
-            send(messageAdHoc, remoteUuidString);
-        } catch (IOException | NoConnectionException e) {
-            e.printStackTrace();
-        }
+        // Send message to remote device
+        send(msg, address);
     }
 
-    private void send(MessageAdHoc messageAdHoc, String uuidString) throws IOException, NoConnectionException {
+    private void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {
 
-        String remoteDeviceName = "";
-        if (hashMapDevices.containsKey(uuidString)) {
-            remoteDeviceName = hashMapDevices.get(uuidString).getDevice().getName();
-        }
+        if (autoConnectionActives.getActivesConnections().containsKey(address)) {
+            // The destination is directly connected
+            NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(address);
+            networkObject.sendObjectStream(msg);
+            if (v) Log.d(TAG, "Send to " + address);
 
-        if (autoConnectionActives.getActivesConnections().containsKey(uuidString)) {
-            // Destinations directly connected
-            NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(uuidString);
-            networkObject.sendObjectStream(messageAdHoc);
-            Log.d(TAG, "Send to " + uuidString + " (" + remoteDeviceName + ")");
-        } else if (aodv.containsDest(uuidString)) {
-            // Destinations learned from neighbors -> send to next by checking the routing table
-            EntryRoutingTable destNext = aodv.getNextfromDest(uuidString);
+        } else if (aodv.containsDest(address)) {
+            // The destination learned from neighbors -> send to next by checking the routing table
+            EntryRoutingTable destNext = aodv.getNextfromDest(address);
             if (destNext == null) {
-                Log.d(TAG, "No destNext found in the routing Table for " + uuidString
-                        + " (" + remoteDeviceName + ")");
+                if (v) Log.d(TAG, "No destNext found in the routing Table for " + address);
             } else {
-                try {
-                    Log.d(TAG, "Routing table contains " + destNext.getNext()
-                            + " (" + remoteDeviceName + ")");
 
-                    // Update the connexion
-                    autoConnectionActives.updateDataPath(uuidString);
-
-                    send(messageAdHoc, destNext.getNext());
-                } catch (IOException | NoConnectionException e) {
-                    e.printStackTrace();
-                }
+                if (v) Log.d(TAG, "Routing table contains " + destNext.getNext());
+                // Update the connexion
+                autoConnectionActives.updateDataPath(address);
+                // Send message to remote device
+                send(msg, destNext.getNext());
             }
-        } else if (messageAdHoc.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
-            Log.d(TAG, ">>>>>RERR");
+        } else if (msg.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
+            if (v) Log.d(TAG, ">>>>>RERR");
+            // TODO change message displayed here
         } else {
             //RREQ
             //TODO startTimerRREQ(uuid, Aodv.RREQ_RETRIES);
-            Log.d(TAG, "No connection to " + uuidString + "-> send RREQ message");
+            if (v) Log.d(TAG, "No connection to " + address + "-> send RREQ message");
             broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
-                    new RREQ(TypeAodv.RREQ.getType(), Aodv.INIT_HOP_COUNT, aodv.getIncrementRreqId(), uuidString,
+                    new RREQ(TypeAodv.RREQ.getType(), Aodv.INIT_HOP_COUNT, aodv.getIncrementRreqId(), address,
                             1, ownStringUUID, 1)));
         }
     }
 
-    private void broadcastMsg(MessageAdHoc messageAdHoc) throws IOException {
+    private void broadcastMsg(MessageAdHoc msg) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
-            entry.getValue().sendObjectStream(messageAdHoc);
-            Log.d(TAG, "Broadcast Message to " + entry.getKey());
+            entry.getValue().sendObjectStream(msg);
+            if (v) Log.d(TAG, "Broadcast Message to " + entry.getKey());
         }
     }
 
-    private void broadcastMsgExcept(MessageAdHoc messageAdHoc, String address) throws IOException {
+    private void broadcastMsgExcept(MessageAdHoc message, String address) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
             if (!entry.getKey().equals(address)) {
-                entry.getValue().sendObjectStream(messageAdHoc);
-                Log.d(TAG, "Broadcast Message to " + entry.getKey());
+                entry.getValue().sendObjectStream(message);
+                if (v) Log.d(TAG, "Broadcast Message to " + entry.getKey());
             }
         }
     }
 
-    private void processRREQ(MessageAdHoc message) {
-        RREQ rreq = (RREQ) message.getPdu();
+    private void processRREQ(MessageAdHoc msg) {
+
+        RREQ rreq = (RREQ) msg.getPdu();
         // Get previous hop
         int hop = rreq.getHopCount();
         // Get previous src
-        String originateAddr = message.getHeader().getSenderAddr();
+        String originateAddr = msg.getHeader().getSenderAddr();
 
-        Log.d(TAG, "Received RREQ from " + originateAddr);
+        if (v) Log.d(TAG, "Received RREQ from " + originateAddr);
 
         if (rreq.getDestIpAddress().equals(ownStringUUID)) {
-            Log.d(TAG, ownStringUUID + " is the destination (stop RREQ broadcast)");
+            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop RREQ broadcast)");
 
             //Update routing table
             EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
@@ -437,7 +432,7 @@ public class AutoManager {
                         1, ownStringUUID, Aodv.LIFE_TIME);
 
                 try {
-                    Log.d(TAG, "Destination reachable via " + entry.getNext());
+                    if (v) Log.d(TAG, "Destination reachable via " + entry.getNext());
 
                     send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName), rrep),
                             entry.getNext());
@@ -448,14 +443,14 @@ public class AutoManager {
         } else {
             if (aodv.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
                 try {
-                    Log.d(TAG, "Received RREQ from " + rreq.getOriginIpAddress());
+                    if (v) Log.d(TAG, "Received RREQ from " + rreq.getOriginIpAddress());
 
                     rreq.incrementHopCount();
-                    message.setPdu(rreq);
+                    msg.setPdu(rreq);
 
-                    message.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
+                    msg.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
 
-                    broadcastMsgExcept(message, originateAddr);
+                    broadcastMsgExcept(msg, originateAddr);
 
                     //Update routing table
                     EntryRoutingTable entry = aodv.addEntryRoutingTable(rreq.getOriginIpAddress(),
@@ -465,30 +460,30 @@ public class AutoManager {
                     e.printStackTrace();
                 }
             } else {
-                Log.d(TAG, "Already received this RREQ from " + rreq.getOriginIpAddress());
+                if (v) Log.d(TAG, "Already received this RREQ from " + rreq.getOriginIpAddress());
             }
         }
     }
 
-    private void processRREP(MessageAdHoc message) {
-        RREP rrepRcv = (RREP) message.getPdu();
+    private void processRREP(MessageAdHoc msg) {
+        RREP rrepRcv = (RREP) msg.getPdu();
         // Get previous hop
         int hopRcv = rrepRcv.getHopCount();
         // Get previous src
-        String originateAddrRcv = message.getHeader().getSenderAddr();
+        String originateAddrRcv = msg.getHeader().getSenderAddr();
 
-        Log.d(TAG, "Received RREP from " + originateAddrRcv);
+        if (v) Log.d(TAG, "Received RREP from " + originateAddrRcv);
         if (rrepRcv.getDestIpAddress().equals(ownStringUUID)) {
-            Log.d(TAG, ownStringUUID + " is the destination (stop RREP)");
+            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop RREP)");
             //todo boolean with timer to manage the LIFE TIME of the entry
         } else {
             //Forward message depending the next entry on the routing table
             EntryRoutingTable destNext = aodv.getNextfromDest(rrepRcv.getDestIpAddress());
             if (destNext == null) {
-                Log.d(TAG, "No destNext found in the routing Table for "
+                if (v) Log.d(TAG, "No destNext found in the routing Table for "
                         + rrepRcv.getDestIpAddress());
             } else {
-                Log.d(TAG, "Destination reachable via " + destNext.getNext());
+                if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
                 try {
                     rrepRcv.incrementHopCount();
                     send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownStringUUID, ownName)
@@ -504,39 +499,40 @@ public class AutoManager {
                 originateAddrRcv, hopRcv, rrepRcv.getDestSeqNum());
     }
 
-    private void processRERR(MessageAdHoc message) {
+    private void processRERR(MessageAdHoc msg) {
 
     }
 
-    private void processData(MessageAdHoc message) {
+    private void processData(MessageAdHoc msg) {
         // Check if dest otherwise forward to path
-        Data data = (Data) message.getPdu();
+        Data data = (Data) msg.getPdu();
 
         // Update the connexion
         autoConnectionActives.updateDataPath(data.getDestIpAddress());
 
 
-        Log.d(TAG, "Data message received from: " + message.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "Data message received from: " + msg.getHeader().getSenderAddr());
 
         if (data.getDestIpAddress().equals(ownStringUUID)) {
-            Log.d(TAG, ownStringUUID + " is the destination (stop data message)");
-            Log.d(TAG, "send DATA-ACK");
+            if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data message)");
+            if (v) Log.d(TAG, "send DATA-ACK");
 
             try {
-                String destinationAck = message.getHeader().getSenderAddr();
-                message.setPdu(new Data(destinationAck, "ACK"));
-                message.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
-                send(message, destinationAck);
+                String destinationAck = msg.getHeader().getSenderAddr();
+                msg.setPdu(new Data(destinationAck, "ACK"));
+                msg.setHeader(new Header("DATA_ACK", ownStringUUID, ownName));
+                send(msg, destinationAck);
             } catch (IOException | NoConnectionException e) {
                 e.printStackTrace();
             }
         } else {
             EntryRoutingTable destNext = aodv.getNextfromDest(data.getDestIpAddress());
             if (destNext == null) {
-                Log.d(TAG, "No destNext found in the routing Table for " + data.getDestIpAddress());
+                if (v)
+                    Log.d(TAG, "No destNext found in the routing Table for " + data.getDestIpAddress());
             } else {
                 try {
-                    send(message, destNext.getNext());
+                    send(msg, destNext.getNext());
                 } catch (IOException | NoConnectionException e) {
                     e.printStackTrace();
                 }
@@ -544,15 +540,15 @@ public class AutoManager {
         }
     }
 
-    private void processDataAck(MessageAdHoc message) {
+    private void processDataAck(MessageAdHoc msg) {
 
         // Get the ACK
-        Data dataAck = (Data) message.getPdu();
+        Data dataAck = (Data) msg.getPdu();
 
         // Update the data path
         autoConnectionActives.updateDataPath(dataAck.getDestIpAddress());
 
-        if (v) Log.d(TAG, "DataAck message received from: " + message.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "DataAck message received from: " + msg.getHeader().getSenderAddr());
 
         if (dataAck.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
@@ -564,7 +560,7 @@ public class AutoManager {
             } else {
                 // Send message to the next destination
                 try {
-                    send(message, destNext.getNext());
+                    send(msg, destNext.getNext());
                 } catch (IOException | NoConnectionException e) {
                     e.printStackTrace();
                 }
