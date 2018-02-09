@@ -8,11 +8,11 @@ import java.util.Hashtable;
 public class RoutingTable {
     private static final String TAG = "[AdHoc][RoutingTable]";
     private final Hashtable<String, EntryRoutingTable> routingTable;
-    private final HashMap<String, String> nxtDestMapping;
+    private final HashMap<String, String> nextDestMapping;
 
     RoutingTable() {
         this.routingTable = new Hashtable<>();
-        this.nxtDestMapping = new HashMap<>();
+        this.nextDestMapping = new HashMap<>();
     }
 
     boolean addEntry(EntryRoutingTable entry) {
@@ -20,8 +20,8 @@ public class RoutingTable {
         if (!routingTable.containsKey(entry.getDestIpAddress())) {
             Log.d(TAG, "Add new Entry in the RIB " + entry.getDestIpAddress());
             routingTable.put(entry.getDestIpAddress(), entry);
-            //add nxt dest mapping --> for RERR
-            nxtDestMapping.put(entry.getNext(), entry.getDestIpAddress());
+            // Add next destination mapping --> for RERR
+            nextDestMapping.put(entry.getNext(), entry.getDestIpAddress());
             return true;
         }
 
@@ -33,18 +33,18 @@ public class RoutingTable {
             // Add new Entry
             routingTable.put(entry.getDestIpAddress(), entry);
             //add nxt dest mapping --> for RERR
-            nxtDestMapping.put(entry.getNext(), entry.getDestIpAddress());
+            nextDestMapping.put(entry.getNext(), entry.getDestIpAddress());
 
-            Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress().substring(24, 36)
+            Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
                     + " hops: " + existingEntry.getHop()
-                    + " is replaced by " + entry.getDestIpAddress().substring(24, 36)
+                    + " is replaced by " + entry.getDestIpAddress()
                     + " hops: " + entry.getHop());
             return true;
         }
 
-        Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress().substring(24, 36)
+        Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
                 + " hops: " + existingEntry.getHop()
-                + " is NOT replaced by " + entry.getDestIpAddress().substring(24, 36)
+                + " is NOT replaced by " + entry.getDestIpAddress()
                 + " hops: " + entry.getHop());
 
         return false;
@@ -66,11 +66,11 @@ public class RoutingTable {
         return routingTable;
     }
 
-    public boolean containsNxt(String next) {
-        return nxtDestMapping.containsKey(next);
+    public boolean containsNext(String next) {
+        return nextDestMapping.containsKey(next);
     }
 
-    public String getDestFromNxt(String next) {
-        return nxtDestMapping.get(next);
+    public String getDestFromNext(String next) {
+        return nextDestMapping.get(next);
     }
 }
