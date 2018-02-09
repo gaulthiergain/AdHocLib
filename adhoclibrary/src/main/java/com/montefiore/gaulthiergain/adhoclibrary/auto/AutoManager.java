@@ -669,6 +669,35 @@ public class AutoManager {
         }
     }
 
+    private void initTimer() {
+        timerRoutingTable.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                Iterator<Map.Entry<String, EntryRoutingTable>> it = aodv.getRoutingTable().getRoutingTable().entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, EntryRoutingTable> entry = it.next();
+
+                    // Check if data is recently sent/received
+                    if (autoConnectionActives.getActivesDataPath().containsKey(entry.getKey())) {
+                        long lastChanged = autoConnectionActives.getActivesDataPath().get(entry.getKey());
+                        if (System.currentTimeMillis() - lastChanged > Aodv.EXPIRED_TIME) {
+                            Log.d(TAG, "No data on " + entry.getKey() + " since " + Aodv.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                            autoConnectionActives.getActivesDataPath().remove(entry.getKey());
+                            it.remove();
+                        } else {
+                            Log.d(TAG, ">>> data on " + entry.getKey() + " since " + Aodv.EXPIRED_TIME + "ms");
+                        }
+                    } else {
+                        //purge entry in RIB
+                        Log.d(TAG, "No data on " + entry.getKey() + " since " + Aodv.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                        it.remove();
+                    }
+                }
+            }
+        }, Aodv.EXPIRED_TABLE, Aodv.EXPIRED_TABLE);
+    }
+
     public void setListenerGUI(ListenerGUI listenerGUI) {
         this.listenerGUI = listenerGUI;
     }
