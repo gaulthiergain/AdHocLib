@@ -29,6 +29,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,6 +55,7 @@ public class AutoManager {
 
     private final Aodv aodv;
     private final AutoConnectionActives autoConnectionActives;
+    private Timer timerRoutingTable;
 
     private BluetoothManager bluetoothManager;
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
@@ -76,6 +78,9 @@ public class AutoManager {
 
         this.listenServer(ownUUID);
         this.updateName();
+
+        //this.timerRoutingTable = new Timer(); //todo decomment this
+        //this.initTimer();
 
         this.aodv = new Aodv();
     }
@@ -522,8 +527,27 @@ public class AutoManager {
                 originateAddrRcv, hopRcv, rrep.getDestSeqNum());
     }
 
-    private void processRERR(MessageAdHoc msg) {
+    private void processRERR(MessageAdHoc msg) throws IOException {
 
+        // Get the RERR message
+        RERR rerr = (RERR) msg.getPdu();
+
+        // Get previous source address
+        String originateAddr = msg.getHeader().getSenderAddr();
+
+        Log.d(TAG, "Received RERR from " + originateAddr + " -> Node " +
+                rerr.getUnreachableDestIpAddress() + " is unreachable");
+
+        if (rerr.getUnreachableDestIpAddress().equals(ownStringUUID)) {
+            Log.d(TAG, "RERR received on the destination (stop forward)");
+        } else if (aodv.containsDest(rerr.getUnreachableDestIpAddress())) {
+            aodv.getRoutingTable().removeEntry(rerr.getUnreachableDestIpAddress());
+            msg.setHeader(new Header(TypeAodv.RERR.getCode(), ownStringUUID, ownName));
+            // Broadcast message to all directly connected devices
+            broadcastMsgExcept(msg, originateAddr);
+        } else {
+            Log.d(TAG, "Node doesn't contain dest: " + rerr.getUnreachableDestIpAddress());
+        }
     }
 
     private void processData(MessageAdHoc msg) throws IOException, NoConnectionException {
