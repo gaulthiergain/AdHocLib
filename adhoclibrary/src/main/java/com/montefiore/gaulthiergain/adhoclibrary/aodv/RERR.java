@@ -7,13 +7,13 @@ package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
 import java.io.Serializable;
 
-public class RERR implements Serializable {
+class RERR implements Serializable {
     private final int type;
     private int hopCount;
     private final String unreachableDestIpAddress;
     private long unreachableDestSeqNum;
 
-    public RERR(int type, int hopCount, String unreachableDestIpAddress, long unreachableDestSeqNum) {
+    RERR(int type, int hopCount, String unreachableDestIpAddress, long unreachableDestSeqNum) {
         this.type = type;
         this.hopCount = hopCount;
         this.unreachableDestIpAddress = unreachableDestIpAddress;
@@ -30,19 +30,19 @@ public class RERR implements Serializable {
                 '}';
     }
 
-    public int getType() {
+    int getType() {
         return type;
     }
 
-    public int getHopCount() {
+    int getHopCount() {
         return hopCount;
     }
 
-    public String getUnreachableDestIpAddress() {
+    String getUnreachableDestIpAddress() {
         return unreachableDestIpAddress;
     }
 
-    public long getUnreachableDestSeqNum() {
+    long getUnreachableDestSeqNum() {
         return unreachableDestSeqNum;
     }
 }

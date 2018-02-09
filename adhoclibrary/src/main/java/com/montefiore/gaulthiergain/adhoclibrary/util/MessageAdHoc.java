@@ -1,7 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.util;
 
-import com.montefiore.gaulthiergain.adhoclibrary.aodv.RREQ;
-
 import java.io.Serializable;
 
 /**

@@ -2,7 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
 import java.io.Serializable;
 
-public class RREQ implements Serializable {
+class RREQ implements Serializable {
     private final int type;
     private int hopCount;
     private final long rreqId;
@@ -12,8 +12,8 @@ public class RREQ implements Serializable {
     private final long originSeqNum;
     //todo lifetime (increased with retries???)
 
-    public RREQ(int type, int hopCount, long rreqId, String destIpAddress, long destSeqNum, String originIpAddress,
-                long originSeqNum) {
+    RREQ(int type, int hopCount, long rreqId, String destIpAddress, long destSeqNum, String originIpAddress,
+         long originSeqNum) {
         this.type = type;
         this.hopCount = hopCount;
         this.rreqId = rreqId;
@@ -23,31 +23,31 @@ public class RREQ implements Serializable {
         this.originSeqNum = originSeqNum;
     }
 
-    public int getType() {
+    int getType() {
         return type;
     }
 
-    public int getHopCount() {
+    int getHopCount() {
         return hopCount;
     }
 
-    public long getRreqId() {
+    long getRreqId() {
         return rreqId;
     }
 
-    public String getDestIpAddress() {
+    String getDestIpAddress() {
         return destIpAddress;
     }
 
-    public long getDestSeqNum() {
+    long getDestSeqNum() {
         return destSeqNum;
     }
 
-    public String getOriginIpAddress() {
+    String getOriginIpAddress() {
         return originIpAddress;
     }
 
-    public long getOriginSeqNum() {
+    long getOriginSeqNum() {
         return originSeqNum;
     }
 
@@ -64,7 +64,7 @@ public class RREQ implements Serializable {
                 '}';
     }
 
-    public void incrementHopCount() {
+    void incrementHopCount() {
         this.hopCount++;
     }
 }

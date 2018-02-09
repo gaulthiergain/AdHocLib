@@ -15,12 +15,16 @@ class AodvHelper {
     final static int EXPIRED_TABLE = 60000; //todo update name and value
     final static int EXPIRED_TIME = EXPIRED_TABLE * 2;
 
+    private final boolean v;
+    private final static String TAG = "[AdHoc][AodvHelper]";
     private RoutingTable routingTable;
     private HashSet<String> entryBroadcast;
+
     private long rreqId;
 
-    AodvHelper() {
-        this.routingTable = new RoutingTable();
+    AodvHelper(boolean v) {
+        this.v = v;
+        this.routingTable = new RoutingTable(v);
         this.entryBroadcast = new HashSet<>();
         this.rreqId = 1;
     }
@@ -38,7 +42,7 @@ class AodvHelper {
     boolean addBroadcastId(String entry) {
         if (!entryBroadcast.contains(entry)) {
             entryBroadcast.add(entry);
-            Log.d("[AodvHelper]", "Add " + entry + " into broadcast set");
+            if (v) Log.d(TAG, "Add " + entry + " into broadcast set");
             return true;
         } else {
             return false;

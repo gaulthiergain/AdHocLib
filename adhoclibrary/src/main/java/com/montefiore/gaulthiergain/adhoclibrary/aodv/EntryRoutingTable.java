@@ -1,12 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
-public class EntryRoutingTable {
+class EntryRoutingTable {
     private final String destIpAddress;
     private final String next;
     private final int hop;
     private final long seq;
 
-    public EntryRoutingTable(String destIpAddress, String next, int hop, long seq) {
+    EntryRoutingTable(String destIpAddress, String next, int hop, long seq) {
         this.destIpAddress = destIpAddress;
         this.next = next;
         this.hop = hop;
@@ -21,15 +21,15 @@ public class EntryRoutingTable {
                 " seq: " + seq;
     }
 
-    public String getDestIpAddress() {
+    String getDestIpAddress() {
         return destIpAddress;
     }
 
-    public String getNext() {
+    String getNext() {
         return next;
     }
 
-    public int getHop() {
+    int getHop() {
         return hop;
     }
 

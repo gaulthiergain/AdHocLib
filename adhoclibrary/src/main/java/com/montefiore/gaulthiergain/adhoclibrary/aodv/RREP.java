@@ -2,7 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
 import java.io.Serializable;
 
-public class RREP implements Serializable {
+class RREP implements Serializable {
     private final int type;
     private int hopCount;
     private final String destIpAddress;
@@ -10,8 +10,8 @@ public class RREP implements Serializable {
     private final String originIpAddress;
     private final long lifetime;
 
-    public RREP(int type, int hopCount, String destIpAddress, long destSeqNum, String originIpAddress,
-                long lifetime) {
+    RREP(int type, int hopCount, String destIpAddress, long destSeqNum, String originIpAddress,
+         long lifetime) {
         this.type = type;
         this.hopCount = hopCount;
         this.destIpAddress = destIpAddress;
@@ -36,19 +36,19 @@ public class RREP implements Serializable {
         return type;
     }
 
-    public int getHopCount() {
+    int getHopCount() {
         return hopCount;
     }
 
-    public String getDestIpAddress() {
+    String getDestIpAddress() {
         return destIpAddress;
     }
 
-    public long getDestSeqNum() {
+    long getDestSeqNum() {
         return destSeqNum;
     }
 
-    public String getOriginIpAddress() {
+    String getOriginIpAddress() {
         return originIpAddress;
     }
 
@@ -56,7 +56,7 @@ public class RREP implements Serializable {
         return lifetime;
     }
 
-    public void incrementHopCount() {
+    void incrementHopCount() {
         this.hopCount++;
     }
 }

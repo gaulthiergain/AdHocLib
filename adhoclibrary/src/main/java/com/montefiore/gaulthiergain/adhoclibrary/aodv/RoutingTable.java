@@ -5,12 +5,14 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-public class RoutingTable {
+class RoutingTable {
     private static final String TAG = "[AdHoc][RoutingTable]";
+    private final boolean v;
     private final Hashtable<String, EntryRoutingTable> routingTable;
     private final HashMap<String, String> nextDestMapping;
 
-    RoutingTable() {
+    RoutingTable(boolean v) {
+        this.v = v;
         this.routingTable = new Hashtable<>();
         this.nextDestMapping = new HashMap<>();
     }
@@ -18,7 +20,7 @@ public class RoutingTable {
     boolean addEntry(EntryRoutingTable entry) {
 
         if (!routingTable.containsKey(entry.getDestIpAddress())) {
-            Log.d(TAG, "Add new Entry in the RIB " + entry.getDestIpAddress());
+            if (v) Log.d(TAG, "Add new Entry in the RIB " + entry.getDestIpAddress());
             routingTable.put(entry.getDestIpAddress(), entry);
             // Add next destination mapping --> for RERR
             nextDestMapping.put(entry.getNext(), entry.getDestIpAddress());
@@ -35,14 +37,14 @@ public class RoutingTable {
             //add nxt dest mapping --> for RERR
             nextDestMapping.put(entry.getNext(), entry.getDestIpAddress());
 
-            Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
+            if (v) Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
                     + " hops: " + existingEntry.getHop()
                     + " is replaced by " + entry.getDestIpAddress()
                     + " hops: " + entry.getHop());
             return true;
         }
 
-        Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
+        if (v) Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
                 + " hops: " + existingEntry.getHop()
                 + " is NOT replaced by " + entry.getDestIpAddress()
                 + " hops: " + entry.getHop());
@@ -50,7 +52,7 @@ public class RoutingTable {
         return false;
     }
 
-    public void removeEntry(String destIpAddress) {
+    void removeEntry(String destIpAddress) {
         routingTable.remove(destIpAddress);
     }
 
@@ -58,19 +60,19 @@ public class RoutingTable {
         return routingTable.get(dest);
     }
 
-    public boolean containsDest(String address) {
+    boolean containsDest(String address) {
         return routingTable.containsKey(address);
     }
 
-    public Hashtable<String, EntryRoutingTable> getRoutingTable() {
+    Hashtable<String, EntryRoutingTable> getRoutingTable() {
         return routingTable;
     }
 
-    public boolean containsNext(String next) {
+    boolean containsNext(String next) {
         return nextDestMapping.containsKey(next);
     }
 
-    public String getDestFromNext(String next) {
+    String getDestFromNext(String next) {
         return nextDestMapping.get(next);
     }
 }

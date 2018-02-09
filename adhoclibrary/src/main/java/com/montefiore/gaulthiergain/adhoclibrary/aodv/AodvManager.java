@@ -23,7 +23,7 @@ public class AodvManager {
     private final String ownName;
     private final String ownStringUUID;
     private final Timer timerRoutingTable;
-    private final String TAG = "[AodvHelper][AodvManager]";
+    private final String TAG = "[AdHoc][AodvManager]";
     private final AutoConnectionActives autoConnectionActives;
 
     public AodvManager(boolean v, String ownStringUUID, String ownName) {
@@ -31,11 +31,10 @@ public class AodvManager {
         this.autoConnectionActives = new AutoConnectionActives();
         this.timerRoutingTable = new Timer();
         //this.initTimer();
-        this.aodvHelper = new AodvHelper();
+        this.aodvHelper = new AodvHelper(v);
         this.ownStringUUID = ownStringUUID;
         this.ownName = ownName;
     }
-
 
     public void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {
 
