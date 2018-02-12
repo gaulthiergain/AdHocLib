@@ -361,7 +361,7 @@ public class AodvManager {
         }
 
         if (aodvHelper.getRoutingTable().containsDest(remoteUuid)) {
-            if (v) Log.d(TAG, "Remote " + remoteUuid + " from RIB");
+            if (v) Log.d(TAG, "Remove " + remoteUuid + " from RIB");
             aodvHelper.getRoutingTable().removeEntry(remoteUuid);
         }
 
