@@ -204,7 +204,13 @@ public class AutoManager {
 
                         if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
-                        aodvManager.removeRemoteConnection(remoteUuid);
+                        try {
+                            aodvManager.removeRemoteConnection(remoteUuid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (NoConnectionException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
@@ -272,7 +278,13 @@ public class AutoManager {
 
                 if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
-                aodvManager.removeRemoteConnection(remoteUuid);
+                try {
+                    aodvManager.removeRemoteConnection(remoteUuid);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoConnectionException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override

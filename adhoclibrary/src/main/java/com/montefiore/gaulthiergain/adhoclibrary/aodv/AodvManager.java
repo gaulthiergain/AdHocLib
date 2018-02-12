@@ -19,16 +19,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AodvManager {
 
-    private final AodvHelper aodvHelper;
+    private final static int DELAY = 60000;
+    private final static int PERIOD = 5000;
+
     private final boolean v;
     private final String ownName;
     private final String ownStringUUID;
+    private final AodvHelper aodvHelper;
     private final Timer timerRoutingTable;
-    private final String TAG = "[AdHoc][AodvManager]";
     private final ListenerAodv listenerAodv;
+    private final String TAG = "[AdHoc][AodvManager]";
     private final AutoConnectionActives autoConnectionActives;
-
-    private final Timer timerTextArea = new Timer();
 
 
     public AodvManager(boolean v, String ownStringUUID, String ownName, ListenerAodv listenerAodv) {
@@ -42,7 +43,7 @@ public class AodvManager {
         this.listenerAodv = listenerAodv;
         if (v) {
             //DEBUG
-            this.initTimerTextArea();
+            this.initTimerDebugRIB();
         }
     }
 
@@ -351,7 +352,7 @@ public class AodvManager {
         }
     }
 
-    public void removeRemoteConnection(String remoteUuid) {
+    public void removeRemoteConnection(String remoteUuid) throws IOException, NoConnectionException {
 
         // Remove remote connections
         if (autoConnectionActives.getActivesConnections().containsKey(remoteUuid)) {
@@ -368,13 +369,7 @@ public class AodvManager {
 
         if (aodvHelper.getRoutingTable().getRoutingTable().size() > 0) {
             if (v) Log.d(TAG, "Send RRER ");
-            try {
-                sendRRER(remoteUuid);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (NoConnectionException e) {
-                e.printStackTrace();
-            }
+            sendRRER(remoteUuid);
         }
     }
 
@@ -413,15 +408,15 @@ public class AodvManager {
         autoConnectionActives.addConnection(key, network);
     }
 
-
     //DEBUG
-    private void initTimerTextArea() {
-        timerTextArea.schedule(new TimerTask() {
+    private void initTimerDebugRIB() {
+        Timer timerDebugRIB = new Timer();
+        timerDebugRIB.schedule(new TimerTask() {
             @Override
             public void run() {
                 updateRoutingTable();
             }
-        }, 60000, 5000);
+        }, DELAY, PERIOD);
     }
 
     private void updateRoutingTable() {
@@ -429,7 +424,6 @@ public class AodvManager {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("Routing Table:\n");
-
         for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getRoutingTable().getRoutingTable().entrySet()) {
             stringBuilder.append(entry.getValue().toString()).append("\n");
         }
@@ -443,6 +437,6 @@ public class AodvManager {
             stringBuilder.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
         }
 
-        Log.d(TAG, stringBuilder.toString());
+        if (v) Log.i(TAG, stringBuilder.toString());
     }
 }
