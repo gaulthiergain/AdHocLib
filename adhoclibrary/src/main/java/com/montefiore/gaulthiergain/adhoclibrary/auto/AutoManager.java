@@ -38,15 +38,14 @@ public class AutoManager {
     private final static int ATTEMPTS = 3;
 
     private final boolean v;
+    private final boolean secure;
     private final Context context;
     private final String TAG = "[AdHoc][AutoManager]";
-    private ListenerAodv listenerAodv;
     private ListenerDiscoveryGUI listenerDiscoveryGUI;
 
     private final String ownStringUUID;
     private final String ownName;
     private final String ownMac;
-
 
     private final AodvManager aodvManager;
 
@@ -56,10 +55,10 @@ public class AutoManager {
     private BluetoothServiceServer bluetoothServiceServer;
 
 
-    public AutoManager(boolean v, Context context, UUID ownUUID, ListenerAodv listenerAodv)
-            throws IOException, DeviceException {
+    public AutoManager(boolean v, Context context, UUID ownUUID, ListenerAodv listenerAodv,
+                       boolean secure) throws IOException, DeviceException {
 
-        this.bluetoothManager = new BluetoothManager(true, context);
+        this.bluetoothManager = new BluetoothManager(v, context);
         this.v = v;
         this.context = context;
         this.hashMapDevices = new HashMap<>();
@@ -68,6 +67,7 @@ public class AutoManager {
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
         this.listenServer(ownUUID); // Listen on server threads
+        this.secure = secure;
         this.aodvManager = new AodvManager(v, ownStringUUID, ownName, listenerAodv);
     }
 
@@ -173,49 +173,51 @@ public class AutoManager {
     }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
-        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(true, context, new MessageListener() {
-            @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NoConnectionException e) {
-                    e.printStackTrace();
-                }
-            }
+        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
+                new MessageListener() {
+                    @Override
+                    public void onMessageReceived(MessageAdHoc message) {
+                        try {
+                            processMsgReceived(message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (NoConnectionException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
+                    @Override
+                    public void onMessageSent(MessageAdHoc message) {
+                        if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+                    }
 
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
+                    @Override
+                    public void onForward(MessageAdHoc message) {
+                        if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+                    }
 
-            @Override
-            public void onConnectionClosed(String deviceName, String deviceAddress) {
+                    @Override
+                    public void onConnectionClosed(String deviceName, String deviceAddress) {
 
-                // Get the remote UUID
-                String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
+                        // Get the remote UUID
+                        String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
 
-                if (v) Log.d(TAG, "Link broken with " + remoteUuid);
+                        if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
-                aodvManager.removeRemoteConnection(remoteUuid);
-            }
+                        aodvManager.removeRemoteConnection(remoteUuid);
+                    }
 
-            @Override
-            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-                if (v) Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
+                    @Override
+                    public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                        if (v)
+                            Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
 
-                // Execute onConnection in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
-                }
-            }
-        }, true, true, ATTEMPTS, bluetoothAdHocDevice);
+                        // Execute onConnection in the GUI
+                        if (listenerDiscoveryGUI != null) {
+                            listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
+                        }
+                    }
+                }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
         bluetoothServiceClient.setListenerAutoConnect(new ListenerAutoConnect() {
             @Override
@@ -240,7 +242,7 @@ public class AutoManager {
     }
 
     private void listenServer(UUID ownUUID) throws IOException {
-        bluetoothServiceServer = new BluetoothServiceServer(true, context, new MessageListener() {
+        bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -286,7 +288,7 @@ public class AutoManager {
         });
 
         // Start the bluetoothServiceServer listening process
-        bluetoothServiceServer.listen(NB_THREAD, true, "secure",
+        bluetoothServiceServer.listen(NB_THREAD, secure, "secure",
                 BluetoothAdapter.getDefaultAdapter(), ownUUID);
 
     }

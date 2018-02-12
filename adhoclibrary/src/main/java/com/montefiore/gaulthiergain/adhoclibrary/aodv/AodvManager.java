@@ -40,9 +40,10 @@ public class AodvManager {
         this.ownStringUUID = ownStringUUID;
         this.ownName = ownName;
         this.listenerAodv = listenerAodv;
-        //DEBUG
-
-        this.initTimerTextArea();
+        if (v) {
+            //DEBUG
+            this.initTimerTextArea();
+        }
     }
 
     public void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {
@@ -420,7 +421,7 @@ public class AodvManager {
             public void run() {
                 updateRoutingTable();
             }
-        }, 30000, 3000);
+        }, 60000, 5000);
     }
 
     private void updateRoutingTable() {
@@ -433,9 +434,9 @@ public class AodvManager {
             stringBuilder.append(entry.getValue().toString()).append("\n");
         }
 
-        ///
         if (autoConnectionActives.getActivesDataPath().size() > 0) {
-            stringBuilder.append("--------\n");
+            stringBuilder.append("----------------------------------------\n");
+            stringBuilder.append("Active Data Path:\n");
         }
 
         for (Map.Entry<String, Long> entry : autoConnectionActives.getActivesDataPath().entrySet()) {
