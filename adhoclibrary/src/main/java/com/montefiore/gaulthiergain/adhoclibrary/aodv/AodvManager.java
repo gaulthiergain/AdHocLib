@@ -423,8 +423,10 @@ public class AodvManager {
 
         StringBuilder stringBuilder = new StringBuilder();
 
+        stringBuilder.append("----------------------------------------\n");
         stringBuilder.append("Routing Table:\n");
-        for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getRoutingTable().getRoutingTable().entrySet()) {
+        for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getRoutingTable().
+                getRoutingTable().entrySet()) {
             stringBuilder.append(entry.getValue().toString()).append("\n");
         }
 
@@ -434,7 +436,8 @@ public class AodvManager {
         }
 
         for (Map.Entry<String, Long> entry : autoConnectionActives.getActivesDataPath().entrySet()) {
-            stringBuilder.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
+            stringBuilder.append("- ").append(entry.getKey()).append(" ").
+                    append(entry.getValue().toString()).append("\n");
         }
 
         if (v) Log.i(TAG, stringBuilder.toString());
