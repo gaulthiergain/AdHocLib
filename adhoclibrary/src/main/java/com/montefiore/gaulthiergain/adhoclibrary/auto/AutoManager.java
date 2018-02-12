@@ -76,11 +76,7 @@ public class AutoManager {
         //bluetoothManager.updateDeviceName(Code.ID_APP );
     }
 
-    public void discovery(int duration) throws DeviceException, BluetoothBadDuration {
-
-        // Create instance of Bluetooth Manager
-        bluetoothManager = new BluetoothManager(true, context);
-
+    public HashMap<String, BluetoothAdHocDevice> getPaired(int duration) throws DeviceException, BluetoothBadDuration {
         // Check if Bluetooth is enabled
         if (!bluetoothManager.isEnabled()) {
 
@@ -96,6 +92,18 @@ public class AutoManager {
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
                         + " into hashMapDevices");
             }
+        }
+        return bluetoothManager.getPairedDevices();
+    }
+
+    public void discovery(int duration) throws DeviceException, BluetoothBadDuration {
+
+        // Check if Bluetooth is enabled
+        if (!bluetoothManager.isEnabled()) {
+
+            // If not, enable bluetooth and enable the discovery
+            bluetoothManager.enable();
+            bluetoothManager.enableDiscovery(duration);
         }
 
         // Start the discovery process
@@ -190,13 +198,12 @@ public class AutoManager {
             @Override
             public void onConnectionClosed(String deviceName, String deviceAddress) {
 
-                if (v) Log.d(TAG, "Link broken with " + deviceAddress);
-
                 // Get the remote UUID
                 String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
 
-                aodvManager.removeRemoteConnection(remoteUuid);
+                if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
+                aodvManager.removeRemoteConnection(remoteUuid);
             }
 
             @Override
@@ -257,23 +264,13 @@ public class AutoManager {
 
             @Override
             public void onConnectionClosed(String deviceName, String deviceAddress) {
-                if (v) Log.d(TAG, "onConnectionClosed");
 
-                String remoteUuid = "";
-                NetworkObject networkObject = bluetoothServiceServer.getActiveConnexion().get(deviceAddress);
-                if (networkObject != null) {
-                    for (Map.Entry<String, NetworkObject> entry : aodvManager.getConnections().entrySet()) {
-                        if (entry.getValue().equals(networkObject)) {
-                            remoteUuid = entry.getKey();
-                            if (v) Log.d(TAG, "Link broken with " + remoteUuid);
-                            break;
-                        }
-                    }
+                // Get the remote UUID
+                String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
 
-                    aodvManager.removeRemoteConnection(remoteUuid);
-                } else {
-                    if (v) Log.e(TAG, "onConnectionClosed >>> Not Found");
-                }
+                if (v) Log.d(TAG, "Link broken with " + remoteUuid);
+
+                aodvManager.removeRemoteConnection(remoteUuid);
             }
 
             @Override
