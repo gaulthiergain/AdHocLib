@@ -146,11 +146,14 @@ public class AutoManager {
         });
     }
 
+
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
             if (!aodvManager.getConnections().containsKey(entry.getValue().getShortUuid())) {
                 //TODO remove
                 if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
+
+                } else if (ownName.equals("#eO91#Samsung_gt") && entry.getValue().getDevice().getName().equals("#e091#SamsungGT3")) {
 
                 } else {
                     _connect(entry.getValue());
@@ -193,6 +196,7 @@ public class AutoManager {
                 String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
 
                 aodvManager.removeRemoteConnection(remoteUuid);
+
             }
 
             @Override

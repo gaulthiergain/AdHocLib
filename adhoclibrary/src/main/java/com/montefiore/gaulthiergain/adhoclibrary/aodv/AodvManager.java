@@ -28,6 +28,9 @@ public class AodvManager {
     private final ListenerAodv listenerAodv;
     private final AutoConnectionActives autoConnectionActives;
 
+    private final Timer timerTextArea = new Timer();
+
+
     public AodvManager(boolean v, String ownStringUUID, String ownName, ListenerAodv listenerAodv) {
         this.v = v;
         this.autoConnectionActives = new AutoConnectionActives();
@@ -37,6 +40,9 @@ public class AodvManager {
         this.ownStringUUID = ownStringUUID;
         this.ownName = ownName;
         this.listenerAodv = listenerAodv;
+        //DEBUG
+
+        this.initTimerTextArea();
     }
 
     public void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {
@@ -404,5 +410,38 @@ public class AodvManager {
 
     public void addConnection(String key, NetworkObject network) {
         autoConnectionActives.addConnection(key, network);
+    }
+
+
+    //DEBUG
+    private void initTimerTextArea() {
+        timerTextArea.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                updateRoutingTable();
+            }
+        }, 30000, 3000);
+    }
+
+    private void updateRoutingTable() {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Routing Table:\n");
+
+        for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getRoutingTable().getRoutingTable().entrySet()) {
+            stringBuilder.append(entry.getValue().toString()).append("\n");
+        }
+
+        ///
+        if (autoConnectionActives.getActivesDataPath().size() > 0) {
+            stringBuilder.append("--------\n");
+        }
+
+        for (Map.Entry<String, Long> entry : autoConnectionActives.getActivesDataPath().entrySet()) {
+            stringBuilder.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
+        }
+
+        Log.d(TAG, stringBuilder.toString());
     }
 }

@@ -20,12 +20,13 @@ public class AutoConnectionActives {
     public void addConnection(String key, NetworkObject networkObject) {
         if (!activesConnections.containsKey(key)) {
             activesConnections.put(key, networkObject);
-            Log.d(TAG, "Add " + key);
+            Log.d(TAG, "Add " + key + " into active connection");
         }
     }
 
     public void updateDataPath(String key) {
         activesDataPath.put(key, System.currentTimeMillis());
+        Log.d(TAG, "Add " + key + " into active connection");
     }
 
     public ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
