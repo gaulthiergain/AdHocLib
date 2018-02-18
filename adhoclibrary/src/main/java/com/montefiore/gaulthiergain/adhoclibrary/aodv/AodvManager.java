@@ -33,7 +33,6 @@ public class AodvManager {
     private final String TAG = "[AdHoc][AodvManager]";
     private final AutoConnectionActives autoConnectionActives;
 
-
     public AodvManager(boolean v, String ownStringUUID, String ownName, ListenerAodv listenerAodv) {
         this.v = v;
         this.autoConnectionActives = new AutoConnectionActives();
@@ -283,7 +282,7 @@ public class AodvManager {
                         e.printStackTrace();
                     }
                 }
-                
+
             }
         }, AodvHelper.NET_TRANVERSAL_TIME);
     }
