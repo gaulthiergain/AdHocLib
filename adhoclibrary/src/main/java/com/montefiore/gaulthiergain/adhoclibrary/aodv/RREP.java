@@ -6,16 +6,16 @@ class RREP implements Serializable {
     private final int type;
     private int hopCount;
     private final String destIpAddress;
-    private long destSeqNum;
+    private long sequenceNum;
     private final String originIpAddress;
     private final long lifetime;
 
-    RREP(int type, int hopCount, String destIpAddress, long destSeqNum, String originIpAddress,
+    RREP(int type, int hopCount, String destIpAddress, long sequenceNum, String originIpAddress,
          long lifetime) {
         this.type = type;
         this.hopCount = hopCount;
         this.destIpAddress = destIpAddress;
-        this.destSeqNum = destSeqNum;
+        this.sequenceNum = sequenceNum;
         this.originIpAddress = originIpAddress;
         this.lifetime = lifetime;
     }
@@ -26,7 +26,7 @@ class RREP implements Serializable {
                 "type=" + type +
                 ", hopCount=" + hopCount +
                 ", destIpAddress='" + destIpAddress + '\'' +
-                ", destSeqNum=" + destSeqNum +
+                ", destSeqNum=" + sequenceNum +
                 ", originIpAddress='" + originIpAddress + '\'' +
                 ", lifetime=" + lifetime +
                 '}';
@@ -44,8 +44,8 @@ class RREP implements Serializable {
         return destIpAddress;
     }
 
-    long getDestSeqNum() {
-        return destSeqNum;
+    long getSequenceNum() {
+        return sequenceNum;
     }
 
     String getOriginIpAddress() {

@@ -22,6 +22,8 @@ public class AodvManager {
     private final static int DELAY = 60000;
     private final static int PERIOD = 5000;
 
+    private long sequenceNum;
+
     private final boolean v;
     private final String ownName;
     private final String ownStringUUID;
@@ -40,6 +42,7 @@ public class AodvManager {
         this.aodvHelper = new AodvHelper(v);
         this.ownStringUUID = ownStringUUID;
         this.ownName = ownName;
+        this.sequenceNum = AodvHelper.UNSET_NUM_SEQ;
         this.listenerAodv = listenerAodv;
         if (v) {
             //DEBUG
@@ -92,12 +95,12 @@ public class AodvManager {
 
             // Update routing table
             EntryRoutingTable entry = aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(),
-                    originateAddr, hop, rreq.getOriginSeqNum());
+                    originateAddr, hop, rreq.getSequenceNum());
             if (entry != null) {
 
                 // Generate RREP
                 RREP rrep = new RREP(TypeAodv.RREP.getType(), AodvHelper.INIT_HOP_COUNT, rreq.getOriginIpAddress(),
-                        1, ownStringUUID, AodvHelper.LIFE_TIME);
+                        sequenceNum, ownStringUUID, AodvHelper.LIFE_TIME);
 
                 if (v) Log.d(TAG, "Destination reachable via " + entry.getNext());
 
@@ -119,7 +122,7 @@ public class AodvManager {
 
                     // Update routing table
                     EntryRoutingTable entry = aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(),
-                            originateAddr, hop, rreq.getOriginSeqNum());
+                            originateAddr, hop, rreq.getSequenceNum());
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -143,7 +146,9 @@ public class AodvManager {
 
         if (rrep.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop RREP)");
-            //todo boolean with timer to manage the LIFE TIME of the entry
+
+            // Increment originSeqNum
+            sequenceNum += 2;
         } else {
             // Forward the RREP message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(rrep.getDestIpAddress());
@@ -162,7 +167,7 @@ public class AodvManager {
 
         // Update routing table
         EntryRoutingTable entryRRep = aodvHelper.addEntryRoutingTable(rrep.getOriginIpAddress(),
-                originateAddrRcv, hopRcv, rrep.getDestSeqNum());
+                originateAddrRcv, hopRcv, rrep.getSequenceNum());
     }
 
     private void processRERR(MessageAdHoc msg) throws IOException {
@@ -258,30 +263,27 @@ public class AodvManager {
         // Broadcast message to all directly connected devices
         broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
                 new RREQ(TypeAodv.RREQ.getType(), AodvHelper.INIT_HOP_COUNT, aodvHelper.getIncrementRreqId(), address,
-                        1, ownStringUUID, 1)));
+                        sequenceNum, ownStringUUID)));
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
 
                 EntryRoutingTable entry = aodvHelper.getNextfromDest(address);
-                if (entry != null) {
-                    //test seq num here todo
+                if (retry == 0) {
+                    if (v) Log.d(TAG, "Expired time: no RREP received for " + address);
+                    //todo event here
                 } else {
-                    if (retry == 0) {
-                        if (v) Log.d(TAG, "Expired time: no RREP received for " + address);
-                        //todo event here
-                    } else {
-                        if (v) Log.d(TAG, "Expired time: no RREP received for " + address +
-                                " Retry: " + retry);
+                    if (v) Log.d(TAG, "Expired time: no RREP received for " + address +
+                            " Retry: " + retry);
 
-                        try {
-                            startTimerRREQ(address, retry - 1);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        startTimerRREQ(address, retry - 1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
+                
             }
         }, AodvHelper.NET_TRANVERSAL_TIME);
     }
@@ -320,15 +322,18 @@ public class AodvManager {
                     if (autoConnectionActives.getActivesDataPath().containsKey(entry.getKey())) {
                         long lastChanged = autoConnectionActives.getActivesDataPath().get(entry.getKey());
                         if (System.currentTimeMillis() - lastChanged > AodvHelper.EXPIRED_TIME) {
-                            Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                            if (v)
+                                Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                             autoConnectionActives.getActivesDataPath().remove(entry.getKey());
                             it.remove();
                         } else {
-                            Log.d(TAG, ">>> data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms");
+                            if (v)
+                                Log.d(TAG, ">>> data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms");
                         }
                     } else {
                         //purge entry in RIB
-                        Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                        if (v)
+                            Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                         it.remove();
                     }
                 }

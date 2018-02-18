@@ -7,20 +7,18 @@ class RREQ implements Serializable {
     private int hopCount;
     private final long rreqId;
     private final String destIpAddress;
-    private long destSeqNum;
+    private long sequenceNum;
     private final String originIpAddress;
-    private final long originSeqNum;
     //todo lifetime (increased with retries???)
 
-    RREQ(int type, int hopCount, long rreqId, String destIpAddress, long destSeqNum, String originIpAddress,
-         long originSeqNum) {
+    RREQ(int type, int hopCount, long rreqId, String destIpAddress, long sequenceNum,
+         String originIpAddress) {
         this.type = type;
         this.hopCount = hopCount;
         this.rreqId = rreqId;
         this.destIpAddress = destIpAddress;
-        this.destSeqNum = destSeqNum;
+        this.sequenceNum = sequenceNum;
         this.originIpAddress = originIpAddress;
-        this.originSeqNum = originSeqNum;
     }
 
     int getType() {
@@ -39,16 +37,12 @@ class RREQ implements Serializable {
         return destIpAddress;
     }
 
-    long getDestSeqNum() {
-        return destSeqNum;
-    }
-
     String getOriginIpAddress() {
         return originIpAddress;
     }
 
-    long getOriginSeqNum() {
-        return originSeqNum;
+    public long getSequenceNum() {
+        return sequenceNum;
     }
 
     @Override
@@ -58,9 +52,8 @@ class RREQ implements Serializable {
                 ", hopCount=" + hopCount +
                 ", rreqId=" + rreqId +
                 ", destIpAddress='" + destIpAddress + '\'' +
-                ", destSeqNum='" + destSeqNum + '\'' +
+                ", sequenceNum='" + sequenceNum + '\'' +
                 ", originIpAddress='" + originIpAddress + '\'' +
-                ", originSeqNum='" + originSeqNum + '\'' +
                 '}';
     }
 

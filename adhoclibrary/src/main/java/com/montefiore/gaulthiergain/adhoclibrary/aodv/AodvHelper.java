@@ -7,6 +7,7 @@ import java.util.HashSet;
 
 class AodvHelper {
 
+    final static short UNSET_NUM_SEQ = 0;
     final static short RREQ_RETRIES = 2;
     final static short INIT_HOP_COUNT = 1;
 

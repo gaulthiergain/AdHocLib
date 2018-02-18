@@ -30,8 +30,9 @@ class RoutingTable {
         // Get existing entry
         EntryRoutingTable existingEntry = routingTable.get(entry.getDestIpAddress());
 
-        // Compare hop between the two entries and take the lowest (todo test SEQ --> Fresh route)
-        if (existingEntry.getHop() >= entry.getHop()) {
+        // Compare hop between the two entries and take the lowest. Take also fresh routes
+        if (existingEntry.getHop() >= entry.getHop() && entry.getSeq() >= existingEntry.getSeq()) {
+
             // Add new Entry
             routingTable.put(entry.getDestIpAddress(), entry);
             //add nxt dest mapping --> for RERR
