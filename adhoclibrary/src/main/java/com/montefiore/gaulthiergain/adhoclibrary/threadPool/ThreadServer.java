@@ -43,6 +43,8 @@ public class ThreadServer extends Thread {
     private final ArrayList<ThreadClient> arrayThreadClients;
 
     /**
+     * Constructor
+     *
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
      * @param nbThreads        an integer value to determine the number of threads managed by the
@@ -57,8 +59,9 @@ public class ThreadServer extends Thread {
      *                         threadPool.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public ThreadServer(Handler handler, int nbThreads, boolean verbose, boolean secure, String name, BluetoothAdapter mAdapter,
-                        UUID uuid, ListSocketDevice listSocketDevice) throws IOException {
+    public ThreadServer(Handler handler, int nbThreads, boolean verbose, boolean secure, String name
+            , BluetoothAdapter mAdapter, UUID uuid, ListSocketDevice listSocketDevice)
+            throws IOException {
 
         this.handler = handler;
         this.nbThreads = nbThreads;
@@ -68,13 +71,17 @@ public class ThreadServer extends Thread {
         this.arrayThreadClients = new ArrayList<>();
 
         if (secure) {
-            this.serverSocket = new AdHocServerSocketBluetooth(mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
+            this.serverSocket = new AdHocServerSocketBluetooth(
+                    mAdapter.listenUsingRfcommWithServiceRecord(name, uuid));
         } else {
-            this.serverSocket = new AdHocServerSocketBluetooth(mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid));
+            this.serverSocket = new AdHocServerSocketBluetooth(
+                    mAdapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid));
         }
     }
 
     /**
+     * Constructor
+     *
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
      * @param nbThreads        an integer value to determine the number of threads managed by the
