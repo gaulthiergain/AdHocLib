@@ -1,10 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
 /**
- * This class represents the different status code used in AODV protocol.
+ * <p>This class represents the different status code used in AODV protocol.</p>
  *
- * @author Gain Gaulthier
+ * @author Gaulthier Gain
+ * @version 1.0
  */
+
 public enum TypeAodv {
 
     /**
@@ -22,6 +24,13 @@ public enum TypeAodv {
     private final String code;
     private final String label;
 
+    /**
+     * Constructor
+     *
+     * @param type  an integer value which represents the type of AODV message.
+     * @param code  a String value which represents the code of AODV message.
+     * @param label a String value which represents the label of AODV message.
+     */
     TypeAodv(int type, String code, String label) {
         this.type = type;
         this.code = code;
@@ -31,7 +40,7 @@ public enum TypeAodv {
     /**
      * Method allowing to get the AODV type.
      *
-     * @return the aodv type number.
+     * @return an integer value which represents the AODV type number.
      */
     public int getType() {
         return type;
@@ -40,7 +49,7 @@ public enum TypeAodv {
     /**
      * Method allowing to get the AODV code.
      *
-     * @return the aodv code.
+     * @return a String value which represents the AODV code.
      */
     public String getCode() {
         return code;
@@ -49,7 +58,7 @@ public enum TypeAodv {
     /**
      * Method allowing to get the label.
      *
-     * @return the label of the AODV type.
+     * @return a String value which represents the label of the AODV type.
      */
     public String getLabel() {
         return label;

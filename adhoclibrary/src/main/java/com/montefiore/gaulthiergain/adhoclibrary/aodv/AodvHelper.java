@@ -1,6 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
-
 import android.util.Log;
 
 import java.util.HashSet;
