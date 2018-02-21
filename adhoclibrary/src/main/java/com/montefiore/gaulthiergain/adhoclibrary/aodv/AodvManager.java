@@ -329,22 +329,27 @@ public class AodvManager {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-
+                
                 EntryRoutingTable entry = aodvHelper.getNextfromDest(destAddr);
-                if (retry == 0) {
-                    if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
-                    listenerAodv.timerExpiredRREQ(destAddr, retry);
+                if (entry != null) {
+                    //test seq num here todo
+                    
                 } else {
-                    if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
-                            " Retry: " + retry);
-                    listenerAodv.timerExpiredRREQ(destAddr, retry);
-                    try {
-                        startTimerRREQ(destAddr, retry - 1);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (retry == 0) {
+                        if (v) Log.traceAodv(TAG, "Expired time: no RREP received for " + destAddr);
+                        listenerAodv.timerExpiredRREQ(destAddr, retry);
+                    } else {
+                        if (v) Log.traceAodv(TAG, "Expired time: no RREP received for " + destAddr +
+                                             " Retry: " + retry);
+                        listenerAodv.timerExpiredRREQ(destAddr, retry);
+                        try {
+                            startTimerRREQ(destAddr, retry - 1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-
+                
             }
         }, AodvHelper.NET_TRANVERSAL_TIME);
     }
