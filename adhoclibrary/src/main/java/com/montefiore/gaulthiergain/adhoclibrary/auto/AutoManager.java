@@ -59,13 +59,16 @@ public class AutoManager {
 
 
     /**
-     * @param verbose
-     * @param context
-     * @param ownUUID
-     * @param listenerAodv
-     * @param secure
-     * @throws IOException
-     * @throws DeviceException
+     * Constructor
+     *
+     * @param verbose      a boolean value to set the debug/verbose mode.
+     * @param context      a Context object which gives global information about an application
+     *                     environment.
+     * @param ownUUID      a UUID object which represents the UUID of the current device.
+     * @param listenerAodv a ListenerAodv object which serves as callback functions.
+     * @param secure       a boolean value to determine if the connection is secure.
+     * @throws IOException     Signals that an I/O exception of some sort has occurred.
+     * @throws DeviceException Signals that a Bluetooth Device Exception exception has occurred.
      */
     public AutoManager(boolean verbose, Context context, UUID ownUUID, ListenerAodv listenerAodv,
                        boolean secure) throws IOException, DeviceException {
