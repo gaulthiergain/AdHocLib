@@ -108,7 +108,7 @@ public class AodvManager {
                         entry.getNext());
             }
         } else {
-            if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
+            if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress() , rreq.getRreqId())) {
 
                 // Update PDU and Header
                 rreq.incrementHopCount();
