@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.auto.AutoConnectionActives;
 import com.montefiore.gaulthiergain.adhoclibrary.auto.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -71,8 +72,7 @@ public class AodvManager {
                 send(msg, destNext.getNext());
             }
         } else if (msg.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
-            if (v) Log.d(TAG, ">>>>>RERR");
-            // TODO change message displayed here
+            if (v) Log.d(TAG, "RERR sent");
         } else {
             startTimerRREQ(address, AodvHelper.RREQ_RETRIES);
         }
@@ -109,23 +109,19 @@ public class AodvManager {
             }
         } else {
             if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress() + rreq.getRreqId())) {
-                try {
 
-                    // Update PDU and Header
-                    rreq.incrementHopCount();
-                    msg.setPdu(rreq);
-                    msg.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
+                // Update PDU and Header
+                rreq.incrementHopCount();
+                msg.setPdu(rreq);
+                msg.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
 
-                    // Broadcast message to all directly connected devices
-                    broadcastMsgExcept(msg, originateAddr);
+                // Broadcast message to all directly connected devices
+                broadcastMsgExcept(msg, originateAddr);
 
-                    // Update routing table
-                    EntryRoutingTable entry = aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(),
-                            originateAddr, hop, rreq.getSequenceNum());
+                // Update routing table
+                EntryRoutingTable entry = aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(),
+                        originateAddr, hop, rreq.getSequenceNum());
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             } else {
                 if (v) Log.d(TAG, "Already received this RREQ from " + rreq.getOriginIpAddress());
             }
@@ -271,11 +267,11 @@ public class AodvManager {
                 EntryRoutingTable entry = aodvHelper.getNextfromDest(address);
                 if (retry == 0) {
                     if (v) Log.d(TAG, "Expired time: no RREP received for " + address);
-                    //todo event here
+                    listenerAodv.timerExpiredRREQ(address, retry);
                 } else {
                     if (v) Log.d(TAG, "Expired time: no RREP received for " + address +
                             " Retry: " + retry);
-
+                    listenerAodv.timerExpiredRREQ(address, retry);
                     try {
                         startTimerRREQ(address, retry - 1);
                     } catch (IOException e) {
@@ -330,7 +326,7 @@ public class AodvManager {
                                 Log.d(TAG, ">>> data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms");
                         }
                     } else {
-                        //purge entry in RIB
+                        //Purge entry in RIB
                         if (v)
                             Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                         it.remove();
@@ -377,7 +373,8 @@ public class AodvManager {
         }
     }
 
-    public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException {
+    public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+            AodvUnknownTypeException {
         switch (message.getHeader().getType()) {
             case "RREP":
                 if (listenerAodv != null) listenerAodv.receivedRREP(message);
@@ -400,7 +397,7 @@ public class AodvManager {
                 processDataAck(message);
                 break;
             default:
-                if (v) Log.e(TAG, "Default Message");
+                throw new AodvUnknownTypeException("Unknown AODV Type");
         }
     }
 

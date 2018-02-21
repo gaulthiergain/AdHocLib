@@ -14,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClien
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
@@ -41,6 +42,8 @@ public class AutoManager {
     private final boolean secure;
     private final Context context;
     private final String TAG = "[AdHoc][AutoManager]";
+
+    private ListenerAodv listenerAodv;
     private ListenerDiscoveryGUI listenerDiscoveryGUI;
 
     private final String ownStringUUID;
@@ -62,6 +65,7 @@ public class AutoManager {
         this.v = v;
         this.context = context;
         this.hashMapDevices = new HashMap<>();
+        this.listenerAodv = listenerAodv;
         this.ownStringUUID = ownUUID.toString().substring(LOW, END); // Take only the last part (24-36) to optimize the process
         this.updateName();
         this.ownName = BluetoothUtil.getCurrentName();
@@ -180,9 +184,11 @@ public class AutoManager {
                         try {
                             processMsgReceived(message);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            listenerAodv.clientIOException(e);
                         } catch (NoConnectionException e) {
-                            e.printStackTrace();
+                            listenerAodv.clientNoConnectionException(e);
+                        } catch (AodvUnknownTypeException e) {
+                            listenerAodv.clientAodvUnknownTypeException(e);
                         }
                     }
 
@@ -207,9 +213,9 @@ public class AutoManager {
                         try {
                             aodvManager.removeRemoteConnection(remoteUuid);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            listenerAodv.clientIOException(e);
                         } catch (NoConnectionException e) {
-                            e.printStackTrace();
+                            listenerAodv.clientNoConnectionException(e);
                         }
                     }
 
@@ -254,9 +260,11 @@ public class AutoManager {
                 try {
                     processMsgReceived(message);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    listenerAodv.serverIOException(e);
                 } catch (NoConnectionException e) {
-                    e.printStackTrace();
+                    listenerAodv.serverNoConnectionException(e);
+                } catch (AodvUnknownTypeException e) {
+                    listenerAodv.serverAodvUnknownTypeException(e);
                 }
             }
 
@@ -281,9 +289,9 @@ public class AutoManager {
                 try {
                     aodvManager.removeRemoteConnection(remoteUuid);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    listenerAodv.serverIOException(e);
                 } catch (NoConnectionException e) {
-                    e.printStackTrace();
+                    listenerAodv.serverNoConnectionException(e);
                 }
             }
 
@@ -305,7 +313,8 @@ public class AutoManager {
 
     }
 
-    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException {
+    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+            AodvUnknownTypeException {
         Log.d(TAG, "Message received: " + message.getPdu().toString());
         switch (message.getHeader().getType()) {
             case "CONNECT":
