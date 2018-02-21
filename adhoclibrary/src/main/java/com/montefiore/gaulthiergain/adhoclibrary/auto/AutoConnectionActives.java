@@ -47,7 +47,7 @@ public class AutoConnectionActives {
      */
     public void updateDataPath(String key) {
         activesDataPath.put(key, System.currentTimeMillis());
-        Log.d(TAG, "Add " + key + " into active connection");
+        Log.d(TAG, "Update " + key + " in data path");
     }
 
     /**

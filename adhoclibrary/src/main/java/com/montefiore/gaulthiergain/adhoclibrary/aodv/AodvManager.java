@@ -139,7 +139,10 @@ public class AodvManager {
                         entry.getNext());
             }
         } else {
-            if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress(), rreq.getRreqId())) {
+            if (rreq.getOriginIpAddress().equals(ownStringUUID)) {
+                if (v) Log.traceAodv(TAG, "Reject own RREQ " + rreq.getOriginIpAddress()
+                                     + " (" + UtilSimulation.getName(rreq.getOriginIpAddress()) + ")");
+            } else if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress(), rreq.getRreqId())) {
 
                 // Update PDU and Header
                 rreq.incrementHopCount();
