@@ -67,8 +67,13 @@ public class BluetoothServiceServer extends ServiceServer {
         if (v) Log.d(TAG, "Listening on device: " + uuid.toString());
     }
 
-    //TODO added
-    public ConcurrentHashMap<String, NetworkObject> getActiveConnexion() {
+    /**
+     * Method allowing to return the active connections managed by the server.
+     *
+     * @return a ConcurrentHashMap<String, NetworkObject> which maps a remote device with a
+     * NetworkObject (socket).
+     */
+    public ConcurrentHashMap<String, NetworkObject> getActiveConnections() {
         return threadListen.getActiveConnexion();
     }
 }

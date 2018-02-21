@@ -21,8 +21,8 @@ import java.util.Set;
 
 public class BluetoothManager {
 
-    long startTime = 0;
-    long estimatedTime;
+    private long startTime = 0;
+    private long estimatedTime;
 
     private final boolean v;
     private final Context context;
@@ -115,7 +115,6 @@ public class BluetoothManager {
             initName = bluetoothAdapter.getName();
         }
 
-        //TODO le faire dans automanager
         if(initName.contains("#e091#")){
             if (initName.split("#").length > 2) {
                 initName = initName.split("#")[2];
@@ -123,7 +122,7 @@ public class BluetoothManager {
         }
 
         if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
-        bluetoothAdapter.setName(name + initName); //TODO le faire dans automanager
+        bluetoothAdapter.setName(name + initName);
         if (v) Log.i(TAG, "localdevicename : " + name + initName);
     }
 

@@ -9,29 +9,94 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 public interface ListenerAodv {
-    void receivedRREQ(MessageAdHoc msg);
 
-    void receivedRREP(MessageAdHoc msg);
+    /**
+     * Callback when a RREQ message is received.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     */
+    void receivedRREQ(MessageAdHoc message);
 
-    void receivedRERR(MessageAdHoc msg);
+    /**
+     * Callback when a RREQ message is received.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     */
+    void receivedRREP(MessageAdHoc message);
 
-    void receivedDATA(MessageAdHoc msg);
+    /**
+     * Callback when a RREQ message is received.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     */
+    void receivedRERR(MessageAdHoc message);
 
-    void receivedDATA_ACK(MessageAdHoc msg);
+    /**
+     * Callback when a RREQ message is received.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     */
+    void receivedDATA(MessageAdHoc message);
 
-    void timerFlushRoutingTable(Hashtable<String, EntryRoutingTable> routingTable);
+    /**
+     * Callback when a RREQ message is received.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     */
+    void receivedDATA_ACK(MessageAdHoc message);
 
-    void timerExpiredRREQ(String address, int retry);
+    /**
+     * Callback when the flush timer for routing table is called.
+     */
+    void timerFlushRoutingTable();
 
-    void clientAodvUnknownTypeException(AodvUnknownTypeException e);
+    /**
+     * Callback when the RREQ timer for routing table is called.
+     *
+     * @param destAddr a String value which represents the destination address.
+     * @param retry    an integer value which represents the retries of the RREQ Timer.
+     */
+    void timerExpiredRREQ(String destAddr, int retry);
 
-    void clientNoConnectionException(NoConnectionException e);
+    /**
+     * Callback when a clientAodvUnknownTypeException has occured
+     *
+     * @param exception an AodvUnknownTypeException object
+     */
+    void clientAodvUnknownTypeException(AodvUnknownTypeException exception);
 
-    void clientIOException(IOException e);
+    /**
+     * Callback when a clientNoConnectionException has occured
+     *
+     * @param exception an NoConnectionException object
+     */
+    void clientNoConnectionException(NoConnectionException exception);
 
-    void serverIOException(IOException e);
+    /**
+     * Callback when a clientIOException has occured
+     *
+     * @param exception an IOException object
+     */
+    void clientIOException(IOException exception);
 
-    void serverNoConnectionException(NoConnectionException e);
+    /**
+     * Callback when a serverIOException has occured
+     *
+     * @param exception an IOException object
+     */
+    void serverIOException(IOException exception);
 
-    void serverAodvUnknownTypeException(AodvUnknownTypeException e);
+    /**
+     * Callback when a serverNoConnectionException has occured
+     *
+     * @param exception a NoConnectionException object
+     */
+    void serverNoConnectionException(NoConnectionException exception);
+
+    /**
+     * Callback when a serverAodvUnknownTypeException has occured
+     *
+     * @param exception an AodvUnknownTypeException object
+     */
+    void serverAodvUnknownTypeException(AodvUnknownTypeException exception);
 }

@@ -386,7 +386,8 @@ public class AodvManager {
             @Override
             public void run() {
 
-                Iterator<Map.Entry<String, EntryRoutingTable>> it = aodvHelper.getRoutingTable().getRoutingTable().entrySet().iterator();
+                Iterator<Map.Entry<String, EntryRoutingTable>> it = aodvHelper.getRoutingTable().
+                        getRoutingTable().entrySet().iterator();
                 while (it.hasNext()) {
                     Map.Entry<String, EntryRoutingTable> entry = it.next();
 
@@ -395,18 +396,23 @@ public class AodvManager {
                         long lastChanged = autoConnectionActives.getActivesDataPath().get(entry.getKey());
                         if (System.currentTimeMillis() - lastChanged > AodvHelper.EXPIRED_TIME) {
                             if (v)
-                                Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                                Log.d(TAG, "No data on " + entry.getKey() + " since " +
+                                        AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                             autoConnectionActives.getActivesDataPath().remove(entry.getKey());
                             it.remove();
+                            if (listenerAodv != null) listenerAodv.timerFlushRoutingTable();
                         } else {
                             if (v)
-                                Log.d(TAG, ">>> data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms");
+                                Log.d(TAG, ">>> data on " + entry.getKey() + " since " +
+                                        AodvHelper.EXPIRED_TIME + "ms");
                         }
                     } else {
                         // Purge entry in RIB
                         if (v)
-                            Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
+                            Log.d(TAG, "No data on " + entry.getKey() + " since " +
+                                    AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                         it.remove();
+                        if (listenerAodv != null) listenerAodv.timerFlushRoutingTable();
                     }
                 }
             }
@@ -521,7 +527,7 @@ public class AodvManager {
      * Method allowing to add a connection to the autoConnectionActives set.
      *
      * @param key     a String value which represents the address of a remote node.
-     * @param network a NetworkObject which represents the state of the connection.
+     * @param network a NetworkObject object which represents the state of the connection.
      */
     public void addConnection(String key, NetworkObject network) {
         autoConnectionActives.addConnection(key, network);

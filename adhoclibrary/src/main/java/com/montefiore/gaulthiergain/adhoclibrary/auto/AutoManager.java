@@ -58,11 +58,20 @@ public class AutoManager {
     private BluetoothServiceServer bluetoothServiceServer;
 
 
-    public AutoManager(boolean v, Context context, UUID ownUUID, ListenerAodv listenerAodv,
+    /**
+     * @param verbose
+     * @param context
+     * @param ownUUID
+     * @param listenerAodv
+     * @param secure
+     * @throws IOException
+     * @throws DeviceException
+     */
+    public AutoManager(boolean verbose, Context context, UUID ownUUID, ListenerAodv listenerAodv,
                        boolean secure) throws IOException, DeviceException {
 
-        this.bluetoothManager = new BluetoothManager(v, context);
-        this.v = v;
+        this.bluetoothManager = new BluetoothManager(verbose, context);
+        this.v = verbose;
         this.context = context;
         this.hashMapDevices = new HashMap<>();
         this.listenerAodv = listenerAodv;
@@ -75,12 +84,24 @@ public class AutoManager {
         this.aodvManager = new AodvManager(v, ownStringUUID, ownName, listenerAodv);
     }
 
+    /**
+     * Method allowing to update the name of the device.
+     */
     private void updateName() {
         //TODO update this
         //bluetoothManager.updateDeviceName(Code.ID_APP );
     }
 
-    public HashMap<String, BluetoothAdHocDevice> getPaired(int duration) throws DeviceException, BluetoothBadDuration {
+    /**
+     * Method allowing to get all the paired Bluetooth devices.
+     *
+     * @param duration an integer value between 0 and 3600 which represents the time of the
+     *                 discovery mode.
+     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
+     * BluetoothAdHocDevice object.
+     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
+     */
+    public HashMap<String, BluetoothAdHocDevice> getPaired(int duration) throws BluetoothBadDuration {
         // Check if Bluetooth is enabled
         if (!bluetoothManager.isEnabled()) {
 
@@ -100,7 +121,14 @@ public class AutoManager {
         return bluetoothManager.getPairedDevices();
     }
 
-    public void discovery(int duration) throws DeviceException, BluetoothBadDuration {
+    /**
+     * Method allowing to discover other bluetooth devices.
+     *
+     * @param duration an integer value between 0 and 3600 which represents the time of
+     *                 the discovery mode.
+     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
+     */
+    public void discovery(int duration) throws BluetoothBadDuration {
 
         // Check if Bluetooth is enabled
         if (!bluetoothManager.isEnabled()) {
@@ -159,6 +187,9 @@ public class AutoManager {
     }
 
 
+    /**
+     * Method allowing to connect to remote bluetooth devices.
+     */
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
             if (!aodvManager.getConnections().containsKey(entry.getValue().getShortUuid())) {
@@ -176,6 +207,12 @@ public class AutoManager {
         }
     }
 
+    /**
+     * Method allowing to connect to a remote bluetooth device.
+     *
+     * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
+     *                             device.
+     */
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
                 new MessageListener() {
@@ -249,10 +286,21 @@ public class AutoManager {
         new Thread(bluetoothServiceClient).start();
     }
 
+    /**
+     * Method allowing to stop the server listening threads.
+     *
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     public void stopListening() throws IOException {
         bluetoothServiceServer.stopListening();
     }
 
+    /**
+     * Method allowing to listen for incoming bluetooth connections.
+     *
+     * @param ownUUID an UUID object which identify the physical device.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     private void listenServer(UUID ownUUID) throws IOException {
         bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
             @Override
@@ -313,12 +361,20 @@ public class AutoManager {
 
     }
 
+    /**
+     * Method allowing to process received messages.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException              Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException    Signals that a No Connection Exception exception has occurred.
+     * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
+     */
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException {
         Log.d(TAG, "Message received: " + message.getPdu().toString());
         switch (message.getHeader().getType()) {
             case "CONNECT":
-                NetworkObject networkObject = bluetoothServiceServer.getActiveConnexion().get(message.getHeader().getSenderAddr());
+                NetworkObject networkObject = bluetoothServiceServer.getActiveConnections().get(message.getHeader().getSenderAddr());
                 if (networkObject != null) {
                     // Add the active connection into the autoConnectionActives object
                     aodvManager.addConnection((String) message.getPdu(), networkObject);
@@ -330,16 +386,29 @@ public class AutoManager {
         }
     }
 
-    public void sendMessage(String address, Serializable serializable) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to send a message to a remote address.
+     *
+     * @param address a String value which represents the destination address.
+     * @param pdu     a Serializable value which represents the PDU of the message.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    public void sendMessage(String address, Serializable pdu) throws IOException, NoConnectionException {
 
         // Create MessageAdHoc object
         Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
-        MessageAdHoc msg = new MessageAdHoc(header, new Data(address, serializable));
+        MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
 
         // Send message to remote device
         aodvManager.send(msg, address);
     }
 
+    /**
+     * Method allowing to set the listenerDiscoveryGUI callback.
+     *
+     * @param listenerDiscoveryGUI a listenerDiscoveryGUI object that serves as callback.
+     */
     public void setListenerDiscoveryGUI(ListenerDiscoveryGUI listenerDiscoveryGUI) {
         this.listenerDiscoveryGUI = listenerDiscoveryGUI;
     }
