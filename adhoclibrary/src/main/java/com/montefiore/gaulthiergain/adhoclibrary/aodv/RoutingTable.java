@@ -5,18 +5,36 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+/**
+ * <p>This class represents the routing table for the AODV protocol. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class RoutingTable {
+
     private static final String TAG = "[AdHoc][RoutingTable]";
     private final boolean v;
     private final Hashtable<String, EntryRoutingTable> routingTable;
     private final HashMap<String, String> nextDestMapping;
 
-    RoutingTable(boolean v) {
-        this.v = v;
+    /**
+     * Constructor
+     *
+     * @param verbose a boolean value to set the debug/verbose mode.
+     */
+    RoutingTable(boolean verbose) {
+        this.v = verbose;
         this.routingTable = new Hashtable<>();
         this.nextDestMapping = new HashMap<>();
     }
 
+    /**
+     * Method allowing to add a new entry in the routing table.
+     *
+     * @param entry an EntryRoutingTable object which represents an entry in the routing table.
+     * @return a boolean value which is true if the entry has been added otherwise false.
+     */
     boolean addEntry(EntryRoutingTable entry) {
 
         if (!routingTable.containsKey(entry.getDestIpAddress())) {
@@ -35,7 +53,7 @@ class RoutingTable {
 
             // Add new Entry
             routingTable.put(entry.getDestIpAddress(), entry);
-            //add nxt dest mapping --> for RERR
+            // Add next dest mapping --> for RERR
             nextDestMapping.put(entry.getNext(), entry.getDestIpAddress());
 
             if (v) Log.d(TAG, "Entry: " + existingEntry.getDestIpAddress()
@@ -53,27 +71,64 @@ class RoutingTable {
         return false;
     }
 
+    /**
+     * Method allowing to remove an entry in the routing table from the destination IP address.
+     *
+     * @param destIpAddress a String value which represents the destination IP address.
+     */
     void removeEntry(String destIpAddress) {
         routingTable.remove(destIpAddress);
     }
 
-    EntryRoutingTable getNextFromDest(String dest) {
-        return routingTable.get(dest);
+    /**
+     * Method allowing to get the entry associated to the destination IP address.
+     *
+     * @param destIpAddress a String value which represents the destination IP address.
+     * @return an EntryRoutingTable object associated to the destination IP address.
+     */
+    EntryRoutingTable getNextFromDest(String destIpAddress) {
+        return routingTable.get(destIpAddress);
     }
 
-    boolean containsDest(String address) {
-        return routingTable.containsKey(address);
+    /**
+     * Method allowing to check if the destination IP address is in the routing table.
+     *
+     * @param destIpAddress a String value which represents the destination IP address.
+     * @return a boolean value which is true if the destination address is in the routing table,
+     * otherwise false.
+     */
+    boolean containsDest(String destIpAddress) {
+        return routingTable.containsKey(destIpAddress);
     }
 
-    Hashtable<String, EntryRoutingTable> getRoutingTable() {
-        return routingTable;
-    }
-
+    /**
+     * Method allowing to check if the next hop IP address is in the routing table.
+     *
+     * @param next a String value which represents the next hop address to reach the destination
+     *             IP address.
+     * @return true if the next hop address is in the routing table, otherwise false.
+     */
     boolean containsNext(String next) {
         return nextDestMapping.containsKey(next);
     }
 
+    /**
+     * Method allowing to get the destination address from the next hop address.
+     *
+     * @param next a String value which represents the next hop address to reach the destination
+     *             IP address.
+     * @return a String value which represents the destination IP address.
+     */
     String getDestFromNext(String next) {
         return nextDestMapping.get(next);
+    }
+
+    /**
+     * Method allowing to get the routing table.
+     *
+     * @return a Hashtable<String, EntryRoutingTable> which represents the routing table.
+     */
+    Hashtable<String, EntryRoutingTable> getRoutingTable() {
+        return routingTable;
     }
 }
