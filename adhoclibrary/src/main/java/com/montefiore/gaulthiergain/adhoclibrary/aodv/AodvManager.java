@@ -17,6 +17,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * <p>This class represents the core of the AODV protocols. It manages all the messages and the
+ * node behaviour. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 
 public class AodvManager {
 
@@ -34,8 +41,17 @@ public class AodvManager {
     private final String TAG = "[AdHoc][AodvManager]";
     private final AutoConnectionActives autoConnectionActives;
 
-    public AodvManager(boolean v, String ownStringUUID, String ownName, ListenerAodv listenerAodv) {
-        this.v = v;
+    /**
+     * Constructor
+     *
+     * @param verbose       a boolean value to set the debug/verbose mode.
+     * @param ownStringUUID a String value which represents the UUID of the current device.
+     * @param ownName       a String value which represents the name of the current device.
+     * @param listenerAodv  a ListenerAodv object which serves as callback functions.
+     */
+    public AodvManager(boolean verbose, String ownStringUUID, String ownName,
+                       ListenerAodv listenerAodv) {
+        this.v = verbose;
         this.autoConnectionActives = new AutoConnectionActives();
         this.timerRoutingTable = new Timer();
         //this.initTimer();
@@ -45,17 +61,25 @@ public class AodvManager {
         this.sequenceNum = AodvHelper.UNSET_NUM_SEQ;
         this.listenerAodv = listenerAodv;
         if (v) {
-            //DEBUG
+            // Print routing table
             this.initTimerDebugRIB();
         }
     }
 
-    public void send(MessageAdHoc msg, String address) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to send a message to a remote address.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param address a String value which represents the destination address.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    public void send(MessageAdHoc message, String address) throws IOException, NoConnectionException {
 
         if (autoConnectionActives.getActivesConnections().containsKey(address)) {
             // The destination is directly connected
             NetworkObject networkObject = autoConnectionActives.getActivesConnections().get(address);
-            networkObject.sendObjectStream(msg);
+            networkObject.sendObjectStream(message);
             if (v) Log.d(TAG, "Send to " + address);
 
         } else if (aodvHelper.containsDest(address)) {
@@ -69,23 +93,30 @@ public class AodvManager {
                 // Update the connexion
                 autoConnectionActives.updateDataPath(address);
                 // Send message to remote device
-                send(msg, destNext.getNext());
+                send(message, destNext.getNext());
             }
-        } else if (msg.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
+        } else if (message.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
             if (v) Log.d(TAG, "RERR sent");
         } else {
             startTimerRREQ(address, AodvHelper.RREQ_RETRIES);
         }
     }
 
-    private void processRREQ(MessageAdHoc msg) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to send a message to a remote address.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    private void processRREQ(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get the RREQ message
-        RREQ rreq = (RREQ) msg.getPdu();
+        RREQ rreq = (RREQ) message.getPdu();
 
         // Get previous hop and previous source address
         int hop = rreq.getHopCount();
-        String originateAddr = msg.getHeader().getSenderAddr();
+        String originateAddr = message.getHeader().getSenderAddr();
 
         if (v) Log.d(TAG, "Received RREQ from " + originateAddr);
 
@@ -108,15 +139,15 @@ public class AodvManager {
                         entry.getNext());
             }
         } else {
-            if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress() , rreq.getRreqId())) {
+            if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress(), rreq.getRreqId())) {
 
                 // Update PDU and Header
                 rreq.incrementHopCount();
-                msg.setPdu(rreq);
-                msg.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
+                message.setPdu(rreq);
+                message.setHeader(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName));
 
                 // Broadcast message to all directly connected devices
-                broadcastMsgExcept(msg, originateAddr);
+                broadcastMsgExcept(message, originateAddr);
 
                 // Update routing table
                 EntryRoutingTable entry = aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(),
@@ -128,14 +159,21 @@ public class AodvManager {
         }
     }
 
-    private void processRREP(MessageAdHoc msg) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to process a RREP message.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    private void processRREP(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get the RREP message
-        RREP rrep = (RREP) msg.getPdu();
+        RREP rrep = (RREP) message.getPdu();
 
         // Get previous hop and previous source address
         int hopRcv = rrep.getHopCount();
-        String originateAddrRcv = msg.getHeader().getSenderAddr();
+        String originateAddrRcv = message.getHeader().getSenderAddr();
 
         if (v) Log.d(TAG, "Received RREP from " + originateAddrRcv);
 
@@ -165,13 +203,19 @@ public class AodvManager {
                 originateAddrRcv, hopRcv, rrep.getSequenceNum());
     }
 
-    private void processRERR(MessageAdHoc msg) throws IOException {
+    /**
+     * Method allowing to process a RERR message.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
+    private void processRERR(MessageAdHoc message) throws IOException {
 
         // Get the RERR message
-        RERR rerr = (RERR) msg.getPdu();
+        RERR rerr = (RERR) message.getPdu();
 
         // Get previous source address
-        String originateAddr = msg.getHeader().getSenderAddr();
+        String originateAddr = message.getHeader().getSenderAddr();
 
         Log.d(TAG, "Received RERR from " + originateAddr + " -> Node " +
                 rerr.getUnreachableDestIpAddress() + " is unreachable");
@@ -180,35 +224,42 @@ public class AodvManager {
             Log.d(TAG, "RERR received on the destination (stop forward)");
         } else if (aodvHelper.containsDest(rerr.getUnreachableDestIpAddress())) {
             aodvHelper.getRoutingTable().removeEntry(rerr.getUnreachableDestIpAddress());
-            msg.setHeader(new Header(TypeAodv.RERR.getCode(), ownStringUUID, ownName));
+            message.setHeader(new Header(TypeAodv.RERR.getCode(), ownStringUUID, ownName));
             // Broadcast message to all directly connected devices
-            broadcastMsgExcept(msg, originateAddr);
+            broadcastMsgExcept(message, originateAddr);
         } else {
             Log.d(TAG, "Node doesn't contain dest: " + rerr.getUnreachableDestIpAddress());
         }
     }
 
-    private void processData(MessageAdHoc msg) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to process a DATA message.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    private void processData(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get the DATA message
-        Data data = (Data) msg.getPdu();
+        Data data = (Data) message.getPdu();
 
         // Update the data path
         autoConnectionActives.updateDataPath(data.getDestIpAddress());
 
-        if (v) Log.d(TAG, "Data message received from: " + msg.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "Data message received from: " + message.getHeader().getSenderAddr());
 
         if (data.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop DATA message " +
                     "and send ACK)");
 
             // Update PDU and Header
-            String destinationAck = msg.getHeader().getSenderAddr();
-            msg.setPdu(new Data(destinationAck, TypeAodv.DATA_ACK.getCode()));
-            msg.setHeader(new Header(TypeAodv.DATA_ACK.getCode(), ownStringUUID, ownName));
+            String destinationAck = message.getHeader().getSenderAddr();
+            message.setPdu(new Data(destinationAck, TypeAodv.DATA_ACK.getCode()));
+            message.setHeader(new Header(TypeAodv.DATA_ACK.getCode(), ownStringUUID, ownName));
 
             // Send message to the destination
-            send(msg, destinationAck);
+            send(message, destinationAck);
         } else {
             // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(data.getDestIpAddress());
@@ -218,20 +269,27 @@ public class AodvManager {
             } else {
                 if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
                 // Send message to the next destination
-                send(msg, destNext.getNext());
+                send(message, destNext.getNext());
             }
         }
     }
 
-    private void processDataAck(MessageAdHoc msg) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to process a DATA message.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    private void processDataAck(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get the ACK message
-        Data dataAck = (Data) msg.getPdu();
+        Data dataAck = (Data) message.getPdu();
 
         // Update the data path
         autoConnectionActives.updateDataPath(dataAck.getDestIpAddress());
 
-        if (v) Log.d(TAG, "ACK message received from: " + msg.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "ACK message received from: " + message.getHeader().getSenderAddr());
 
         if (dataAck.getDestIpAddress().equals(ownStringUUID)) {
             if (v) Log.d(TAG, ownStringUUID + " is the destination (stop data-ack message)");
@@ -245,35 +303,43 @@ public class AodvManager {
             } else {
                 if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
                 // Send message to the next destination
-                send(msg, destNext.getNext());
+                send(message, destNext.getNext());
             }
         }
     }
 
-    private void startTimerRREQ(final String address, final int retry) throws IOException {
+    /**
+     * Method allowing to send a RREQ message to find a destination. This timer is executed
+     * RREQ_RETRIES times and every NET_TRANVERSAL_TIME seconds.
+     *
+     * @param destAddr a String value which represents the destination address.
+     * @param retry    an integer value which represents the retries of the RREQ Timer.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
+    private void startTimerRREQ(final String destAddr, final int retry) throws IOException {
 
         // No destination was found, send RREQ request (with timer)
-        Log.d(TAG, "No connection to " + address + "-> send RREQ message");
+        Log.d(TAG, "No connection to " + destAddr + "-> send RREQ message");
 
         // Broadcast message to all directly connected devices
         broadcastMsg(new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownStringUUID, ownName),
-                new RREQ(TypeAodv.RREQ.getType(), AodvHelper.INIT_HOP_COUNT, aodvHelper.getIncrementRreqId(), address,
-                        sequenceNum, ownStringUUID)));
+                new RREQ(TypeAodv.RREQ.getType(), AodvHelper.INIT_HOP_COUNT,
+                        aodvHelper.getIncrementRreqId(), destAddr, sequenceNum, ownStringUUID)));
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
 
-                EntryRoutingTable entry = aodvHelper.getNextfromDest(address);
+                EntryRoutingTable entry = aodvHelper.getNextfromDest(destAddr);
                 if (retry == 0) {
-                    if (v) Log.d(TAG, "Expired time: no RREP received for " + address);
-                    listenerAodv.timerExpiredRREQ(address, retry);
+                    if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
+                    listenerAodv.timerExpiredRREQ(destAddr, retry);
                 } else {
-                    if (v) Log.d(TAG, "Expired time: no RREP received for " + address +
+                    if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
                             " Retry: " + retry);
-                    listenerAodv.timerExpiredRREQ(address, retry);
+                    listenerAodv.timerExpiredRREQ(destAddr, retry);
                     try {
-                        startTimerRREQ(address, retry - 1);
+                        startTimerRREQ(destAddr, retry - 1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -283,10 +349,17 @@ public class AodvManager {
         }, AodvHelper.NET_TRANVERSAL_TIME);
     }
 
-    private void sendRRER(String remoteUuid) throws IOException, NoConnectionException {
+    /**
+     * Method allowing to send a RRER message when the connection is closed.
+     *
+     * @param destAddr a String value which represents the destination address.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
+    private void sendRRER(String destAddr) throws IOException, NoConnectionException {
 
-        if (aodvHelper.getRoutingTable().containsNext(remoteUuid)) {
-            String dest = aodvHelper.getRoutingTable().getDestFromNext(remoteUuid);
+        if (aodvHelper.getRoutingTable().containsNext(destAddr)) {
+            String dest = aodvHelper.getRoutingTable().getDestFromNext(destAddr);
 
             if (dest.equals(ownStringUUID)) {
                 if (v) Log.d(TAG, "RERR received on the destination (stop forward)");
@@ -304,6 +377,10 @@ public class AodvManager {
         }
     }
 
+    /**
+     * Method allowing to purge the routing table after EXPIRED_TABLE in ms if no data are
+     * transmitted on a connection.
+     */
     private void initTimer() {
         timerRoutingTable.schedule(new TimerTask() {
             @Override
@@ -326,7 +403,7 @@ public class AodvManager {
                                 Log.d(TAG, ">>> data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms");
                         }
                     } else {
-                        //Purge entry in RIB
+                        // Purge entry in RIB
                         if (v)
                             Log.d(TAG, "No data on " + entry.getKey() + " since " + AodvHelper.EXPIRED_TIME + "ms -> Purge Entry in RIB");
                         it.remove();
@@ -336,13 +413,26 @@ public class AodvManager {
         }, AodvHelper.EXPIRED_TABLE, AodvHelper.EXPIRED_TABLE);
     }
 
-    private void broadcastMsg(MessageAdHoc msg) throws IOException {
+    /**
+     * Method allowing to broadcast a message to all nodes.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
+    private void broadcastMsg(MessageAdHoc message) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
-            entry.getValue().sendObjectStream(msg);
+            entry.getValue().sendObjectStream(message);
             if (v) Log.d(TAG, "Broadcast Message to " + entry.getKey());
         }
     }
 
+    /**
+     * Method allowing to broadcast a message to all nodes except a particular one.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param address a String value which represents the destination address.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     private void broadcastMsgExcept(MessageAdHoc message, String address) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : autoConnectionActives.getActivesConnections().entrySet()) {
             if (!entry.getKey().equals(address)) {
@@ -352,6 +442,14 @@ public class AodvManager {
         }
     }
 
+    /**
+     * Method allowing to remove a remote connection from the autoConnectionActives set and from
+     * the routing table.
+     *
+     * @param remoteUuid a String value which represents the remote address of a node.
+     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     */
     public void removeRemoteConnection(String remoteUuid) throws IOException, NoConnectionException {
 
         // Remove remote connections
@@ -373,6 +471,14 @@ public class AodvManager {
         }
     }
 
+    /**
+     * Method allowing to process AODV messages.
+     *
+     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @throws IOException              Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException    Signals that a No Connection Exception exception has occurred.
+     * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
+     */
     public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException {
         switch (message.getHeader().getType()) {
@@ -401,15 +507,29 @@ public class AodvManager {
         }
     }
 
+    /**
+     * Method allowing to get all the outgoing and incoming connections.
+     *
+     * @return a ConcurrentHashMap<String, NetworkObject> object which maps the remote node name to
+     * a NetworkObject object.
+     */
     public ConcurrentHashMap<String, NetworkObject> getConnections() {
         return autoConnectionActives.getActivesConnections();
     }
 
+    /**
+     * Method allowing to add a connection to the autoConnectionActives set.
+     *
+     * @param key     a String value which represents the address of a remote node.
+     * @param network a NetworkObject which represents the state of the connection.
+     */
     public void addConnection(String key, NetworkObject network) {
         autoConnectionActives.addConnection(key, network);
     }
 
-    //DEBUG
+    /**
+     * Method allowing to print the routing table after a DELAY in ms and every PERIOD times.
+     */
     private void initTimerDebugRIB() {
         Timer timerDebugRIB = new Timer();
         timerDebugRIB.schedule(new TimerTask() {
@@ -420,6 +540,9 @@ public class AodvManager {
         }, DELAY, PERIOD);
     }
 
+    /**
+     * Method allowing to display the routing table in debug mode.
+     */
     private void updateRoutingTable() {
 
         StringBuilder stringBuilder = new StringBuilder();

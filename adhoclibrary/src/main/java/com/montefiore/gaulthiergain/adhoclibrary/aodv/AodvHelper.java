@@ -6,7 +6,7 @@ import java.util.HashSet;
 
 /**
  * <p>This class allows to help the AodvManager by providing constants and by managing broadcast
- * requests </p>
+ * requests. </p>
  *
  * @author Gaulthier Gain
  * @version 1.0
