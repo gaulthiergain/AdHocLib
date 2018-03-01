@@ -37,6 +37,10 @@ public class NetworkObject {
     }
 
     public void sendObjectStream(Object obj) throws IOException {
+        /*
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonStr = mapper.writeValueAsString(obj);
+         */
         oos.writeObject(obj);
         oos.flush();
         if (obj.toString().length() > 50) {
@@ -47,7 +51,13 @@ public class NetworkObject {
     }
 
     public Object receiveObjectStream() throws IOException, ClassNotFoundException {
+
+        /*
+        ObjectMapper mapper = new ObjectMapper();
+        Object obj = mapper.readValue((String) ois.readObject(), MessageAdHoc.class);
+         */
         Object obj = ois.readObject();
+
 
         if (obj.toString().length() > 50) {
             Log.d(TAG, "Received object: " + obj.toString().substring(0, 30) + "...");
