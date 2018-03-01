@@ -8,27 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public interface MessageListener {
-    /**
-     * Callback when message is received.
-     *
-     * @param message a MessageAdHoc object which defines the message.
-     */
-    void onMessageReceived(MessageAdHoc message);
-
-    /**
-     * Callback when message is sent.
-     *
-     * @param message a MessageAdHoc object which defines the message.
-     */
-    void onMessageSent(MessageAdHoc message);
-
-    /**
-     * Callback when message is forwarded.
-     *
-     * @param message a MessageAdHoc object which defines the message.
-     */
-    void onForward(MessageAdHoc message);
+public interface MessageListener extends MessageMainListener {
 
     /**
      * Callback when connection is closed.
