@@ -1,18 +1,18 @@
 package com.montefiore.gaulthiergain.adhoclibrary.exceptions;
 
 /**
- * <p>This class signals that a AODV unknown type exception has occurred.</p>
+ * <p>This class signals that a AODV unknown destination route exception has occurred.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class AodvUnknownTypeException extends Exception {
+public class AodvUnknownDestException extends Exception {
     /**
      * Constructor
      *
      * @param message a String values which represents the cause of the exception
      */
-    public AodvUnknownTypeException(String message) {
+    public AodvUnknownDestException(String message) {
         super(message);
     }
 }

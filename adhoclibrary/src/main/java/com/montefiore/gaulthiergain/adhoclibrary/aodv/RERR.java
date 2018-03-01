@@ -10,7 +10,6 @@ import java.io.Serializable;
  */
 class RERR implements Serializable {
     private final int type;
-    private int hopCount;
     private final String unreachableDestIpAddress;
     private long unreachableDestSeqNum;
 
@@ -19,16 +18,13 @@ class RERR implements Serializable {
      *
      * @param type                     an integer value which represents the type of the RERR
      *                                 message.
-     * @param hopCount                 an integer value which represents the hops number of the RERR
-     *                                 message.
      * @param unreachableDestIpAddress a String value which represents the unreachable IP
      *                                 destination address of the RERR message.
      * @param unreachableDestSeqNum    a long value which represents unreachable sequence number
      *                                 of the RERR message.
      */
-    RERR(int type, int hopCount, String unreachableDestIpAddress, long unreachableDestSeqNum) {
+    RERR(int type, String unreachableDestIpAddress, long unreachableDestSeqNum) {
         this.type = type;
-        this.hopCount = hopCount;
         this.unreachableDestIpAddress = unreachableDestIpAddress;
         this.unreachableDestSeqNum = unreachableDestSeqNum;
     }
@@ -40,15 +36,6 @@ class RERR implements Serializable {
      */
     int getType() {
         return type;
-    }
-
-    /**
-     * Method allowing to get the hops number of the RERR message.
-     *
-     * @return an integer value which represents the hops number of the RERR message.
-     */
-    int getHopCount() {
-        return hopCount;
     }
 
     /**
@@ -74,7 +61,6 @@ class RERR implements Serializable {
     public String toString() {
         return "RERR{" +
                 "type=" + type +
-                ", hopCount=" + hopCount +
                 ", unreachableDestIpAddress='" + unreachableDestIpAddress + '\'' +
                 ", unreachableDestSeqNum=" + unreachableDestSeqNum +
                 '}';

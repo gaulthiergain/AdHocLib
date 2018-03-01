@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @version 1.0
  */
 class RREP implements Serializable {
-    private final int type;
+    private int type;
     private int hopCount;
     private final String destIpAddress;
     private long sequenceNum;
@@ -21,7 +21,7 @@ class RREP implements Serializable {
      * @param hopCount        an integer value which represents the hops number of the RREP message.
      * @param destIpAddress   a String value which represents the destination IP address of the RREP
      *                        message.
-     * @param sequenceNum     an integer value which represents the sequence number of the RREP
+     * @param sequenceNum     a long value which represents the sequence number of the RREP
      *                        message
      * @param originIpAddress a String value which represents the source IP address of the RREP
      *                        message.
@@ -93,9 +93,11 @@ class RREP implements Serializable {
 
     /**
      * Method increment the hop count of the RREP message.
+     *
+     * @return an integer which represents the hop count incremented
      */
-    void incrementHopCount() {
-        this.hopCount++;
+    public int incrementHopCount() {
+        return ++this.hopCount;
     }
 
     @Override
@@ -109,4 +111,6 @@ class RREP implements Serializable {
                 ", lifetime=" + lifetime +
                 '}';
     }
+
+
 }

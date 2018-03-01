@@ -1,5 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.aodv;
 
+
 /**
  * <p>This class represents the different status code used in AODV protocol.</p>
  *
@@ -12,13 +13,11 @@ public enum TypeAodv {
     /**
      * Represents the different types used in AODV protocol
      */
-    RREQ(1, "RREQ", "Route Request"),
-    RREP(2, "RREP", "Route Reply"),
-    RERR(3, "RERR", "Route Error"),
-    RREP_ACK(4, "RREP_ACK", "Route Reply Acknowledgment"),
-
-    DATA(8, "DATA", "Data"),
-    DATA_ACK(9, "DATA_ACK", "Data Acknowledgment");
+    RREQ(Constants.RREQ, "RREQ", "Route Request"),
+    RREP(Constants.RREP, "RREP", "Route Reply"),
+    RERR(Constants.RERR, "RERR", "Route Error"),
+    RREP_GRATUITOUS(Constants.RREP_GRATUITOUS, "RREP_GRATUITOUS", "Gratuitous Route Reply"),
+    DATA(Constants.DATA, "DATA", "Data");
 
     private final int type;
     private final String code;

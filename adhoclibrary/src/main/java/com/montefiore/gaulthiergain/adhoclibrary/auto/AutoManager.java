@@ -14,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceClien
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.bluetooth.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.exceptions.DeviceException;
@@ -229,6 +230,8 @@ public class AutoManager {
                             listenerAodv.clientNoConnectionException(e);
                         } catch (AodvUnknownTypeException e) {
                             listenerAodv.clientAodvUnknownTypeException(e);
+                        } catch (AodvUnknownDestException e) {
+                            listenerAodv.clientAodvUnknownDestException(e);
                         }
                     }
 
@@ -254,8 +257,6 @@ public class AutoManager {
                             aodvManager.removeRemoteConnection(remoteUuid);
                         } catch (IOException e) {
                             listenerAodv.clientIOException(e);
-                        } catch (NoConnectionException e) {
-                            listenerAodv.clientNoConnectionException(e);
                         }
                     }
 
@@ -316,6 +317,8 @@ public class AutoManager {
                     listenerAodv.serverNoConnectionException(e);
                 } catch (AodvUnknownTypeException e) {
                     listenerAodv.serverAodvUnknownTypeException(e);
+                } catch (AodvUnknownDestException e) {
+                    listenerAodv.serverAodvUnknownDestException(e);
                 }
             }
 
@@ -341,8 +344,6 @@ public class AutoManager {
                     aodvManager.removeRemoteConnection(remoteUuid);
                 } catch (IOException e) {
                     listenerAodv.serverIOException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.serverNoConnectionException(e);
                 }
             }
 
@@ -373,7 +374,7 @@ public class AutoManager {
      * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
      */
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
-            AodvUnknownTypeException {
+            AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message received: " + message.getPdu().toString());
         switch (message.getHeader().getType()) {
             case "CONNECT":
