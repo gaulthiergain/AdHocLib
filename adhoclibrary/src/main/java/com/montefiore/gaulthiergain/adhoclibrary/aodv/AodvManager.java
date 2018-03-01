@@ -140,8 +140,7 @@ public class AodvManager {
             }
         } else {
             if (rreq.getOriginIpAddress().equals(ownStringUUID)) {
-                if (v) Log.traceAodv(TAG, "Reject own RREQ " + rreq.getOriginIpAddress()
-                                     + " (" + UtilSimulation.getName(rreq.getOriginIpAddress()) + ")");
+                if (v) Log.d(TAG, "Reject own RREQ " + rreq.getOriginIpAddress());
             } else if (aodvHelper.addBroadcastId(rreq.getOriginIpAddress(), rreq.getRreqId())) {
 
                 // Update PDU and Header
@@ -339,10 +338,10 @@ public class AodvManager {
                     
                 } else {
                     if (retry == 0) {
-                        if (v) Log.traceAodv(TAG, "Expired time: no RREP received for " + destAddr);
+                        if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
                         listenerAodv.timerExpiredRREQ(destAddr, retry);
                     } else {
-                        if (v) Log.traceAodv(TAG, "Expired time: no RREP received for " + destAddr +
+                        if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
                                              " Retry: " + retry);
                         listenerAodv.timerExpiredRREQ(destAddr, retry);
                         try {
