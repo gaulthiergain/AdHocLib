@@ -1,7 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.auto;
 
-import com.montefiore.gaulthiergain.adhoclibrary.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 
 import java.io.IOException;
 import java.util.UUID;

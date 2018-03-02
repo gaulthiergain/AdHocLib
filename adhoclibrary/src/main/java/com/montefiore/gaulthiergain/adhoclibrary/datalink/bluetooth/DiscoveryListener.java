@@ -1,14 +1,16 @@
-package com.montefiore.gaulthiergain.adhoclibrary.auto;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
-
 import java.util.HashMap;
 
-
-public interface ListenerDiscoveryGUI {
-
+/**
+ * <p>This interface allows to define callback functions for the bluetooth discovery process.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
+public interface DiscoveryListener {
     /**
      * Callback when the discovery is finished.
      *
@@ -19,16 +21,7 @@ public interface ListenerDiscoveryGUI {
     void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice);
 
     /**
-     * Callback when connection is performed.
-     *
-     * @param deviceName    a String value which represents the remote device's name.
-     * @param deviceAddress a String value which represents the remote device's address.
-     * @param localAddress  a String value which represents the local device's address.
-     */
-    void onConnection(String deviceName, String deviceAddress, String localAddress);
-
-    /**
-     * Callback when the discovery is started.
+     * Callback when the discovery started.
      */
     void onDiscoveryStarted();
 

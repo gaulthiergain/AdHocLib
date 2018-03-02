@@ -2,7 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.auto;
 
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 
 import java.util.concurrent.ConcurrentHashMap;
 
