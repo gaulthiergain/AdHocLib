@@ -14,12 +14,12 @@ import java.util.Enumeration;
  *
  */
 
-public class InfosInterface {
+public class UtilInterfaces {
 
     private ArrayList<NetworkInterface> arrayNetworkInterfaces;
 
 
-    public InfosInterface() {
+    public UtilInterfaces() {
     }
 
     public ArrayList<NetworkInterface> getAllNetworkInterfaces(){
