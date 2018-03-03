@@ -1,15 +1,11 @@
-package com.montefiore.gaulthiergain.adhoclibrary.auto;
+package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Data;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
@@ -18,7 +14,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
@@ -27,7 +22,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,7 +52,6 @@ public class DataLinkBtManager implements IDataLink {
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
     private BluetoothServiceServer bluetoothServiceServer;
-
 
     /**
      * Constructor
@@ -119,6 +112,8 @@ public class DataLinkBtManager implements IDataLink {
                         + " into hashMapDevices");
             }
         }
+
+        listenerAodv.onPairedCompleted();
     }
 
     /**
@@ -139,6 +134,7 @@ public class DataLinkBtManager implements IDataLink {
                                 + " into hashMapDevices");
                     }
                 }
+                listenerAodv.onDiscoveryCompleted();
                 // Stop and unregister to the discovery process
                 bluetoothManager.unregisterDiscovery();
             }
@@ -165,13 +161,14 @@ public class DataLinkBtManager implements IDataLink {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
             if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
                 //TODO remove
-                if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
+                /*if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
 
                 } else if (ownName.equals("#eO91#Samsung_gt") && entry.getValue().getDevice().getName().equals("#e091#SamsungGT3")) {
 
                 } else {
-                    _connect(entry.getValue());
-                }
+
+                }*/
+                _connect(entry.getValue());
             } else {
                 if (v) Log.d(TAG, entry.getValue().getShortUuid() + " is already connected");
             }
@@ -237,7 +234,7 @@ public class DataLinkBtManager implements IDataLink {
                     }
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
-        bluetoothServiceClient.setListenerAutoConnect(new ListenerAutoConnect() {
+        bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
             @Override
             public void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException {
 
@@ -379,4 +376,6 @@ public class DataLinkBtManager implements IDataLink {
                 Log.d(TAG, "Broadcast Message to " + entry.getKey());
         }
     }
+
+
 }

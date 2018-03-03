@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.auto.ListenerAutoConnect;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
@@ -135,5 +134,9 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
     public void setListenerAutoConnect(ListenerAutoConnect listenerAutoConnect) {
         this.listenerAutoConnect = listenerAutoConnect;
+    }
+
+    public interface ListenerAutoConnect {
+        void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException;
     }
 }

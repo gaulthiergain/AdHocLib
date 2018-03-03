@@ -5,8 +5,8 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadPool.ListSocketDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadPool.ThreadServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ListSocketDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ThreadServer;
 
 import java.io.IOException;
 

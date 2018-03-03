@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.auto;
+package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -9,6 +9,16 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 
 public interface ListenerAodv {
+
+    /**
+     * Callback when the discovery is completed.
+     */
+    void onDiscoveryCompleted();
+
+    /**
+     * Callback when the getPairedDevices is completed.
+     */
+    void onPairedCompleted();
 
     /**
      * Callback when a RREQ message is received.

@@ -3,10 +3,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.auto.DataLinkBtManager;
-import com.montefiore.gaulthiergain.adhoclibrary.auto.DataLinkWifiManager;
-import com.montefiore.gaulthiergain.adhoclibrary.auto.IDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.auto.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -36,7 +35,7 @@ public class AodvManager {
     private final static int END = 36;
 
     // Constants for displaying the routing table
-    private final static int DELAY = 500;
+    private final static int DELAY = 60000;
     private final static int PERIOD = DELAY;
 
     private IDataLink dataLink;
@@ -839,5 +838,13 @@ public class AodvManager {
             return mapDestSequenceNumber.get(dest);
         }
         return Constants.UNKNOWN_SEQUENCE_NUMBER;
+    }
+
+    public void getPaired() {
+        dataLink.getPaired();
+    }
+
+    public void discovery() {
+        dataLink.discovery();
     }
 }
