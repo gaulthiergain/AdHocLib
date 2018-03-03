@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 
-public class AutoConnectionActives {
+public class ActiveConnections {
     private static final String TAG = "[AdHoc][AutoConActives]";
 
     private ConcurrentHashMap<String, NetworkObject> activesConnections;
@@ -22,7 +22,7 @@ public class AutoConnectionActives {
     /**
      * Constructor
      */
-    public AutoConnectionActives() {
+    public ActiveConnections() {
         this.activesConnections = new ConcurrentHashMap<>();
         this.activesDataPath = new ConcurrentHashMap<>();
     }

@@ -20,11 +20,6 @@ public class Data implements Serializable {
      *                      DATA message.
      * @param pdu           a Serializable value which represents the PDU of the DATA message.
      */
-    public Data(String destIpAddress, Serializable pdu, RREQ rreq) {
-        this.destIpAddress = destIpAddress;
-        this.pdu = pdu;
-    }
-
     public Data(String destIpAddress, Serializable pdu) {
         this.destIpAddress = destIpAddress;
         this.pdu = pdu;

@@ -17,7 +17,8 @@ public enum TypeAodv {
     RREP(Constants.RREP, "RREP", "Route Reply"),
     RERR(Constants.RERR, "RERR", "Route Error"),
     RREP_GRATUITOUS(Constants.RREP_GRATUITOUS, "RREP_GRATUITOUS", "Gratuitous Route Reply"),
-    DATA(Constants.DATA, "DATA", "Data");
+    DATA(Constants.DATA, "DATA", "Data"),
+    HELLO(Constants.HELLO, "HELLO", "Hello");
 
     private final int type;
     private final String code;

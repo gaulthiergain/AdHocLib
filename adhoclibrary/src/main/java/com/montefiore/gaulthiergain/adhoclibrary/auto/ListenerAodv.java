@@ -1,5 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.auto;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -53,58 +54,37 @@ public interface ListenerAodv {
     void timerExpiredRREQ(String destAddr, int retry);
 
     /**
-     * Callback when a clientAodvUnknownTypeException has occured
-     *
-     * @param e an AodvUnknownTypeException object
-     */
-    void clientAodvUnknownTypeException(AodvUnknownTypeException e);
-
-    /**
-     * Callback when a serverAodvUnknownDestException has occured
-     *
-     * @param e an serverAodvUnknownDestException object
-     */
-    void clientAodvUnknownDestException(AodvUnknownDestException e);
-
-    /**
-     * Callback when a clientNoConnectionException has occured
-     *
-     * @param e an NoConnectionException object
-     */
-    void clientNoConnectionException(NoConnectionException e);
-
-    /**
-     * Callback when a clientIOException has occured
+     * Callback when a IOException has occured
      *
      * @param e an IOException object
      */
-    void clientIOException(IOException e);
+    void IOException(IOException e);
 
     /**
-     * Callback when a serverIOException has occured
-     *
-     * @param e an IOException object
-     */
-    void serverIOException(IOException e);
-
-    /**
-     * Callback when a serverNoConnectionException has occured
+     * Callback when a NoConnectionException has occured
      *
      * @param e a NoConnectionException object
      */
-    void serverNoConnectionException(NoConnectionException e);
+    void NoConnectionException(NoConnectionException e);
 
     /**
-     * Callback when a serverAodvUnknownTypeException has occured
+     * Callback when a AodvUnknownTypeException has occured
      *
      * @param e an AodvUnknownTypeException object
      */
-    void serverAodvUnknownTypeException(AodvUnknownTypeException e);
+    void AodvUnknownTypeException(AodvUnknownTypeException e);
 
     /**
-     * Callback when a serverAodvUnknownDestException has occured
+     * Callback when a AodvUnknownDestException has occured
      *
-     * @param e an serverAodvUnknownDestException object
+     * @param e an AodvUnknownDestException object
      */
-    void serverAodvUnknownDestException(AodvUnknownDestException e);
+    void AodvUnknownDestException(AodvUnknownDestException e);
+
+    /**
+     * Callback when a DeviceException has occured
+     *
+     * @param e a DeviceException object
+     */
+    void DeviceException(DeviceException e);
 }

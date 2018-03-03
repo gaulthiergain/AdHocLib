@@ -1,5 +1,11 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
+/**
+ * <p>This class defines some constants for AODV protocol. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public interface Constants {
 
     byte INIT_HOP_COUNT = 0;
@@ -19,6 +25,7 @@ public interface Constants {
     byte RREP = 2;
     byte RREP_GRATUITOUS = 4;
     byte DATA = 8;
+    byte HELLO = 9;
 
     int NET_TRANVERSAL_TIME = 2800;
     int EXPIRED_TABLE = 10000;
@@ -31,12 +38,11 @@ public interface Constants {
     //the time to wait between each hello message sent
     int BROADCAST_INTERVAL = 1;
 
-    //the amount of time to store a RREQ entry before the entry dies
-    int PATH_DESCOVERY_TIME = 3000;
+    //the time of hello packets
+    int HELLO_PACKET_INTERVAL_SND = 30000;
+    int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 2;
 
     //energy constants
     int FIRST_THRESHOLD = 15;
     int SECOND_THRESHOLD = 5;
-
-
 }

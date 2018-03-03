@@ -5,8 +5,10 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Data;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
@@ -30,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class AutoManager {
+public class DataLinkBtManager implements IDataLink {
 
     //Helper
     public static final String ID_APP = "#e091#";
@@ -42,18 +44,17 @@ public class AutoManager {
     private final boolean v;
     private final boolean secure;
     private final Context context;
-    private final String TAG = "[AdHoc][AutoManager]";
+    private final String TAG = "[AdHoc][DataLinkBt]";
 
     private ListenerAodv listenerAodv;
-    private ListenerDiscoveryGUI listenerDiscoveryGUI;
+    private ListenerDataLinkAodv listenerDataLinkAodv;
 
     private final String ownStringUUID;
     private final String ownName;
     private final String ownMac;
 
-    private final AodvManager aodvManager;
-
-    private BluetoothManager bluetoothManager;
+    private final ActiveConnections activeConnections;
+    private final BluetoothManager bluetoothManager;
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
     private BluetoothServiceServer bluetoothServiceServer;
@@ -62,30 +63,39 @@ public class AutoManager {
     /**
      * Constructor
      *
-     * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param context      a Context object which gives global information about an application
-     *                     environment.
-     * @param ownUUID      a UUID object which represents the UUID of the current device.
-     * @param listenerAodv a ListenerAodv object which serves as callback functions.
-     * @param secure       a boolean value to determine if the connection is secure.
+     * @param verbose              a boolean value to set the debug/verbose mode.
+     * @param context              a Context object which gives global information about an
+     *                             application environment.
+     * @param ownUUID              a UUID object which represents the UUID of the current device.
+     * @param ownName              a String value which represents the name of the current device.
+     * @param secure               a boolean value to determine if the connection is secure.
+     * @param listenerAodv         a ListenerAodv object which serves as callback functions.
+     * @param listenerDataLinkAodv a listenerDataLinkAodv object which serves as callback functions.
      * @throws IOException     Signals that an I/O exception of some sort has occurred.
      * @throws DeviceException Signals that a Bluetooth Device Exception exception has occurred.
      */
-    public AutoManager(boolean verbose, Context context, UUID ownUUID, ListenerAodv listenerAodv,
-                       boolean secure) throws IOException, DeviceException {
+    public DataLinkBtManager(boolean verbose, Context context, UUID ownUUID, String ownName, boolean secure,
+                             ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) throws IOException, DeviceException {
 
-        this.bluetoothManager = new BluetoothManager(verbose, context);
+
         this.v = verbose;
         this.context = context;
-        this.hashMapDevices = new HashMap<>();
+        this.bluetoothManager = new BluetoothManager(verbose, context);
         this.listenerAodv = listenerAodv;
-        this.ownStringUUID = ownUUID.toString().substring(LOW, END); // Take only the last part (24-36) to optimize the process
-        this.updateName();
-        this.ownName = BluetoothUtil.getCurrentName();
+        this.listenerDataLinkAodv = listenerDataLinkAodv;
+        this.ownStringUUID = ownUUID.toString().substring(LOW, END); // Take only the last part
+        // (24-36) to optimize the process
+        this.ownName = ownName;
         this.ownMac = BluetoothUtil.getCurrentMac(context);
+
+        this.hashMapDevices = new HashMap<>();
+        this.activeConnections = new ActiveConnections();
+
+        this.updateName();
         this.listenServer(ownUUID); // Listen on server threads
         this.secure = secure;
-        this.aodvManager = new AodvManager(v, ownStringUUID, ownName, listenerAodv);
+
+        //TODO check if bluetooth is active and set duration here
     }
 
     /**
@@ -98,49 +108,23 @@ public class AutoManager {
 
     /**
      * Method allowing to get all the paired Bluetooth devices.
-     *
-     * @param duration an integer value between 0 and 3600 which represents the time of the
-     *                 discovery mode.
-     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
-     * BluetoothAdHocDevice object.
-     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
      */
-    public HashMap<String, BluetoothAdHocDevice> getPaired(int duration) throws BluetoothBadDuration {
-        // Check if Bluetooth is enabled
-        if (!bluetoothManager.isEnabled()) {
-
-            // If not, enable bluetooth and enable the discovery
-            bluetoothManager.enable();
-            bluetoothManager.enableDiscovery(duration);
-        }
+    public void getPaired() {
 
         // Add paired devices into the hashMapDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
-            if (entry.getValue().getDevice().getName().contains(AutoManager.ID_APP)) {
+            if (entry.getValue().getDevice().getName().contains(DataLinkBtManager.ID_APP)) {
                 hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
                         + " into hashMapDevices");
             }
         }
-        return bluetoothManager.getPairedDevices();
     }
 
     /**
      * Method allowing to discover other bluetooth devices.
-     *
-     * @param duration an integer value between 0 and 3600 which represents the time of
-     *                 the discovery mode.
-     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
      */
-    public void discovery(int duration) throws BluetoothBadDuration {
-
-        // Check if Bluetooth is enabled
-        if (!bluetoothManager.isEnabled()) {
-
-            // If not, enable bluetooth and enable the discovery
-            bluetoothManager.enable();
-            bluetoothManager.enableDiscovery(duration);
-        }
+    public void discovery() {
 
         // Start the discovery process
         bluetoothManager.discovery(new DiscoveryListener() {
@@ -149,7 +133,7 @@ public class AutoManager {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName() != null &&
-                            entry.getValue().getDevice().getName().contains(AutoManager.ID_APP)) {
+                            entry.getValue().getDevice().getName().contains(DataLinkBtManager.ID_APP)) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into hashMapDevices");
@@ -157,35 +141,18 @@ public class AutoManager {
                 }
                 // Stop and unregister to the discovery process
                 bluetoothManager.unregisterDiscovery();
-
-                // Execute onDiscoveryCompleted in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onDiscoveryCompleted(hashMapBluetoothDevice);
-                }
             }
 
             @Override
             public void onDiscoveryStarted() {
-                // Execute onDiscoveryStarted in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onDiscoveryStarted();
-                }
             }
 
             @Override
             public void onDeviceFound(BluetoothDevice device) {
-                // Execute onDeviceFound in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onDeviceFound(device);
-                }
             }
 
             @Override
             public void onScanModeChange(int currentMode, int oldMode) {
-                // Execute onScanModeChange in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onScanModeChange(currentMode, oldMode);
-                }
             }
         });
     }
@@ -196,7 +163,7 @@ public class AutoManager {
      */
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
-            if (!aodvManager.getConnections().containsKey(entry.getValue().getShortUuid())) {
+            if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
                 //TODO remove
                 if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
 
@@ -225,13 +192,13 @@ public class AutoManager {
                         try {
                             processMsgReceived(message);
                         } catch (IOException e) {
-                            listenerAodv.clientIOException(e);
+                            listenerAodv.IOException(e);
                         } catch (NoConnectionException e) {
-                            listenerAodv.clientNoConnectionException(e);
+                            listenerAodv.NoConnectionException(e);
                         } catch (AodvUnknownTypeException e) {
-                            listenerAodv.clientAodvUnknownTypeException(e);
+                            listenerAodv.AodvUnknownTypeException(e);
                         } catch (AodvUnknownDestException e) {
-                            listenerAodv.clientAodvUnknownDestException(e);
+                            listenerAodv.AodvUnknownDestException(e);
                         }
                     }
 
@@ -254,21 +221,19 @@ public class AutoManager {
                         if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
                         try {
-                            aodvManager.removeRemoteConnection(remoteUuid);
+                            listenerDataLinkAodv.brokenLink(remoteUuid);
                         } catch (IOException e) {
-                            listenerAodv.clientIOException(e);
+                            listenerAodv.IOException(e);
+                        } catch (NoConnectionException e) {
+                            listenerAodv.NoConnectionException(e);
                         }
+
                     }
 
                     @Override
                     public void onConnection(String deviceName, String deviceAddress, String localAddress) {
                         if (v)
                             Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
-
-                        // Execute onConnection in the GUI
-                        if (listenerDiscoveryGUI != null) {
-                            listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
-                        }
                     }
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
@@ -277,7 +242,7 @@ public class AutoManager {
             public void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException {
 
                 // Add the active connection into the autoConnectionActives object
-                aodvManager.addConnection(uuid.toString().substring(LOW, END).toLowerCase(), network);
+                activeConnections.addConnection(uuid.toString().substring(LOW, END).toLowerCase(), network);
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
@@ -288,15 +253,6 @@ public class AutoManager {
 
         // Start the bluetoothServiceClient thread
         new Thread(bluetoothServiceClient).start();
-    }
-
-    /**
-     * Method allowing to stop the server listening threads.
-     *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
-     */
-    public void stopListening() throws IOException {
-        bluetoothServiceServer.stopListening();
     }
 
     /**
@@ -312,13 +268,13 @@ public class AutoManager {
                 try {
                     processMsgReceived(message);
                 } catch (IOException e) {
-                    listenerAodv.serverIOException(e);
+                    listenerAodv.IOException(e);
                 } catch (NoConnectionException e) {
-                    listenerAodv.serverNoConnectionException(e);
+                    listenerAodv.NoConnectionException(e);
                 } catch (AodvUnknownTypeException e) {
-                    listenerAodv.serverAodvUnknownTypeException(e);
+                    listenerAodv.AodvUnknownTypeException(e);
                 } catch (AodvUnknownDestException e) {
-                    listenerAodv.serverAodvUnknownDestException(e);
+                    listenerAodv.AodvUnknownDestException(e);
                 }
             }
 
@@ -341,21 +297,17 @@ public class AutoManager {
                 if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
                 try {
-                    aodvManager.removeRemoteConnection(remoteUuid);
+                    listenerDataLinkAodv.brokenLink(remoteUuid);
                 } catch (IOException e) {
-                    listenerAodv.serverIOException(e);
+                    listenerAodv.IOException(e);
+                } catch (NoConnectionException e) {
+                    listenerAodv.NoConnectionException(e);
                 }
             }
 
             @Override
             public void onConnection(String deviceName, String deviceAddress, String localAddress) {
                 if (v) Log.d(TAG, "Connected to client: " + deviceAddress);
-
-                // Execute onConnection in the GUI
-                if (listenerDiscoveryGUI != null) {
-                    listenerDiscoveryGUI.onConnection(deviceName, deviceAddress, localAddress);
-                }
-
             }
         });
 
@@ -381,39 +333,50 @@ public class AutoManager {
                 NetworkObject networkObject = bluetoothServiceServer.getActiveConnections().get(message.getHeader().getSenderAddr());
                 if (networkObject != null) {
                     // Add the active connection into the autoConnectionActives object
-                    aodvManager.addConnection((String) message.getPdu(), networkObject);
+                    activeConnections.addConnection((String) message.getPdu(), networkObject);
                 }
                 break;
             default:
                 // Handle messages in protocol scope
-                aodvManager.processMsgReceived(message);
+                listenerDataLinkAodv.processMsgReceived(message);
         }
     }
 
-    /**
-     * Method allowing to send a message to a remote address.
-     *
-     * @param address a String value which represents the destination address.
-     * @param pdu     a Serializable value which represents the PDU of the message.
-     * @throws IOException           Signals that an I/O exception of some sort has occurred.
-     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
-     */
-    public void sendMessage(String address, Serializable pdu) throws IOException, NoConnectionException {
-
-        // Create MessageAdHoc object
-        Header header = new Header(TypeAodv.DATA.getCode(), ownStringUUID, ownName);
-        MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
-
-        // Send message to remote device
-        aodvManager.send(msg, address);
+    @Override
+    public void stopListening() throws IOException {
+        bluetoothServiceServer.stopListening();
     }
 
-    /**
-     * Method allowing to set the listenerDiscoveryGUI callback.
-     *
-     * @param listenerDiscoveryGUI a listenerDiscoveryGUI object that serves as callback.
-     */
-    public void setListenerDiscoveryGUI(ListenerDiscoveryGUI listenerDiscoveryGUI) {
-        this.listenerDiscoveryGUI = listenerDiscoveryGUI;
+    @Override
+    public void sendMessage(MessageAdHoc message, String address) throws IOException {
+
+        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
+        networkObject.sendObjectStream(message);
+        if (v) Log.d(TAG, "Send directly to " + address);
+    }
+
+    @Override
+    public boolean isDirectNeighbors(String address) {
+        return activeConnections.getActivesConnections().containsKey(address);
+    }
+
+    @Override
+    public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            if (!entry.getKey().equals(originateAddr)) {
+                entry.getValue().sendObjectStream(message);
+                if (v)
+                    Log.d(TAG, "Broadcast Message to " + entry.getKey());
+            }
+        }
+    }
+
+    @Override
+    public void broadcast(MessageAdHoc message) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            entry.getValue().sendObjectStream(message);
+            if (v)
+                Log.d(TAG, "Broadcast Message to " + entry.getKey());
+        }
     }
 }
