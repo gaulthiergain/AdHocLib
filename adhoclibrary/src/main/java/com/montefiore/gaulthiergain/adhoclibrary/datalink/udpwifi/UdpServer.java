@@ -38,13 +38,11 @@ class UdpServer extends Thread {
         running = true;
 
         try {
-            Log.d(TAG, "Starting UDP Server");
+            Log.d(TAG, "Starting UDP Server on " + serverPort);
             socket = new DatagramSocket(serverPort);
 
 
             while (running) {
-
-                Log.d(TAG, "UDP Server is running");
 
                 // receive request
                 byte[] buffer = new byte[65507];

@@ -13,7 +13,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
@@ -48,6 +46,7 @@ public class DataLinkWifiManager implements IDataLink {
     private final WifiManager wifiManager;
 
     private UdpPeers udpPeers;
+    private MessageAdHoc connectMessage;
 
     /**
      * Constructor
@@ -172,6 +171,38 @@ public class DataLinkWifiManager implements IDataLink {
 
     }
 
+
+    private void timerClientMessage(final MessageAdHoc message,
+                                    final InetAddress groupOwnerAddress, final int time) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                udpPeers.sendMessageTo(message, groupOwnerAddress, serverPort);
+                if (connectMessage == null) {
+                    timerClientMessage(message, groupOwnerAddress, time);
+                }
+
+            }
+        }, time);
+    }
+
+    private void timerGroupOwnerMessage(final MessageAdHoc message, final int time) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                // send Connect Reply Message
+                sendConnectMessage(message, message.getPdu().toString());
+                if (connectMessage == null) {
+                    timerGroupOwnerMessage(message, time);
+                }
+            }
+        }, time);
+    }
+
     /**
      * Method allowing to process received messages.
      *
@@ -181,14 +212,39 @@ public class DataLinkWifiManager implements IDataLink {
      * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
      * @throws AodvUnknownTypeException Signals that a Unknown route has found.
      */
-    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+    private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         switch (message.getHeader().getType()) {
             case "CONNECT":
+                // Send CONNECT_REPLY to client
                 message.setHeader(new Header("CONNECT_REPLY", ownAddress, "Group Owner"));
-                udpPeers.sendMessageTo(message, InetAddress.getByName(message.getPdu().toString()), serverPort);
+                timerGroupOwnerMessage(message, 1000);
                 break;
             case "CONNECT_REPLY":
+                Log.d(TAG, "CONNECT_REPLY rcv " + message.toString());
+                connectMessage = message;
+                message.setHeader(new Header("ACK", ownAddress, "Client"));
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            InetAddress groupOwner = InetAddress.getByName("192.168.49.1");
+                            for (int i = 0; i < 5; i++) {
+                                udpPeers.sendMessageTo(message, groupOwner, serverPort);
+                            }
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+                break;
+            case "ACK":
+                Log.d(TAG, "ACK rcv " + message.toString());
+                connectMessage = message;
+
+
                 break;
             case "HELLO":
                 helloMessages.put(message.getHeader().getSenderAddr(), (long) message.getPdu());
@@ -207,12 +263,6 @@ public class DataLinkWifiManager implements IDataLink {
                 @Override
                 public void onConnectionStarted() {
                     Log.d(TAG, "Connection Started");
-                    /*String ip = "192.168.49.1";
-                    try {
-                        sendConnectMessage(InetAddress.getByAddress(ip.getBytes()));
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
-                    }*/
                 }
 
                 @Override
@@ -229,20 +279,27 @@ public class DataLinkWifiManager implements IDataLink {
                 @Override
                 public void onClient(final InetAddress groupOwnerAddress) {
                     Log.d(TAG, "onClient serverAddress: " + groupOwnerAddress.toString());
-                    sendConnectMessage(groupOwnerAddress);
+                    // Send CONNECT message to group owner
+                    Header header = new Header("CONNECT", "", "");
+                    timerClientMessage(new MessageAdHoc(header, ""), groupOwnerAddress, 1000);
                 }
             });
         }
     }
 
-    private void sendConnectMessage(final InetAddress groupOwnerAddress){
-        Header header = new Header("CONNECT", "", "");
-        final MessageAdHoc msg = new MessageAdHoc(header, "");
-        // Send CONNECT message to group owner
+    private void sendConnectMessage(final MessageAdHoc msg, final String address) {
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                udpPeers.sendMessageTo(msg, groupOwnerAddress, serverPort);
+                InetAddress addr = null;
+                try {
+                    addr = InetAddress.getByName(address.substring(1, address.length()));
+                    udpPeers.sendMessageTo(msg, addr, serverPort);
+                    Log.d(TAG, msg.toString() + " is sent on " + addr + " on " + serverPort);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
@@ -310,4 +367,5 @@ public class DataLinkWifiManager implements IDataLink {
     @Override
     public void getPaired() {
     }
+
 }
