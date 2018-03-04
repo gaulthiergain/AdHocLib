@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -11,14 +12,21 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.provider.Settings;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static android.content.Context.WIFI_SERVICE;
 import static android.os.Looper.getMainLooper;
 
 public class WifiManager {
@@ -73,6 +81,8 @@ public class WifiManager {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         // Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        // Update name
+        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
         WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
             @Override
@@ -140,7 +150,7 @@ public class WifiManager {
 
         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
             @Override
-            public void onConnectionInfoAvailable(WifiP2pInfo info) {
+            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
                 if (v) {
                     Log.d(TAG, "onConnectionInfoAvailable");
                     Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
@@ -160,7 +170,7 @@ public class WifiManager {
         context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
 
         // Get The device from its address
-        WifiP2pDevice device = hashMapWifiDevices.get(address);
+        final WifiP2pDevice device = hashMapWifiDevices.get(address);
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
@@ -217,4 +227,5 @@ public class WifiManager {
             discoveryRegistered = false;
         }
     }
+
 }

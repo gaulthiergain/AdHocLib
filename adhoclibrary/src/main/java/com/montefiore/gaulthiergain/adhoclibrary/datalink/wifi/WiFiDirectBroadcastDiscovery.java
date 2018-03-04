@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
@@ -48,6 +49,10 @@ public class WiFiDirectBroadcastDiscovery extends BroadcastReceiver {
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             if (v) Log.d(TAG, "P2P WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
+        } else if(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE.equals(action)){
+            WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+            String thisDeviceName = device.deviceName;
+            if (v) Log.d(TAG, ">>>DEVICE name " + thisDeviceName);
         }
     }
 }

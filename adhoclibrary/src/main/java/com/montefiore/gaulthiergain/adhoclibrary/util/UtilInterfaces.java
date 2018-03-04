@@ -36,8 +36,4 @@ public class UtilInterfaces {
         return arrayNetworkInterfaces;
 
     }
-
-
-
-
 }

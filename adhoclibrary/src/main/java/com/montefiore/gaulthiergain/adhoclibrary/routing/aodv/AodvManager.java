@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkWifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -101,12 +102,12 @@ public class AodvManager {
      * @param ownName      a String value which represents the name of the current device.
      * @param serverPort   an integer value which represents the server port.
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
+     * @throws DeviceException Signals that a DeviceException has occurred.
      */
     public AodvManager(boolean verbose, Context context, String ownAddress, String ownName,
-                       int serverPort, ListenerAodv listenerAodv) {
+                       int serverPort, ListenerAodv listenerAodv) throws DeviceException {
         this(verbose, ownAddress, ownName, listenerAodv);
-        //initDataLinkWifi(simulateDevices, this.ownAddress, ownName, serverPort);
-
+        initDataLinkWifi(verbose, context, ownAddress, ownName, serverPort);
     }
 
     /**
@@ -143,8 +144,9 @@ public class AodvManager {
 
     /**************************************************Private methods*************************************************/
 
-    private void initDataLinkWifi(String ownAddress, String ownName, int serverPort) {
-        /*dataLink = new DataLinkWifiManager(ownName, this.ownAddress, simulateDevices, true, new Context(), serverPort,
+    private void initDataLinkWifi(boolean v, Context context, String ownAddress, String ownName, int serverPort)
+            throws DeviceException {
+        dataLink = new DataLinkWifiManager(v, context, ownName, ownAddress, serverPort,
                 listenerAodv, new ListenerDataLinkAodv() {
 
             @Override
@@ -157,7 +159,7 @@ public class AodvManager {
                     AodvUnknownDestException, NoConnectionException {
                 processAodvMsgReceived(message);
             }
-        });*/
+        });
     }
 
     private void initDataLinkBt(boolean v, Context context, UUID ownUUID, String ownName)
