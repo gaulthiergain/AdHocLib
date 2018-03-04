@@ -19,8 +19,12 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -171,38 +175,6 @@ public class DataLinkWifiManager implements IDataLink {
 
     }
 
-
-    private void timerClientMessage(final MessageAdHoc message,
-                                    final InetAddress groupOwnerAddress, final int time) {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-
-                udpPeers.sendMessageTo(message, groupOwnerAddress, serverPort);
-                if (connectMessage == null) {
-                    timerClientMessage(message, groupOwnerAddress, time);
-                }
-
-            }
-        }, time);
-    }
-
-    private void timerGroupOwnerMessage(final MessageAdHoc message, final int time) {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-
-                // send Connect Reply Message
-                sendConnectMessage(message, message.getPdu().toString());
-                if (connectMessage == null) {
-                    timerGroupOwnerMessage(message, time);
-                }
-            }
-        }, time);
-    }
-
     /**
      * Method allowing to process received messages.
      *
@@ -215,37 +187,6 @@ public class DataLinkWifiManager implements IDataLink {
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         switch (message.getHeader().getType()) {
-            case "CONNECT":
-                // Send CONNECT_REPLY to client
-                message.setHeader(new Header("CONNECT_REPLY", ownAddress, "Group Owner"));
-                timerGroupOwnerMessage(message, 1000);
-                break;
-            case "CONNECT_REPLY":
-                Log.d(TAG, "CONNECT_REPLY rcv " + message.toString());
-                connectMessage = message;
-                message.setHeader(new Header("ACK", ownAddress, "Client"));
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            InetAddress groupOwner = InetAddress.getByName("192.168.49.1");
-                            for (int i = 0; i < 5; i++) {
-                                udpPeers.sendMessageTo(message, groupOwner, serverPort);
-                            }
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-
-                break;
-            case "ACK":
-                Log.d(TAG, "ACK rcv " + message.toString());
-                connectMessage = message;
-
-
-                break;
             case "HELLO":
                 helloMessages.put(message.getHeader().getSenderAddr(), (long) message.getPdu());
                 break;
@@ -278,10 +219,9 @@ public class DataLinkWifiManager implements IDataLink {
 
                 @Override
                 public void onClient(final InetAddress groupOwnerAddress) {
-                    Log.d(TAG, "onClient serverAddress: " + groupOwnerAddress.toString());
-                    // Send CONNECT message to group owner
-                    Header header = new Header("CONNECT", "", "");
-                    timerClientMessage(new MessageAdHoc(header, ""), groupOwnerAddress, 1000);
+                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.toString());
+                    ownAddress = getDottedDecimalIP(getLocalIPAddress());
+                    Log.d(TAG, "OWN IP address: " + ownAddress);
                 }
             });
         }
@@ -368,4 +308,37 @@ public class DataLinkWifiManager implements IDataLink {
     public void getPaired() {
     }
 
+    private byte[] getLocalIPAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
+                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                            return inetAddress.getAddress();
+                        }
+                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        } catch (NullPointerException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        }
+        return null;
+    }
+
+    private String getDottedDecimalIP(byte[] ipAddr) {
+        //convert to dotted decimal notation:
+        StringBuilder ipAddrStr = new StringBuilder();
+        for (int i=0; i<ipAddr.length; i++) {
+            if (i > 0) {
+                ipAddrStr.append(".");
+            }
+            ipAddrStr.append(ipAddr[i] & 0xFF);
+        }
+        return ipAddrStr.toString();
+    }
 }
