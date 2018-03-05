@@ -15,12 +15,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
@@ -34,10 +37,15 @@ public class DataLinkWifiManager implements IDataLink {
     private final boolean v;
     private final Context context;
 
-    private String ownAddress;
-    private final String ownName;
+    private String ownIpAddress;
+    private String ownMacAddress;
+    private boolean groupOwner;
+
+    private long seqNum;
+    private HashSet<String> ackSet;
+
     private final int serverPort;
-    private final HashMap<String, WifiP2pDevice> neighbors;
+    private final HashMap<String, WifiAdHocDevice> neighbors;
     private final HashMap<String, Long> helloMessages;
     private final ListenerAodv listenerAodv;
     private final ListenerDataLinkAodv listenerDataLinkAodv;
@@ -46,6 +54,7 @@ public class DataLinkWifiManager implements IDataLink {
 
     private UdpPeers udpPeers;
     private MessageAdHoc connectMessage;
+    private final Hashtable<String, WifiP2pDevice> peers;
 
     /**
      * Constructor
@@ -53,25 +62,27 @@ public class DataLinkWifiManager implements IDataLink {
      * @param verbose              a boolean value to set the debug/verbose mode.
      * @param context              a Context object which gives global information about an application
      *                             environment.
-     * @param ownName              a String which represents the name of the device.
-     * @param ownAddress           a String which represents the address of the device.
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
      */
-    public DataLinkWifiManager(boolean verbose, Context context, String ownName, String ownAddress,
-                               int serverPort, ListenerAodv listenerAodv,
-                               ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
+    public DataLinkWifiManager(boolean verbose, Context context, int serverPort,
+                               ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+            throws DeviceException {
         this.v = verbose;
         this.context = context;
-        this.ownName = ownName;
-        this.ownAddress = ownAddress;
         this.serverPort = serverPort;
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
         this.wifiManager = new WifiManager(v, context);
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
+        this.ownMacAddress = wifiManager.getOwnMACAddress().toLowerCase();
+        Log.d(TAG, "OWN MAC is " + ownMacAddress);
         this.init();
+        //
+        this.seqNum = 1;
+        this.ackSet = new HashSet<>();
+        this.peers = new Hashtable<>();
     }
 
     /**
@@ -109,7 +120,7 @@ public class DataLinkWifiManager implements IDataLink {
     }
 
     /**
-     * Method allowing to launch the timer to send HELLO messages between neighbors every TIME (ms).
+     * Method allowing to launch the timer to send HELLO messages between peers every TIME (ms).
      *
      * @param time an integer value which represents the period of the timer.
      */
@@ -118,8 +129,8 @@ public class DataLinkWifiManager implements IDataLink {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                /*for (Map.Entry<String, WifiP2pDevice> entry : neighbors.entrySet()) {
-                    Header header = new Header(TypeAodv.HELLO.getCode(), ownAddress, ownName);
+                /*for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
+                    Header header = new Header(TypeAodv.HELLO.getCode(), ownIpAddress, ownName);
                     MessageAdHoc msg = new MessageAdHoc(header, System.currentTimeMillis());
                     try {
                         sendMessage(msg, entry.getValue().getAddr() + ":" + entry.getValue().getPort());
@@ -144,13 +155,13 @@ public class DataLinkWifiManager implements IDataLink {
             @Override
             public void run() {
 
-                // Check neighbors
+                // Check peers
                 Iterator<Map.Entry<String, Long>> iter = helloMessages.entrySet().iterator();
                 while (iter.hasNext()) {
                     Map.Entry<String, Long> entry = iter.next();
                     long upTime = (System.currentTimeMillis() - entry.getValue());
                     if (upTime > Constants.HELLO_PACKET_INTERVAL_SND) {
-                        // Remove the neighbors and send RRER packets
+                        // Remove the peers and send RRER packets
                         try {
                             if (v)
                                 Log.d(TAG, "Neighbor " + entry.getKey() + " is down for " + upTime);
@@ -177,11 +188,56 @@ public class DataLinkWifiManager implements IDataLink {
      * @throws IOException              Signals that an I/O exception of some sort has occurred.
      * @throws NoConnectionException    Signals that a No Connection Exception exception has occurred.
      * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
-     * @throws AodvUnknownTypeException Signals that a Unknown route has found.
+     * @throws AodvUnknownDestException Signals that a Unknown route has found.
      */
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         switch (message.getHeader().getType()) {
+            case "CONNECT":
+
+                if (groupOwner) {
+                    Log.d(TAG, "THIS IS SPARTA GO");
+                    /*Header header = new Header("CONNECT", groupOwnerAddress.toString(), "client");
+                    sendConnectMessage(new MessageAdHoc(header, ownMacAddress), "192.168.49.255");*/
+                }
+
+                String sourceAddr = message.getHeader().getSenderAddr();
+                UDPmsg udPmsg = (UDPmsg) message.getPdu();
+                neighbors.put(message.getHeader().getSenderAddr(),
+                        new WifiAdHocDevice(message.getHeader().getSenderName(),
+                                message.getHeader().getSenderAddr(), udPmsg.getOwnMac()));
+                Log.d(TAG, "CATCH " + neighbors.get(message.getHeader().getSenderAddr()));
+
+                if(ownIpAddress == null){
+                    ownIpAddress = udPmsg.getDestinationAddress();
+                }
+
+                Header header = new Header("CONNECT_REPLY", ownIpAddress, "groupOwner");
+                //ackSet.add(sourceAddr + "#" + seqNum);
+                sendConnectMessage(new MessageAdHoc(header, new UDPmsg(ownMacAddress, udPmsg.getSeqNumber(), sourceAddr)),
+                        sourceAddr);
+                break;
+            case "CONNECT_REPLY":
+
+                String sourceAddr2 = message.getHeader().getSenderAddr();
+                UDPmsg udPmsg2 = (UDPmsg) message.getPdu();
+
+
+                Log.d(TAG, "Client check " + (sourceAddr2 + "#" + udPmsg2.getSeqNumber()) + " in set");
+                if (ackSet.contains(sourceAddr2 + "#" + udPmsg2.getSeqNumber())) {
+                    ackSet.remove(sourceAddr2 + "#" + udPmsg2.getSeqNumber());
+                    Log.d(TAG, "Client remove " + (sourceAddr2 + "#" + udPmsg2.getSeqNumber()) + " in set");
+                }
+
+                neighbors.put(message.getHeader().getSenderAddr(),
+                        new WifiAdHocDevice(message.getHeader().getSenderName(),
+                                message.getHeader().getSenderAddr(), udPmsg2.getOwnMac()));
+
+                Log.d(TAG, "CATCH " + neighbors.get(message.getHeader().getSenderAddr()));
+
+                break;
+            case "ACK":
+
             case "HELLO":
                 helloMessages.put(message.getHeader().getSenderAddr(), (long) message.getPdu());
                 break;
@@ -193,12 +249,13 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void connect() {
-        for (Map.Entry<String, WifiP2pDevice> deviceEntry : neighbors.entrySet()) {
+        for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
             wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
                 public void onConnectionStarted(boolean isGroupOwner) {
                     Log.d(TAG, "Connection Started isGO: " + isGroupOwner);
+                    groupOwner = isGroupOwner;
                 }
 
                 @Override
@@ -208,18 +265,59 @@ public class DataLinkWifiManager implements IDataLink {
 
                 @Override
                 public void onGroupOwner(InetAddress groupOwnerAddress) {
-                    Log.d(TAG, "onGroupOwner: " + groupOwnerAddress.toString());
-                    ownAddress = groupOwnerAddress.toString();
+                    ownIpAddress = groupOwnerAddress.getHostAddress();
+                    groupOwner = true;
+
+
+                    Log.d(TAG, "onGroupOwner: " + ownIpAddress);
                 }
 
                 @Override
-                public void onClient(final InetAddress groupOwnerAddress, final InetAddress ownAddress) {
-                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.toString());
-                    Log.d(TAG, "OWN IP address: " + ownAddress.toString());
+                public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                    ownIpAddress = address.getHostAddress();
+                    groupOwner = false;
+
+                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
+                    Log.d(TAG, "OWN IP address: " + ownIpAddress);
+
+                    Header header = new Header("CONNECT", ownIpAddress, "client");
+                    ackSet.add(groupOwnerAddress.getHostAddress() + "#" + seqNum);
+                    Log.d(TAG, "Client add " + (groupOwnerAddress.getHostAddress() + "#" + seqNum) + " into set");
+                    timerClientMessage(new MessageAdHoc(header, new UDPmsg(ownMacAddress, seqNum++, groupOwnerAddress.getHostAddress())),
+                            groupOwnerAddress.getHostAddress(), 1000);
+
+
                 }
             });
         }
     }
+
+    private void timerClientMessage(final MessageAdHoc message,
+                                    final String dest, final int time) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                // send Connect Reply Message
+                sendConnectMessage(message, dest);
+
+                UDPmsg udPmsg = (UDPmsg) message.getPdu();
+
+                Log.d(TAG, "Timer client: " + (dest + "#" + udPmsg.getSeqNumber()) + " into set");
+
+                if (ackSet.contains(dest + "#" + udPmsg.getSeqNumber())) {
+                    Log.d(TAG, "Timer client contains " + (dest + "#" + udPmsg.getSeqNumber()) + " into set");
+                    timerClientMessage(message, dest, time);
+                }
+                /*if (time < 30000) {
+                    timerClientMessage(message, dest, time + time);
+                }*/
+            }
+        }, time);
+    }
+
 
     private void sendConnectMessage(final MessageAdHoc msg, final String address) {
 
@@ -228,7 +326,7 @@ public class DataLinkWifiManager implements IDataLink {
             public void run() {
                 InetAddress addr;
                 try {
-                    addr = InetAddress.getByName(address.substring(1, address.length()));
+                    addr = InetAddress.getByName(address);
                     udpPeers.sendMessageTo(msg, addr, serverPort);
                     Log.d(TAG, msg.toString() + " is sent on " + addr + " on " + serverPort);
                 } catch (UnknownHostException e) {
@@ -260,7 +358,7 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
-        /*for (Map.Entry<String, SimulateDevice> entry : neighbors.entrySet()) {
+        /*for (Map.Entry<String, SimulateDevice> entry : peers.entrySet()) {
             if(!entry.getKey().equals(originateAddr)){
                 sendMessage(message, entry.getValue().getAddr() + ":" + entry.getValue().getPort());
             }
@@ -282,12 +380,12 @@ public class DataLinkWifiManager implements IDataLink {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers) {
+            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
                 // Add no paired devices into the hashMapDevices
-                for (Map.Entry<String, WifiP2pDevice> entry : peers.entrySet()) {
+                for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
                             entry.getValue().deviceName.contains(DataLinkBtManager.ID_APP)) {
-                        neighbors.put(entry.getValue().deviceAddress, entry.getValue());
+                        peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().deviceAddress
                                 + " into hashMapDevices");
                     }
@@ -300,5 +398,39 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void getPaired() {
+    }
+
+
+    class WifiAdHocDevice {
+        private final String name;
+        private final String ipAddress;
+        private final String macAddress;
+
+        WifiAdHocDevice(String name, String ipAddress, String macAddress) {
+            this.name = name;
+            this.ipAddress = ipAddress;
+            this.macAddress = macAddress;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getIpAddress() {
+            return ipAddress;
+        }
+
+        public String getMacAddress() {
+            return macAddress;
+        }
+
+        @Override
+        public String toString() {
+            return "WifiAdHocDevice{" +
+                    "name='" + name + '\'' +
+                    ", ipAddress='" + ipAddress + '\'' +
+                    ", macAddress='" + macAddress + '\'' +
+                    '}';
+        }
     }
 }

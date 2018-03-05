@@ -57,7 +57,6 @@ class UdpServer extends Thread {
                 try {
                     MessageAdHoc msg = (MessageAdHoc) deserialize(packet.getData());
                     Log.d(TAG, "Request from: " + address + ":" + port + " - " + msg.toString() + "\n");
-                    msg.setPdu(address);
 
                     handler.obtainMessage(Service.MESSAGE_READ, msg).sendToTarget();
                 } catch (ClassNotFoundException e) {

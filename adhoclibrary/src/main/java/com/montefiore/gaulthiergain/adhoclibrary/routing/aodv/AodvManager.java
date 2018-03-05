@@ -146,7 +146,7 @@ public class AodvManager {
 
     private void initDataLinkWifi(boolean v, Context context, String ownAddress, String ownName, int serverPort)
             throws DeviceException {
-        dataLink = new DataLinkWifiManager(v, context, ownName, ownAddress, serverPort,
+        dataLink = new DataLinkWifiManager(v, context, serverPort,
                 listenerAodv, new ListenerDataLinkAodv() {
 
             @Override

@@ -27,6 +27,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -237,6 +238,34 @@ public class WifiManager {
             context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
             discoveryRegistered = false;
         }
+    }
+
+    public String getOwnMACAddress(){
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface ntwInterface : interfaces) {
+
+                if (ntwInterface.getName().equalsIgnoreCase("p2p0")) {
+                    byte[] byteMac = ntwInterface.getHardwareAddress();
+                    if (byteMac==null){
+                        return null;
+                    }
+                    StringBuilder strBuilder = new StringBuilder();
+                    for (byte aByteMac : byteMac) {
+                        strBuilder.append(String.format("%02X:", aByteMac));
+                    }
+
+                    if (strBuilder.length()>0){
+                        strBuilder.deleteCharAt(strBuilder.length()-1);
+                    }
+
+                    return strBuilder.toString();
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return null;
     }
 
     private byte[] getLocalIPAddress() {
