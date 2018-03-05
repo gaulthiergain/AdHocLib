@@ -15,16 +15,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -202,8 +197,8 @@ public class DataLinkWifiManager implements IDataLink {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
             wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
-                public void onConnectionStarted() {
-                    Log.d(TAG, "Connection Started");
+                public void onConnectionStarted(boolean isGroupOwner) {
+                    Log.d(TAG, "Connection Started isGO: " + isGroupOwner);
                 }
 
                 @Override
@@ -218,10 +213,9 @@ public class DataLinkWifiManager implements IDataLink {
                 }
 
                 @Override
-                public void onClient(final InetAddress groupOwnerAddress) {
+                public void onClient(final InetAddress groupOwnerAddress, final InetAddress ownAddress) {
                     Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.toString());
-                    ownAddress = getDottedDecimalIP(getLocalIPAddress());
-                    Log.d(TAG, "OWN IP address: " + ownAddress);
+                    Log.d(TAG, "OWN IP address: " + ownAddress.toString());
                 }
             });
         }
@@ -232,7 +226,7 @@ public class DataLinkWifiManager implements IDataLink {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                InetAddress addr = null;
+                InetAddress addr;
                 try {
                     addr = InetAddress.getByName(address.substring(1, address.length()));
                     udpPeers.sendMessageTo(msg, addr, serverPort);
@@ -306,39 +300,5 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void getPaired() {
-    }
-
-    private byte[] getLocalIPAddress() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
-                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
-                            return inetAddress.getAddress();
-                        }
-                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
-        } catch (NullPointerException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
-        }
-        return null;
-    }
-
-    private String getDottedDecimalIP(byte[] ipAddr) {
-        //convert to dotted decimal notation:
-        StringBuilder ipAddrStr = new StringBuilder();
-        for (int i=0; i<ipAddr.length; i++) {
-            if (i > 0) {
-                ipAddrStr.append(".");
-            }
-            ipAddrStr.append(ipAddr[i] & 0xFF);
-        }
-        return ipAddrStr.toString();
     }
 }

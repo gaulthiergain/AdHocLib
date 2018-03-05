@@ -12,7 +12,7 @@ public interface ConnectionListener {
     /**
      * Callback when the connection is started.
      */
-    void onConnectionStarted();
+    void onConnectionStarted(boolean isGroupOwner);
 
     /**
      * Callback when the connection fails.
@@ -35,5 +35,5 @@ public interface ConnectionListener {
      * @param groupOwnerAddress an InetAddress object which represents the current address'
      *                          group owner.
      */
-    void onClient(InetAddress groupOwnerAddress);
+    void onClient(InetAddress groupOwnerAddress, InetAddress ownAddress);
 }

@@ -20,9 +20,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
@@ -159,7 +164,13 @@ public class WifiManager {
                 if (info.isGroupOwner) {
                     connectionListener.onGroupOwner(info.groupOwnerAddress);
                 } else {
-                    connectionListener.onClient(info.groupOwnerAddress);
+                    try {
+                        connectionListener.onClient(info.groupOwnerAddress,
+                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
+                        //TODO test if thread needed here
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
@@ -171,14 +182,14 @@ public class WifiManager {
 
         // Get The device from its address
         final WifiP2pDevice device = hashMapWifiDevices.get(address);
-        WifiP2pConfig config = new WifiP2pConfig();
+        final WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
 
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                connectionListener.onConnectionStarted();
+                connectionListener.onConnectionStarted(device.isGroupOwner());
             }
 
             @Override
@@ -228,4 +239,54 @@ public class WifiManager {
         }
     }
 
+    private byte[] getLocalIPAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
+                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                            return inetAddress.getAddress();
+                        }
+                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        } catch (NullPointerException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        }
+        return null;
+    }
+
+    private String getDottedDecimalIP(byte[] ipAddr) {
+        //convert to dotted decimal notation:
+        StringBuilder ipAddrStr = new StringBuilder();
+        for (int i = 0; i < ipAddr.length; i++) {
+            if (i > 0) {
+                ipAddrStr.append(".");
+            }
+            ipAddrStr.append(ipAddr[i] & 0xFF);
+        }
+        return ipAddrStr.toString();
+    }
+
+    public void updateName(String name) {
+        try {
+            Method method = wifiP2pManager.getClass().getMethod("setDeviceName",
+                    WifiP2pManager.Channel.class, String.class, WifiP2pManager.ActionListener.class);
+
+            method.invoke(wifiP2pManager, channel, "New Device Name", new WifiP2pManager.ActionListener() {
+                public void onSuccess() {
+                }
+
+                public void onFailure(int reason) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
