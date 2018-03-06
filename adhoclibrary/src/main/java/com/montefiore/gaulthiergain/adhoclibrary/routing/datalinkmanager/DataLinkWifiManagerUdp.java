@@ -208,7 +208,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                                 message.getHeader().getSenderAddr(), udPmsg.getOwnMac()));
                 Log.d(TAG, "CATCH " + neighbors.get(message.getHeader().getSenderAddr()));
 
-                if(ownIpAddress == null){
+                if (ownIpAddress == null) {
                     ownIpAddress = udPmsg.getDestinationAddress();
                 }
 
@@ -251,9 +251,8 @@ public class DataLinkWifiManagerUdp implements IDataLink {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
             wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
-                public void onConnectionStarted(boolean isGroupOwner) {
-                    Log.d(TAG, "Connection Started isGO: " + isGroupOwner);
-                    groupOwner = isGroupOwner;
+                public void onConnectionStarted() {
+                    Log.d(TAG, "Connection Started");
                 }
 
                 @Override
@@ -265,7 +264,6 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                 public void onGroupOwner(InetAddress groupOwnerAddress) {
                     ownIpAddress = groupOwnerAddress.getHostAddress();
                     groupOwner = true;
-
 
                     Log.d(TAG, "onGroupOwner: " + ownIpAddress);
                 }
@@ -378,7 +376,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
+            public void onDiscoveryCompleted(String deviceName, HashMap<String, WifiP2pDevice> peerslist) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&

@@ -37,6 +37,8 @@ import static android.os.Looper.getMainLooper;
 
 public class WifiManager {
 
+    private String ownName;
+
     private final boolean v;
     private final Context context;
     private final String TAG = "[AdHoc][WifiManager]";
@@ -83,11 +85,11 @@ public class WifiManager {
 
         //  Indicates a change in the Wi-Fi P2P status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates a change in the list of available hashMapWifiDevices.
+        //  Indicates a change in the list of available hashMapWifiDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        // Indicates this device's details have changed.
+        //  Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        // Update name
+        //  Update name
         intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
         WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
@@ -106,7 +108,7 @@ public class WifiManager {
                         if (v)
                             Log.d(TAG, "Devices found: " +
                                     hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
-                        discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
+                        discoveryListener.onDiscoveryCompleted(ownName, hashMapWifiDevices);
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
@@ -118,8 +120,13 @@ public class WifiManager {
             }
         };
 
-        wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(wifiP2pManager, channel,
-                peerListListener, v);
+        wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(v, wifiP2pManager, channel,
+                peerListListener, new ListenerWifiManager() {
+            @Override
+            public void setDeviceName(String name) {
+                ownName = name;
+            }
+        });
         discoveryRegistered = true;
         context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
 
@@ -168,7 +175,6 @@ public class WifiManager {
                     try {
                         connectionListener.onClient(info.groupOwnerAddress,
                                 InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
-                        //TODO test if thread needed here
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
@@ -190,7 +196,7 @@ public class WifiManager {
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                connectionListener.onConnectionStarted(device.isGroupOwner());
+                connectionListener.onConnectionStarted();
             }
 
             @Override
@@ -240,14 +246,14 @@ public class WifiManager {
         }
     }
 
-    public String getOwnMACAddress(){
+    public String getOwnMACAddress() {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface ntwInterface : interfaces) {
 
                 if (ntwInterface.getName().equalsIgnoreCase("p2p0")) {
                     byte[] byteMac = ntwInterface.getHardwareAddress();
-                    if (byteMac==null){
+                    if (byteMac == null) {
                         return null;
                     }
                     StringBuilder strBuilder = new StringBuilder();
@@ -255,8 +261,8 @@ public class WifiManager {
                         strBuilder.append(String.format("%02X:", aByteMac));
                     }
 
-                    if (strBuilder.length()>0){
-                        strBuilder.deleteCharAt(strBuilder.length()-1);
+                    if (strBuilder.length() > 0) {
+                        strBuilder.deleteCharAt(strBuilder.length() - 1);
                     }
 
                     return strBuilder.toString();
@@ -317,5 +323,9 @@ public class WifiManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public interface ListenerWifiManager {
+        void setDeviceName(String name);
     }
 }

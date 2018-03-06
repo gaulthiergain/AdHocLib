@@ -7,6 +7,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
@@ -84,16 +85,15 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 // Connect to the remote host
                 bluetoothSocket.connect();
                 network = new NetworkObject(new AdHocSocketBluetooth(bluetoothSocket));
-                if(listenerAutoConnect != null){
+                if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(uuid, network);
                 }
 
                 // Notify handler
-                String messageHandle[] = new String[3];
-                messageHandle[0] = bluetoothSocket.getRemoteDevice().getName();
-                messageHandle[1] = bluetoothSocket.getRemoteDevice().getAddress();
-                messageHandle[2] = bluetoothAdHocDevice.getUuid();
-                handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                handler.obtainMessage(Service.CONNECTION_PERFORMED,
+                        new RemoteBtDevice(bluetoothSocket.getRemoteDevice().getAddress(),
+                                bluetoothSocket.getRemoteDevice().getName(),
+                                bluetoothAdHocDevice.getUuid())).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);

@@ -5,6 +5,9 @@ import android.content.Context;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 /**
@@ -88,13 +91,11 @@ public abstract class Service {
                     break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");
-                    String handleConnectionAborted[] = (String[]) msg.obj;
-                    messageListener.onConnectionClosed(handleConnectionAborted[0], handleConnectionAborted[1]);
+                    messageListener.onConnectionClosed((AbstractRemoteDevice) msg.obj);
                     break;
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
-                    String handleConnectionPerformed[] = (String[]) msg.obj;
-                    messageListener.onConnection(handleConnectionPerformed[0], handleConnectionPerformed[1], handleConnectionPerformed[2]);
+                    messageListener.onConnection((AbstractRemoteDevice) msg.obj);
                     break;
                 case FORWARD:
                     if (v) Log.d(TAG, "FORWARD");

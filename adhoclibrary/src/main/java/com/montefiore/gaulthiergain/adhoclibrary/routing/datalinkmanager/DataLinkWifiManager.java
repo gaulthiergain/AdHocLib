@@ -7,6 +7,8 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
@@ -30,25 +32,24 @@ public class DataLinkWifiManager implements IDataLink {
 
     public static final String ID_APP = "#e091#";
     private static final String TAG = "[AdHoc][DataLinkWifi]";
-    private static final int NB_THREAD = 8;
-    private final boolean v;
-    private final Context context;
 
+    private final boolean v;
+    private final int nbThreads;
+    private final int serverPort;
+    private final Context context;
+    private final WifiManager wifiManager;
+    private final ListenerAodv listenerAodv;
+    private final ActiveConnections activeConnections;
+    private final Hashtable<String, WifiP2pDevice> peers;
+    private final ListenerDataLinkAodv listenerDataLinkAodv;
+
+    private String ownName;
     private String ownIpAddress;
     private String ownMacAddress;
     private String groupOwnerAddr;
 
-
-    private final int serverPort;
-    private final ListenerAodv listenerAodv;
-    private final ListenerDataLinkAodv listenerDataLinkAodv;
-
-    private final WifiManager wifiManager;
-
-    private final Hashtable<String, WifiP2pDevice> peers;
     private WifiServiceServer wifiServiceServer;
-    private ActiveConnections activeConnections;
-    private String ownName = "name";
+
 
     /**
      * Constructor
@@ -59,11 +60,12 @@ public class DataLinkWifiManager implements IDataLink {
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
      */
-    public DataLinkWifiManager(boolean verbose, Context context, int serverPort,
+    public DataLinkWifiManager(boolean verbose, Context context, int nbThreads, int serverPort,
                                ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException {
         this.v = verbose;
         this.context = context;
+        this.nbThreads = nbThreads;
         this.serverPort = serverPort;
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
@@ -107,9 +109,11 @@ public class DataLinkWifiManager implements IDataLink {
             }
 
             @Override
-            public void onConnectionClosed(String deviceName, String deviceAddress) {
+            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
 
-                if (v) Log.d(TAG, "Server broken with " + deviceAddress + " - " + deviceAddress);
+                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+
+                if (v) Log.d(TAG, "Server broken with " + remoteWifiDevice.getDeviceAddress());
 
                 /*try {
                     listenerDataLinkAodv.brokenLink(remoteUuid);
@@ -121,14 +125,18 @@ public class DataLinkWifiManager implements IDataLink {
             }
 
             @Override
-            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+            public void onConnection(AbstractRemoteDevice remoteDevice) {
+                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+
                 if (v)
-                    Log.d(TAG, "Sever connected to client: " + deviceAddress + " - " + deviceName + " - " + localAddress);
+                    Log.d(TAG, "Sever connected to client: "
+                            + remoteWifiDevice.getDeviceAddress() + " - "
+                            + remoteWifiDevice.getDeviceLocalAddress());
             }
         });
 
         // Start the bluetoothServiceServer listening process
-        wifiServiceServer.listen(NB_THREAD, serverPort);
+        wifiServiceServer.listen(nbThreads, serverPort);
     }
 
     /**
@@ -162,13 +170,22 @@ public class DataLinkWifiManager implements IDataLink {
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true, groupOwnerAddr, serverPort, 10000, 3, new MessageListener() {
             @Override
-            public void onConnectionClosed(String deviceName, String deviceAddress) {
-                Log.d(TAG, "Client break with server " + deviceAddress + " - " + deviceName);
+            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+
+                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+
+                if (v)
+                    Log.d(TAG, "Client break with server " + remoteWifiDevice.getDeviceAddress());
             }
 
             @Override
-            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-                Log.d(TAG, "Client connected with server " + deviceAddress + " - " + deviceName + " - " + localAddress);
+            public void onConnection(AbstractRemoteDevice remoteDevice) {
+
+                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+
+                if (v)
+                    Log.d(TAG, "Client connected with server " + remoteWifiDevice.getDeviceAddress()
+                            + " " + remoteWifiDevice.getDeviceLocalAddress());
             }
 
             @Override
@@ -223,8 +240,8 @@ public class DataLinkWifiManager implements IDataLink {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
             wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
-                public void onConnectionStarted(boolean isGroupOwner) {
-                    Log.d(TAG, "Connection Started isGO: " + isGroupOwner);
+                public void onConnectionStarted() {
+                    Log.d(TAG, "Connection Started");
                 }
 
                 @Override
@@ -310,7 +327,7 @@ public class DataLinkWifiManager implements IDataLink {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
+            public void onDiscoveryCompleted(String deviceName, HashMap<String, WifiP2pDevice> peerslist) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
@@ -320,6 +337,11 @@ public class DataLinkWifiManager implements IDataLink {
                                 + " into hashMapDevices");
                     }
                 }
+
+                // Update ownName
+                ownName = deviceName;
+                Log.d(TAG, "OWN NAME " + ownName);
+
                 wifiManager.unregisterDiscovery();
                 listenerAodv.onDiscoveryCompleted();
             }
@@ -329,5 +351,4 @@ public class DataLinkWifiManager implements IDataLink {
     @Override
     public void getPaired() {
     }
-
 }

@@ -16,13 +16,17 @@ public class WiFiDirectBroadcastDiscovery extends BroadcastReceiver {
     private WifiP2pManager manager;
     private Channel channel;
     private PeerListListener peerListListener;
+    private WifiManager.ListenerWifiManager listenerWifiManager;
 
-    public WiFiDirectBroadcastDiscovery(WifiP2pManager manager, Channel channel, PeerListListener peerListListener, boolean verbose) {
+    public WiFiDirectBroadcastDiscovery(boolean verbose, WifiP2pManager manager, Channel channel,
+                                        PeerListListener peerListListener,
+                                        WifiManager.ListenerWifiManager listenerWifiManager) {
         super();
         this.v = verbose;
         this.manager = manager;
         this.channel = channel;
         this.peerListListener = peerListListener;
+        this.listenerWifiManager = listenerWifiManager;
     }
 
     @Override
@@ -49,10 +53,8 @@ public class WiFiDirectBroadcastDiscovery extends BroadcastReceiver {
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             if (v) Log.d(TAG, "P2P WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
-        } else if(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE.equals(action)){
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            String thisDeviceName = device.deviceName;
-            if (v) Log.d(TAG, ">>>DEVICE name " + thisDeviceName);
+            listenerWifiManager.setDeviceName(device.deviceName);
         }
     }
 }

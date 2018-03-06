@@ -6,13 +6,16 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Random;
 import java.util.UUID;
@@ -66,7 +69,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
             try {
                 connect();
                 i = attempts;
-            } catch (SocketTimeoutException e) {
+            } catch (SocketException | SocketTimeoutException e) {
                 i++;
                 try {
                     long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
@@ -82,7 +85,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
     /**
      * Method allowing to connect to a remote bluetooth device.
      */
-    public void connect() throws SocketTimeoutException {
+    public void connect() throws SocketTimeoutException, SocketException {
         if (v) Log.d(TAG, "connect to: " + remoteAddress + ":" + port);
 
         if (state == STATE_NONE) {
@@ -97,19 +100,15 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 socket.connect((new InetSocketAddress(remoteAddress, port)), timeOut);
 
                 network = new NetworkObject(new AdHocSocketWifi(socket));
-                if(listenerAutoConnect != null){
+                if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(remoteAddress, network);
                 }
 
                 // Notify handler
-                String[] messageHandle = new String[3];
-                messageHandle[0] = "name"; //TODO
-                // Set remote address
-                messageHandle[1] = socket.getRemoteSocketAddress().toString()
-                        .split(":")[0].substring(1);
-                // Set local address
-                messageHandle[2] = socket.getLocalAddress().toString().substring(1);
-                handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                handler.obtainMessage(Service.CONNECTION_PERFORMED,
+                        new RemoteWifiDevice(socket.getRemoteSocketAddress().toString()
+                                .split(":")[0].substring(1),
+                                socket.getLocalAddress().toString().substring(1))).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);

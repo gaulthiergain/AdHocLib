@@ -12,12 +12,17 @@ public interface ConnectionListener {
     /**
      * Callback when the connection is started.
      */
-    void onConnectionStarted(boolean isGroupOwner);
+    void onConnectionStarted();
 
     /**
      * Callback when the connection fails.
      *
-     * @param reasonCode an integer value which represents the status of the discovery.
+     * @param reasonCode an integer value which represents the status of the discovery. The origin
+     *                   of the error can be one of the following:
+     *                   - WifiP2pManager.BUSY
+     *                   - WifiP2pManager.ERROR
+     *                   - WifiP2pManager.P2P_UNSUPPORTED
+     *                   - WifiP2pManager.NO_SERVICE_REQUESTS
      */
     void onConnectionFailed(int reasonCode);
 
@@ -34,6 +39,7 @@ public interface ConnectionListener {
      *
      * @param groupOwnerAddress an InetAddress object which represents the current address'
      *                          group owner.
+     * @param ownAddress        an InetAddress object which represents the address of the device.
      */
     void onClient(InetAddress groupOwnerAddress, InetAddress ownAddress);
 }

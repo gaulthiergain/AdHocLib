@@ -13,6 +13,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWif
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 import java.io.IOException;
@@ -143,11 +145,9 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    String messageHandle[] = new String[3];
-                    messageHandle[0] = isocket.getRemoteSocketAddress();
-                    messageHandle[1] = "name"; //TODO
-                    messageHandle[2] = socket.getLocalAddress().toString().substring(1);
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteWifiDevice(
+                            isocket.getRemoteSocketAddress(),
+                            socket.getLocalAddress().toString().substring(1))).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
@@ -178,11 +178,9 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    String messageHandle[] = new String[3];
-                    messageHandle[0] = socket.getRemoteDevice().getName();
-                    messageHandle[1] = socket.getRemoteDevice().getAddress();
-                    messageHandle[2] = uuid.toString();
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, messageHandle).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteBtDevice(
+                            socket.getRemoteDevice().getAddress(),
+                            socket.getRemoteDevice().getName(), uuid.toString())).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }

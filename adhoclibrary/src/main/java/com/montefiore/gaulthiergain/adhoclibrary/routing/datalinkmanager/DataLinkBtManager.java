@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
@@ -210,10 +212,13 @@ public class DataLinkBtManager implements IDataLink {
                     }
 
                     @Override
-                    public void onConnectionClosed(String deviceName, String deviceAddress) {
+                    public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+
+                        RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
 
                         // Get the remote UUID
-                        String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
+                        String remoteUuid = remoteBtDevice.getDeviceAddress().
+                                replace(":", "").toLowerCase();
 
                         if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
@@ -228,9 +233,13 @@ public class DataLinkBtManager implements IDataLink {
                     }
 
                     @Override
-                    public void onConnection(String deviceName, String deviceAddress, String localAddress) {
+                    public void onConnection(AbstractRemoteDevice remoteDevice) {
+                        RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
+
                         if (v)
-                            Log.d(TAG, "Connected to server: " + deviceAddress + " - " + deviceName);
+                            Log.d(TAG, "Connected to server: "
+                                    + remoteBtDevice.getDeviceAddress() + " - "
+                                    + remoteBtDevice.getDeviceName());
                     }
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
@@ -286,10 +295,13 @@ public class DataLinkBtManager implements IDataLink {
             }
 
             @Override
-            public void onConnectionClosed(String deviceName, String deviceAddress) {
+            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+
+                RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
 
                 // Get the remote UUID
-                String remoteUuid = deviceAddress.replace(":", "").toLowerCase();
+                String remoteUuid = remoteBtDevice.getDeviceAddress()
+                        .replace(":", "").toLowerCase();
 
                 if (v) Log.d(TAG, "Link broken with " + remoteUuid);
 
@@ -303,8 +315,10 @@ public class DataLinkBtManager implements IDataLink {
             }
 
             @Override
-            public void onConnection(String deviceName, String deviceAddress, String localAddress) {
-                if (v) Log.d(TAG, "Connected to client: " + deviceAddress);
+            public void onConnection(AbstractRemoteDevice remoteDevice) {
+                RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
+
+                if (v) Log.d(TAG, "Connected to client: " + remoteBtDevice.toString());
             }
         });
 

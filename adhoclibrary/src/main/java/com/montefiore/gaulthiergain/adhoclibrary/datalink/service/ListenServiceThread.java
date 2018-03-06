@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -54,23 +56,17 @@ class ListenServiceThread extends Thread {
                 if (network.getISocket() != null) {
 
                     if (network.getISocket() instanceof AdHocSocketWifi) {
-                        // Notify handler
-                        String handleConnectionAborted[] = new String[2];
-                        // Get remote device name
-                        handleConnectionAborted[0] = "name"; //TODO
-                        // Get remote device address
-                        handleConnectionAborted[1] = network.getISocket().getRemoteSocketAddress();
-                        handler.obtainMessage(Service.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+                        // Notify handler and set remote device address
+                        handler.obtainMessage(Service.CONNECTION_ABORTED,
+                                new RemoteWifiDevice(network.getISocket().getRemoteSocketAddress()))
+                                .sendToTarget();
                     } else {
                         // Get Socket
                         BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
-                        String handleConnectionAborted[] = new String[2];
-                        // Get remote device name
-                        handleConnectionAborted[0] = socket.getRemoteDevice().getName();
-                        // Get remote device address
-                        handleConnectionAborted[1] = socket.getRemoteDevice().getAddress();
-                        // Notify handler
-                        handler.obtainMessage(Service.CONNECTION_ABORTED, handleConnectionAborted).sendToTarget();
+                        // Notify handler and set remote device address and name
+                        handler.obtainMessage(Service.CONNECTION_ABORTED,
+                                new RemoteBtDevice(socket.getRemoteDevice().getAddress(),
+                                        socket.getRemoteDevice().getName())).sendToTarget();
                     }
 
                     network.closeConnection();

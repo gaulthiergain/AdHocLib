@@ -30,5 +30,5 @@ public interface DiscoveryListener {
      *              mapping between the name of a device and a
      *              {@link WifiP2pDevice} object.
      */
-    void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peers);
+    void onDiscoveryCompleted(String deviceName, HashMap<String, WifiP2pDevice> peers);
 }
