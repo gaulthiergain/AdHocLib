@@ -13,6 +13,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -94,14 +95,8 @@ public class DataLinkWifiManagerUdp implements IDataLink {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException e) {
-                    listenerAodv.IOException(e);
-                } catch (AodvUnknownTypeException e) {
-                    listenerAodv.AodvUnknownTypeException(e);
-                } catch (AodvUnknownDestException e) {
-                    listenerAodv.AodvUnknownDestException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerAodv.catchException(e);
                 }
             }
 
@@ -111,6 +106,11 @@ public class DataLinkWifiManagerUdp implements IDataLink {
 
             @Override
             public void onForward(MessageAdHoc message) {
+
+            }
+
+            @Override
+            public void catchException(Exception e) {
 
             }
         });
@@ -169,9 +169,9 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                             iter.remove();
                             listenerDataLinkAodv.brokenLink(entry.getKey());
                         } catch (IOException e) {
-                            listenerAodv.IOException(e);
+                            listenerAodv.catchException(e);
                         } catch (NoConnectionException e) {
-                            listenerAodv.NoConnectionException(e);
+                            listenerAodv.catchException(e);
                         }
                     }
                 }

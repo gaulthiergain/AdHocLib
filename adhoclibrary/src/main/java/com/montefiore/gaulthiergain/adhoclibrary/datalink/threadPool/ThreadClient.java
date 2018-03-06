@@ -2,7 +2,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
@@ -15,7 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.EOFException;
 import java.io.IOException;
 
-public class ThreadClient extends Thread {
+class ThreadClient extends Thread {
 
     private static final String TAG = "[AdHoc][ThreadClient]";
 
@@ -41,15 +40,13 @@ public class ThreadClient extends Thread {
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                Log.d(TAG, "Error InterruptedException: " + e.getMessage());
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (EOFException e) {
-                Log.d(TAG, "Error EOFException: " + e.getMessage());
-                e.printStackTrace(); //TODO remove
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (IOException e) {
-                Log.d(TAG, "Error IOException: " + e.getMessage());
-                e.printStackTrace(); //TODO remove
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } finally {
                 if (network != null) {
                     if (socketDevice instanceof AdHocSocketWifi) {
@@ -78,7 +75,6 @@ public class ThreadClient extends Thread {
     }
 
     private void processRequest(MessageAdHoc request) throws IOException {
-        Log.d(TAG, "Processing request: " + request);
         handler.obtainMessage(Service.MESSAGE_READ, request).sendToTarget();
     }
 

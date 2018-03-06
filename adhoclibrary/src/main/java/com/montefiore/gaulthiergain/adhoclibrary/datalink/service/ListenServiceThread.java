@@ -73,7 +73,7 @@ class ListenServiceThread extends Thread {
                 }
                 break;
             } catch (ClassNotFoundException e) {
-                e.printStackTrace(); //TODO update
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             }
         }
     }
@@ -82,7 +82,7 @@ class ListenServiceThread extends Thread {
      * Method allowing to close the remote connection.
      */
     void cancel() {
-        if (network.getISocket() != null) { //TODO !network.getSocket().isConnected()
+        if (network.getISocket() != null) {
             network.closeConnection();
         }
     }

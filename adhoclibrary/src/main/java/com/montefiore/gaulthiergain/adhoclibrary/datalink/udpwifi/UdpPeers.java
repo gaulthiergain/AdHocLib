@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.net.InetAddress;
 
+import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.CATH_EXCEPTION;
 import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.MESSAGE_READ;
 import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.MESSAGE_WRITE;
 
@@ -34,6 +35,10 @@ public class UdpPeers extends Thread {
                     case MESSAGE_WRITE:
                         if (v) Log.d(TAG, "MESSAGE_WRITE");
                         messageListener.onMessageSent((MessageAdHoc) msg.obj);
+                        break;
+                    case CATH_EXCEPTION:
+                        if (v) Log.d(TAG, "MESSAGE_WRITE");
+                        messageListener.catchException((Exception) msg.obj);
                         break;
                 }
             }

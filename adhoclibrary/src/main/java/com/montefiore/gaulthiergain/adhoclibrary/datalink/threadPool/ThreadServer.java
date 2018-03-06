@@ -153,7 +153,7 @@ public class ThreadServer extends Thread {
                 }
 
             } catch (IOException e) {
-                if (v) Log.e(TAG, "Error IO: " + e.getMessage());
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
                 break;
             }
         }
@@ -186,7 +186,7 @@ public class ThreadServer extends Thread {
                 }
 
             } catch (IOException e) {
-                if (v) Log.e(TAG, "Error IO: " + e.getMessage());
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
                 break;
             }
         }

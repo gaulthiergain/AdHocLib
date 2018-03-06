@@ -30,7 +30,7 @@ public class NetworkObject {
             this.oos = new ObjectOutputStream(isocket.getOutputStream());
             this.ois = new ObjectInputStream(isocket.getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(); //todo check this
         }
     }
 

@@ -5,21 +5,22 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -190,14 +191,8 @@ public class DataLinkBtManager implements IDataLink {
                     public void onMessageReceived(MessageAdHoc message) {
                         try {
                             processMsgReceived(message);
-                        } catch (IOException e) {
-                            listenerAodv.IOException(e);
-                        } catch (NoConnectionException e) {
-                            listenerAodv.NoConnectionException(e);
-                        } catch (AodvUnknownTypeException e) {
-                            listenerAodv.AodvUnknownTypeException(e);
-                        } catch (AodvUnknownDestException e) {
-                            listenerAodv.AodvUnknownDestException(e);
+                        } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                            listenerAodv.catchException(e);
                         }
                     }
 
@@ -209,6 +204,11 @@ public class DataLinkBtManager implements IDataLink {
                     @Override
                     public void onForward(MessageAdHoc message) {
                         if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+                    }
+
+                    @Override
+                    public void catchException(Exception e) {
+
                     }
 
                     @Override
@@ -225,9 +225,9 @@ public class DataLinkBtManager implements IDataLink {
                         try {
                             listenerDataLinkAodv.brokenLink(remoteUuid);
                         } catch (IOException e) {
-                            listenerAodv.IOException(e);
+                            listenerAodv.catchException(e);
                         } catch (NoConnectionException e) {
-                            listenerAodv.NoConnectionException(e);
+                            listenerAodv.catchException(e);
                         }
 
                     }
@@ -274,13 +274,13 @@ public class DataLinkBtManager implements IDataLink {
                 try {
                     processMsgReceived(message);
                 } catch (IOException e) {
-                    listenerAodv.IOException(e);
+                    listenerAodv.catchException(e);
                 } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
+                    listenerAodv.catchException(e);
                 } catch (AodvUnknownTypeException e) {
-                    listenerAodv.AodvUnknownTypeException(e);
+                    listenerAodv.catchException(e);
                 } catch (AodvUnknownDestException e) {
-                    listenerAodv.AodvUnknownDestException(e);
+                    listenerAodv.catchException(e);
                 }
             }
 
@@ -292,6 +292,11 @@ public class DataLinkBtManager implements IDataLink {
             @Override
             public void onForward(MessageAdHoc message) {
                 if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+
             }
 
             @Override
@@ -308,9 +313,9 @@ public class DataLinkBtManager implements IDataLink {
                 try {
                     listenerDataLinkAodv.brokenLink(remoteUuid);
                 } catch (IOException e) {
-                    listenerAodv.IOException(e);
+                    listenerAodv.catchException(e);
                 } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
+                    listenerAodv.catchException(e);
                 }
             }
 

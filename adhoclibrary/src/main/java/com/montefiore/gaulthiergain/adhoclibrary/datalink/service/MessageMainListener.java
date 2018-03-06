@@ -29,4 +29,11 @@ public interface MessageMainListener {
      * @param message a MessageAdHoc object which defines the message.
      */
     void onForward(MessageAdHoc message);
+
+    /**
+     * Callback when exception occurs.
+     *
+     * @param e an Exception object which represents the exception.
+     */
+    void catchException(Exception e);
 }

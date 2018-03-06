@@ -10,7 +10,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractR
  */
 public interface MessageListener extends MessageMainListener {
 
-
     void onConnectionClosed(AbstractRemoteDevice remoteDevice);
 
     void onConnection(AbstractRemoteDevice remoteDevice);

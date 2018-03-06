@@ -16,6 +16,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -87,14 +88,8 @@ public class DataLinkWifiManager implements IDataLink {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException e) {
-                    listenerAodv.IOException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
-                } catch (AodvUnknownTypeException e) {
-                    listenerAodv.AodvUnknownTypeException(e);
-                } catch (AodvUnknownDestException e) {
-                    listenerAodv.AodvUnknownDestException(e);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerAodv.catchException(e);
                 }
             }
 
@@ -106,6 +101,11 @@ public class DataLinkWifiManager implements IDataLink {
             @Override
             public void onForward(MessageAdHoc message) {
                 if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+
             }
 
             @Override
@@ -192,14 +192,8 @@ public class DataLinkWifiManager implements IDataLink {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException e) {
-                    listenerAodv.IOException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
-                } catch (AodvUnknownTypeException e) {
-                    listenerAodv.AodvUnknownTypeException(e);
-                } catch (AodvUnknownDestException e) {
-                    listenerAodv.AodvUnknownDestException(e);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerAodv.catchException(e);
                 }
             }
 
@@ -211,6 +205,11 @@ public class DataLinkWifiManager implements IDataLink {
             @Override
             public void onForward(MessageAdHoc message) {
                 if (v) Log.d(TAG, "Message forward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+
             }
         });
 

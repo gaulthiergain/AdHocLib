@@ -53,7 +53,7 @@ public class UdpClient extends Thread {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
         }
 
     }

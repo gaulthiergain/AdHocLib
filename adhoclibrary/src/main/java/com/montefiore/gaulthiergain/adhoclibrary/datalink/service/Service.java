@@ -34,6 +34,7 @@ public abstract class Service {
     // Constants for connection
     public static final int CONNECTION_ABORTED = 8;         // connection aborted
     public static final int CONNECTION_PERFORMED = 9;       // connection performed
+    public static final int CATH_EXCEPTION = 10;            // catch exception
 
     protected int state;
     protected final boolean v;
@@ -100,6 +101,10 @@ public abstract class Service {
                 case FORWARD:
                     if (v) Log.d(TAG, "FORWARD");
                     messageListener.onForward((MessageAdHoc) msg.obj);
+                    break;
+                case CATH_EXCEPTION:
+                    if (v) Log.d(TAG, "FORWARD");
+                    messageListener.catchException((Exception) msg.obj);
                     break;
                 default:
                     if (v) Log.d(TAG, "default");

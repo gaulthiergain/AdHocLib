@@ -75,7 +75,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                     long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
                     Thread.sleep((result));
                 } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                    handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
                 }
                 Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
             }
@@ -119,11 +119,10 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                e.printStackTrace();
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (NoConnectionException e) {
-                e.printStackTrace();
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             }
-            //TODO run() exception
         }
     }
 

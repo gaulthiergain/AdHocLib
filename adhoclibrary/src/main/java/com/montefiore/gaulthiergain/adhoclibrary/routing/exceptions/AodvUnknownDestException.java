@@ -6,7 +6,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class AodvUnknownDestException extends Exception {
+public class AodvUnknownDestException extends AodvAbstractException {
     /**
      * Constructor
      *

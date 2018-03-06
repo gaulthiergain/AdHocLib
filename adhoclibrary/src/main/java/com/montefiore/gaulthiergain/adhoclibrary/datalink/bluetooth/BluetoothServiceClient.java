@@ -122,7 +122,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                     long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
                     Thread.sleep((result));
                 } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                    handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
                 }
                 Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
             }

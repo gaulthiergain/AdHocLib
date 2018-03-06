@@ -21,9 +21,6 @@ import java.util.Set;
 
 public class BluetoothManager {
 
-    private long startTime = 0;
-    private long estimatedTime;
-
     private final boolean v;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
@@ -252,15 +249,12 @@ public class BluetoothManager {
                             intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)));
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                startTime = System.currentTimeMillis();
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_STARTED");
                 // Clear the hashMap
                 hashMapBluetoothDevice.clear();
                 // Listener onDiscoveryStarted
                 discoveryListener.onDiscoveryStarted();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                estimatedTime = System.currentTimeMillis() - startTime;
-                Log.d(TAG, "TIME NEED (nano):" + estimatedTime);
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener onDiscoveryCompleted
                 discoveryListener.onDiscoveryCompleted(hashMapBluetoothDevice);

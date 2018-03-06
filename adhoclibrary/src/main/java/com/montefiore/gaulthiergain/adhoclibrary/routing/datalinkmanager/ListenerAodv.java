@@ -64,37 +64,9 @@ public interface ListenerAodv {
     void timerExpiredRREQ(String destAddr, int retry);
 
     /**
-     * Callback when a IOException has occured
+     * Callback when exception occurs.
      *
-     * @param e an IOException object
+     * @param e an Exception object which represents the exception.
      */
-    void IOException(IOException e);
-
-    /**
-     * Callback when a NoConnectionException has occured
-     *
-     * @param e a NoConnectionException object
-     */
-    void NoConnectionException(NoConnectionException e);
-
-    /**
-     * Callback when a AodvUnknownTypeException has occured
-     *
-     * @param e an AodvUnknownTypeException object
-     */
-    void AodvUnknownTypeException(AodvUnknownTypeException e);
-
-    /**
-     * Callback when a AodvUnknownDestException has occured
-     *
-     * @param e an AodvUnknownDestException object
-     */
-    void AodvUnknownDestException(AodvUnknownDestException e);
-
-    /**
-     * Callback when a DeviceException has occured
-     *
-     * @param e a DeviceException object
-     */
-    void DeviceException(DeviceException e);
+    void catchException(Exception e);
 }
