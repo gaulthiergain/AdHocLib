@@ -143,7 +143,7 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    String messageHandle[] = new String[2];
+                    String messageHandle[] = new String[3];
                     messageHandle[0] = isocket.getRemoteSocketAddress();
                     messageHandle[1] = "name"; //TODO
                     messageHandle[2] = socket.getLocalAddress().toString().substring(1);

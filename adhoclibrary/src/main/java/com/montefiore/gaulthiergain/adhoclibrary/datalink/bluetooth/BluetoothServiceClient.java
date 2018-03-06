@@ -23,6 +23,7 @@ import java.util.UUID;
  */
 public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
+    //todo refactor this? (backoff algorithm)
     private static final int LOW = 500;
     private static final int HIGH = 2500;
 

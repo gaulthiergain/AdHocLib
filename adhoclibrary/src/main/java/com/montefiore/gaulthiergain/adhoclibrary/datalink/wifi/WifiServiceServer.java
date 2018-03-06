@@ -3,12 +3,14 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ThreadServer;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>This class defines the server's logic for wifi implementation. </p>
@@ -55,5 +57,9 @@ public class WifiServiceServer extends ServiceServer {
         setState(STATE_LISTENING);
 
         if (v) Log.d(TAG, "Listening on port: " + port);
+    }
+
+    public ConcurrentHashMap<String, NetworkObject> getActiveConnections() {
+        return threadListen.getActiveConnexion();
     }
 }
