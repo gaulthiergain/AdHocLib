@@ -239,6 +239,9 @@ public class DataLinkWifiManager implements IDataLink {
                 public void onGroupOwner(InetAddress groupOwnerAddress) {
                     ownIpAddress = groupOwnerAddress.getHostAddress();
                     Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+
+                    listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
+
                     try {
                         listenServer();
                     } catch (IOException e) {
@@ -251,6 +254,8 @@ public class DataLinkWifiManager implements IDataLink {
 
                     groupOwnerAddr = groupOwnerAddress.getHostAddress();
                     ownIpAddress = address.getHostAddress();
+
+                    listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
 
                     Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
                     Log.d(TAG, "OWN IP address: " + ownIpAddress);
@@ -327,6 +332,7 @@ public class DataLinkWifiManager implements IDataLink {
                 // Update ownName
                 ownName = deviceName;
                 Log.d(TAG, "OWN NAME " + ownName);
+                listenerDataLinkAodv.getDeviceName(deviceName);
 
                 wifiManager.unregisterDiscovery();
                 listenerAodv.onDiscoveryCompleted();

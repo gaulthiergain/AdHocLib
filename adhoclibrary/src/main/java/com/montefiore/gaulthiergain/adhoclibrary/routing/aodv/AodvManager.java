@@ -43,9 +43,9 @@ public class AodvManager {
     private long ownSequenceNum;
     private MessageAdHoc dataMessage;
 
+    private String ownName;
+    private String ownAddress;
     private final boolean v;
-    private final String ownName;
-    private final String ownAddress;
     private final AodvHelper aodvHelper;
     private final ListenerAodv listenerAodv;
     private final HashMap<String, Long> mapDestSequenceNumber;
@@ -93,21 +93,18 @@ public class AodvManager {
     }
 
     /**
-     * Constructor
+     * Constructor wifi
      *
      * @param verbose      a boolean value to set the debug/verbose mode.
      * @param context      a Context object which gives global information about an application
      *                     environment.
-     * @param ownAddress   a String value which represents the address of the current device.
-     * @param ownName      a String value which represents the name of the current device.
      * @param serverPort   an integer value which represents the server port.
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      */
-    public AodvManager(boolean verbose, Context context, String ownAddress, String ownName,
-                       int serverPort, ListenerAodv listenerAodv) throws DeviceException {
-        this(verbose, ownAddress, ownName, listenerAodv);
-        initDataLinkWifi(verbose, context, ownAddress, ownName, serverPort);
+    public AodvManager(boolean verbose, Context context, int nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException {
+        this(verbose, "", "", listenerAodv); //update
+        initDataLinkWifi(verbose, context, nbThreads, serverPort);
     }
 
     /**
@@ -144,9 +141,9 @@ public class AodvManager {
 
     /**************************************************Private methods*************************************************/
 
-    private void initDataLinkWifi(boolean v, Context context, String ownAddress, String ownName, int serverPort)
+    private void initDataLinkWifi(boolean v, Context context, int nbThreads, int serverPort)
             throws DeviceException {
-        dataLink = new DataLinkWifiManager(v, context, 10, serverPort,
+        dataLink = new DataLinkWifiManager(v, context, nbThreads, serverPort,
                 listenerAodv, new ListenerDataLinkAodv() {
 
             @Override
@@ -159,10 +156,22 @@ public class AodvManager {
                     AodvUnknownDestException, NoConnectionException {
                 processAodvMsgReceived(message);
             }
+
+            @Override
+            public void getDeviceAddress(String address) {
+                ownAddress = address;
+                Log.d(TAG, "--------> Addr " + address);
+            }
+
+            @Override
+            public void getDeviceName(String name) {
+                ownName = name;
+                Log.d(TAG, "--------> Name " + name);
+            }
         });
     }
 
-    private void initDataLinkBt(boolean v, Context context, UUID ownUUID, String ownName)
+    private void initDataLinkBt(boolean v, Context context, UUID ownUUID, final String ownName)
             throws IOException, DeviceException {
 
         dataLink = new DataLinkBtManager(v, context, ownUUID, ownName, true,
@@ -176,6 +185,16 @@ public class AodvManager {
             @Override
             public void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException, AodvUnknownDestException, NoConnectionException {
                 processAodvMsgReceived(message);
+            }
+
+            @Override
+            public void getDeviceAddress(String address) {
+                //todo
+            }
+
+            @Override
+            public void getDeviceName(String name) {
+                //todo
             }
         });
 
