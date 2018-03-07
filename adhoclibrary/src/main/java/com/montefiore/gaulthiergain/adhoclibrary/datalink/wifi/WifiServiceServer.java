@@ -6,8 +6,8 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ListSocketDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ThreadServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;

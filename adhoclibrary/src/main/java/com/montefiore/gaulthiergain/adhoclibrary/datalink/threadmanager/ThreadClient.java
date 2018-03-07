@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;

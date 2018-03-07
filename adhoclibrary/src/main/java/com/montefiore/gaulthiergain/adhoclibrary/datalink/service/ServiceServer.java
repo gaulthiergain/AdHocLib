@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool.ThreadServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;

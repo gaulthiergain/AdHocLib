@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadpool;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
