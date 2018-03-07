@@ -105,7 +105,7 @@ public class DataLinkWifiManager implements IDataLink {
 
             @Override
             public void catchException(Exception e) {
-
+                listenerAodv.catchException(e);
             }
 
             @Override
@@ -115,23 +115,18 @@ public class DataLinkWifiManager implements IDataLink {
 
                 if (v) Log.d(TAG, "Server broken with " + remoteWifiDevice.getDeviceAddress());
 
-                /*try {
-                    listenerDataLinkAodv.brokenLink(remoteUuid);
-                } catch (IOException e) {
-                    listenerAodv.IOException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.NoConnectionException(e);
-                }*/
+                try {
+                    listenerDataLinkAodv.brokenLink(remoteDevice.getDeviceAddress());
+                } catch (IOException | NoConnectionException e) {
+                    listenerAodv.catchException(e);
+                }
+
+                listenerAodv.onConnectionClosed(remoteDevice);
             }
 
             @Override
             public void onConnection(AbstractRemoteDevice remoteDevice) {
-                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
-
-                if (v)
-                    Log.d(TAG, "Sever connected to client: "
-                            + remoteWifiDevice.getDeviceAddress() + " - "
-                            + remoteWifiDevice.getDeviceLocalAddress());
+                listenerAodv.onConnection(remoteDevice);
             }
         });
 
@@ -171,21 +166,13 @@ public class DataLinkWifiManager implements IDataLink {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true, groupOwnerAddr, serverPort, 10000, 3, new MessageListener() {
             @Override
             public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
-
-                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
-
-                if (v)
-                    Log.d(TAG, "Client break with server " + remoteWifiDevice.getDeviceAddress());
+                listenerAodv.onConnectionClosed(remoteDevice);
+                //TODO update aodv code
             }
 
             @Override
             public void onConnection(AbstractRemoteDevice remoteDevice) {
-
-                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
-
-                if (v)
-                    Log.d(TAG, "Client connected with server " + remoteWifiDevice.getDeviceAddress()
-                            + " " + remoteWifiDevice.getDeviceLocalAddress());
+                listenerAodv.onConnection(remoteDevice);
             }
 
             @Override
@@ -209,7 +196,7 @@ public class DataLinkWifiManager implements IDataLink {
 
             @Override
             public void catchException(Exception e) {
-
+                listenerAodv.catchException(e);
             }
         });
 

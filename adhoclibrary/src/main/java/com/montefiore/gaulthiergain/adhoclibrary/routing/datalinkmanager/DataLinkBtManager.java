@@ -208,7 +208,7 @@ public class DataLinkBtManager implements IDataLink {
 
                     @Override
                     public void catchException(Exception e) {
-
+                        listenerAodv.catchException(e);
                     }
 
                     @Override
@@ -230,17 +230,14 @@ public class DataLinkBtManager implements IDataLink {
                             listenerAodv.catchException(e);
                         }
 
+                        listenerAodv.onConnectionClosed(remoteDevice);
                     }
 
                     @Override
                     public void onConnection(AbstractRemoteDevice remoteDevice) {
-                        RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
-
-                        if (v)
-                            Log.d(TAG, "Connected to server: "
-                                    + remoteBtDevice.getDeviceAddress() + " - "
-                                    + remoteBtDevice.getDeviceName());
+                        listenerAodv.onConnection(remoteDevice);
                     }
+
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
         bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
@@ -296,7 +293,7 @@ public class DataLinkBtManager implements IDataLink {
 
             @Override
             public void catchException(Exception e) {
-
+                listenerAodv.catchException(e);
             }
 
             @Override
@@ -317,13 +314,13 @@ public class DataLinkBtManager implements IDataLink {
                 } catch (NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
+
+                listenerAodv.onConnectionClosed(remoteDevice);
             }
 
             @Override
             public void onConnection(AbstractRemoteDevice remoteDevice) {
-                RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
-
-                if (v) Log.d(TAG, "Connected to client: " + remoteBtDevice.toString());
+                listenerAodv.onConnection(remoteDevice);
             }
         });
 

@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -69,4 +70,8 @@ public interface ListenerAodv {
      * @param e an Exception object which represents the exception.
      */
     void catchException(Exception e);
+
+    void onConnectionClosed(AbstractRemoteDevice remoteDevice);
+
+    void onConnection(AbstractRemoteDevice remoteDevice);
 }
