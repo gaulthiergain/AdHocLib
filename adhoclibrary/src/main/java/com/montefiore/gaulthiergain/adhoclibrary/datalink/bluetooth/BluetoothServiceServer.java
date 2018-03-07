@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
@@ -21,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 public class BluetoothServiceServer extends ServiceServer {
+
+    private static final int MAX_THREAD = 8; //to check if good value
 
     /**
      * Constructor
@@ -47,13 +50,17 @@ public class BluetoothServiceServer extends ServiceServer {
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
     public void listen(int nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
-                       UUID uuid) throws IOException {
+                       UUID uuid) throws IOException, MaxThreadReachedException {
         if (v) Log.d(TAG, "Listening()");
 
         // Cancel any thread currently running a connection
         if (threadListen != null) {
             threadListen.cancel();
             threadListen = null;
+        }
+
+        if (nbThreads >= MAX_THREAD) {
+            throw new MaxThreadReachedException("Number of threads must be smaller than " + MAX_THREAD);
         }
 
         // Start thread Listening

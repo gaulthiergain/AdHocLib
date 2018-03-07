@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothSer
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
@@ -231,9 +232,7 @@ public class DataLinkBtManager implements IDataLink {
 
                         try {
                             listenerDataLinkAodv.brokenLink(remoteUuid);
-                        } catch (IOException e) {
-                            listenerAodv.catchException(e);
-                        } catch (NoConnectionException e) {
+                        } catch (IOException | NoConnectionException e) {
                             listenerAodv.catchException(e);
                         }
 
@@ -277,13 +276,7 @@ public class DataLinkBtManager implements IDataLink {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException e) {
-                    listenerAodv.catchException(e);
-                } catch (NoConnectionException e) {
-                    listenerAodv.catchException(e);
-                } catch (AodvUnknownTypeException e) {
-                    listenerAodv.catchException(e);
-                } catch (AodvUnknownDestException e) {
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
                     listenerAodv.catchException(e);
                 }
             }
@@ -332,8 +325,12 @@ public class DataLinkBtManager implements IDataLink {
         });
 
         // Start the bluetoothServiceServer listening process
-        bluetoothServiceServer.listen(nbThreads, secure, "secure",
-                BluetoothAdapter.getDefaultAdapter(), ownUUID);
+        try {
+            bluetoothServiceServer.listen(nbThreads, secure, "secure",
+                    BluetoothAdapter.getDefaultAdapter(), ownUUID);
+        } catch (MaxThreadReachedException e) {
+            listenerAodv.catchException(e);
+        }
 
     }
 
