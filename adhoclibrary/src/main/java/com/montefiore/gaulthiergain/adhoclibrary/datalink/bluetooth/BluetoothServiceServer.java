@@ -47,7 +47,8 @@ public class BluetoothServiceServer extends ServiceServer {
      * @param bluetoothAdapter a BluetoothAdapter object which represents the local device Bluetooth
      *                         adapter.
      * @param uuid             an UUID object which identify the physical device.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException               Signals that an I/O exception of some sort has occurred.
+     * @throws MaxThreadReachedException Signals that the maximum number of threads is reached.
      */
     public void listen(int nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
                        UUID uuid) throws IOException, MaxThreadReachedException {
