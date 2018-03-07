@@ -10,7 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainLis
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
@@ -38,8 +38,10 @@ public class DataLinkWifiManagerUdp implements IDataLink {
     private final boolean v;
     private final Context context;
 
+    private String ownName;
     private String ownIpAddress;
     private String ownMacAddress;
+    private String groupOwnerAddr;
     private boolean groupOwner;
 
     private long seqNum;
@@ -51,7 +53,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
     private final ListenerAodv listenerAodv;
     private final ListenerDataLinkAodv listenerDataLinkAodv;
 
-    private final WifiManager wifiManager;
+    private final WifiAdHocManager wifiAdHocManager;
 
     private UdpPeers udpPeers;
     private MessageAdHoc connectMessage;
@@ -67,17 +69,26 @@ public class DataLinkWifiManagerUdp implements IDataLink {
      * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
      */
     public DataLinkWifiManagerUdp(boolean verbose, Context context, int serverPort,
-                                  ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+                                  ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException {
         this.v = verbose;
         this.context = context;
         this.serverPort = serverPort;
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
-        this.wifiManager = new WifiManager(v, context);
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager(){
+
+            @Override
+            public void setDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                Log.d(TAG, "OWN NAME " + ownName);
+                listenerDataLinkAodv.getDeviceName(ownName);
+            }
+        });
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
-        this.ownMacAddress = wifiManager.getOwnMACAddress().toLowerCase();
+        this.ownMacAddress = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         Log.d(TAG, "OWN MAC is " + ownMacAddress);
         this.init();
         //
@@ -249,7 +260,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
     public void connect() {
         for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
+            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
                 public void onConnectionStarted() {
                     Log.d(TAG, "Connection Started");
@@ -364,7 +375,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
 
     @Override
     public void discovery() {
-        wifiManager.discover(new DiscoveryListener() {
+        wifiAdHocManager.discover(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
 
@@ -376,7 +387,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
             }
 
             @Override
-            public void onDiscoveryCompleted(String deviceName, HashMap<String, WifiP2pDevice> peerslist) {
+            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
@@ -386,7 +397,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                                 + " into hashMapDevices");
                     }
                 }
-                wifiManager.unregisterDiscovery();
+                wifiAdHocManager.unregisterDiscovery();
                 listenerAodv.onDiscoveryCompleted();
             }
         });

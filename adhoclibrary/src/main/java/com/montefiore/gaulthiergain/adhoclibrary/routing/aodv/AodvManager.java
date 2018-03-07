@@ -123,7 +123,7 @@ public class AodvManager {
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      */
-    public AodvManager(boolean verbose, Context context, short nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException {
+    public AodvManager(boolean verbose, Context context, short nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException, IOException {
         this(verbose, listenerAodv);
         initDataLinkWifi(verbose, context, nbThreads, serverPort);
     }
@@ -163,7 +163,7 @@ public class AodvManager {
     /**************************************************Private methods*************************************************/
 
     private void initDataLinkWifi(boolean v, Context context, short nbThreads, int serverPort)
-            throws DeviceException {
+            throws DeviceException, IOException {
         dataLink = new DataLinkWifiManager(v, context, nbThreads, serverPort,
                 listenerAodv, listenerDataLink);
     }

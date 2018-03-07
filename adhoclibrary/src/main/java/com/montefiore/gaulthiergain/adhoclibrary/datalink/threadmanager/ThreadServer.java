@@ -20,6 +20,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -152,7 +153,10 @@ public class ThreadServer extends Thread {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
 
-            } catch (IOException e) {
+            } catch (SocketException e) {
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                break;
+            } catch (IOException e){
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
                 break;
             }

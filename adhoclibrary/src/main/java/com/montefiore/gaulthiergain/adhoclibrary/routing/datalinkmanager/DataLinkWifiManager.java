@@ -1,6 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
@@ -12,7 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWif
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
@@ -38,7 +40,7 @@ public class DataLinkWifiManager implements IDataLink {
     private final short nbThreads;
     private final int serverPort;
     private final Context context;
-    private final WifiManager wifiManager;
+    private final WifiAdHocManager wifiAdHocManager;
     private final ListenerAodv listenerAodv;
     private final ActiveConnections activeConnections;
     private final Hashtable<String, WifiP2pDevice> peers;
@@ -66,20 +68,38 @@ public class DataLinkWifiManager implements IDataLink {
      * @throws DeviceException
      */
     public DataLinkWifiManager(boolean verbose, Context context, short nbThreads, int serverPort,
-                               ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException {
+                               ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
+            throws DeviceException, IOException {
         this.v = verbose;
         this.context = context;
         this.nbThreads = nbThreads;
         this.serverPort = serverPort;
+        this.peers = new Hashtable<>();
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
-        this.wifiManager = new WifiManager(v, context);
         this.activeConnections = new ActiveConnections();
-        this.ownMacAddress = wifiManager.getOwnMACAddress().toLowerCase();
-        this.peers = new Hashtable<>();
-    }
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager(){
 
+            @Override
+            public void setDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                Log.d(TAG, "OWN NAME " + ownName);
+                listenerDataLinkAodv.getDeviceName(ownName);
+                wifiAdHocManager.unregisterInitName();
+            }
+        });
+
+        // Enable wifi adapter
+        if (!wifiAdHocManager.isEnabled()) {
+            wifiAdHocManager.enable();
+            waitWifiAdapter();
+        } else {
+            this.ownMacAddress = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        }
+
+        this.listenServer();
+    }
 
     /**
      * Method allowing to listen for incoming bluetooth connections.
@@ -150,7 +170,6 @@ public class DataLinkWifiManager implements IDataLink {
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
 
-
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case "CONNECT":
@@ -159,6 +178,12 @@ public class DataLinkWifiManager implements IDataLink {
                     // Add the active connection into the autoConnectionActives object
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObject);
                 }
+
+                if(ownIpAddress == null){
+                    //ownIpAddress = "192.168.49.1";
+                    wifiAdHocManager.requestGO();
+                }
+
                 break;
             default:
                 // Handle messages in protocol scope
@@ -167,7 +192,8 @@ public class DataLinkWifiManager implements IDataLink {
     }
 
     private void _connect() {
-        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true, groupOwnerAddr, serverPort, 10000, 3, new MessageListener() {
+        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true, groupOwnerAddr, serverPort,
+                10000, 3, new MessageListener() {
             @Override
             public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
                 listenerAodv.onConnectionClosed(remoteDevice);
@@ -224,11 +250,42 @@ public class DataLinkWifiManager implements IDataLink {
 
     }
 
+    private void waitWifiAdapter() {
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    // Check if connected
+                    while (!isConnected(context)) {
+                        // Wait to connect
+                        Thread.sleep(500);
+                    }
+                    // Initialize MAC
+                    ownMacAddress = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+                } catch (Exception e) {
+                    listenerAodv.catchException(e);
+                }
+            }
+        };
+        t.start();
+    }
+
+    private boolean isConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = null;
+        if (connectivityManager != null) {
+            networkInfo = connectivityManager.getActiveNetworkInfo();
+        }
+
+        return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
+    }
+
     @Override
     public void connect() {
         for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
+            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
                 @Override
                 public void onConnectionStarted() {
                     Log.d(TAG, "Connection Started");
@@ -245,12 +302,6 @@ public class DataLinkWifiManager implements IDataLink {
                     Log.d(TAG, "onGroupOwner: " + ownIpAddress);
 
                     listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
-
-                    try {
-                        listenServer();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
 
                 @Override
@@ -264,7 +315,14 @@ public class DataLinkWifiManager implements IDataLink {
                     Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
                     Log.d(TAG, "OWN IP address: " + ownIpAddress);
 
+                    try {
+                        stopListening();
+                    } catch (IOException e) {
+                        listenerAodv.catchException(e);
+                    }
+
                     _connect();
+
                 }
             });
         }
@@ -310,7 +368,7 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void discovery() {
-        wifiManager.discover(new DiscoveryListener() {
+        wifiAdHocManager.discover(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
 
@@ -322,7 +380,7 @@ public class DataLinkWifiManager implements IDataLink {
             }
 
             @Override
-            public void onDiscoveryCompleted(String deviceName, HashMap<String, WifiP2pDevice> peerslist) {
+            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
@@ -333,12 +391,7 @@ public class DataLinkWifiManager implements IDataLink {
                     }
                 }
 
-                // Update ownName
-                ownName = deviceName;
-                Log.d(TAG, "OWN NAME " + ownName);
-                listenerDataLinkAodv.getDeviceName(deviceName);
-
-                wifiManager.unregisterDiscovery();
+                wifiAdHocManager.unregisterDiscovery();
                 listenerAodv.onDiscoveryCompleted();
             }
         });

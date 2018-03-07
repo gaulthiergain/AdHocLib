@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
  */
 
 public class WifiUtil {
-    public static void updateWifiName(WifiManager wifimngr, WifiP2pManager.Channel wifichannel, String new_name) {
+    public static void updateWifiName(WifiAdHocManager wifimngr, WifiP2pManager.Channel wifichannel, String new_name) {
         try {
 
             Method m = wifimngr.getClass().getMethod(

@@ -103,7 +103,7 @@ public abstract class Service {
                     messageListener.onForward((MessageAdHoc) msg.obj);
                     break;
                 case CATH_EXCEPTION:
-                    if (v) Log.d(TAG, "FORWARD");
+                    if (v) Log.d(TAG, "CATH_EXCEPTION");
                     messageListener.catchException((Exception) msg.obj);
                     break;
                 default:

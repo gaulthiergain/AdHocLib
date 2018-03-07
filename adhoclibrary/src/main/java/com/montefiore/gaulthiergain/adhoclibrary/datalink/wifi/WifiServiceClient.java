@@ -69,7 +69,16 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
             try {
                 connect();
                 i = attempts;
-            } catch (SocketException | SocketTimeoutException e) {
+            } catch (ConnectException | SocketTimeoutException e) {
+                i++;
+                try {
+                    long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
+                    Thread.sleep((result));
+                } catch (InterruptedException e1) {
+                    handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
+                }
+                Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
+            } catch (SocketException e) {
                 i++;
                 try {
                     long result = (long) new Random().nextInt(HIGH - LOW) + LOW;

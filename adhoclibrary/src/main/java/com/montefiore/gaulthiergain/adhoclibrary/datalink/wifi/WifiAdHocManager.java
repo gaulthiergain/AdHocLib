@@ -3,7 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WifiInfo;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -11,15 +12,11 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.provider.Settings;
-import android.text.format.Formatter;
+import android.os.Build;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -32,24 +29,25 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
-import static android.content.Context.WIFI_SERVICE;
 import static android.os.Looper.getMainLooper;
 
-public class WifiManager {
+public class WifiAdHocManager {
 
-    private String ownName;
-
-    private final boolean v;
-    private final Context context;
-    private final String TAG = "[AdHoc][WifiManager]";
-    private final WifiP2pManager wifiP2pManager;
-    private final Channel channel;
-    private final HashMap<String, WifiP2pDevice> hashMapWifiDevices;
+    private boolean v;
+    private Context context;
+    private String TAG = "[AdHoc][WifiManager]";
+    private WifiP2pManager wifiP2pManager;
+    private Channel channel;
+    private ListenerWifiManager listenerWifiManager;
+    private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
     private boolean discoveryRegistered = false;
     private boolean connectionRegistered = false;
+    private boolean nameRegistered = false;
+
     private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
     private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
+    private WifiDirectBroadcastName wifiDirectBroadcastName;
 
     /**
      * Constructor
@@ -58,20 +56,53 @@ public class WifiManager {
      * @param context a Context object which gives global information about an application
      *                environment.
      */
-    public WifiManager(boolean verbose, final Context context) throws DeviceException {
+    public WifiAdHocManager(boolean verbose, final Context context, ListenerWifiManager listenerWifiManager) throws DeviceException {
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifi != null && wifi.isP2pSupported()) {
+                init(verbose, context, listenerWifiManager);
+            } else {
+                // Device does not support Wifi Direct
+                throw new DeviceException("Error device does not support Wifi Direct");
+            }
+        } else {
+            init(verbose, context, listenerWifiManager);
+        }
+    }
+
+    private void init(boolean verbose, Context context, ListenerWifiManager listenerWifiManager) throws DeviceException {
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
             // Device does not support Wifi Direct
-            throw new DeviceException("Error device does not support Bluetooth");
+            throw new DeviceException("Error device does not support Wifi Direct");
         } else {
             // Device supports Wifi Direct
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.v = verbose;
             this.context = context;
             this.hashMapWifiDevices = new HashMap<>();
+            this.listenerWifiManager = listenerWifiManager;
+            this.initInfo();
         }
+    }
 
+    private void initInfo() {
+        final IntentFilter intentFilter = new IntentFilter();
+
+        //  Indicates this device's details have changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        //  Update name
+        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+
+        wifiDirectBroadcastName = new WifiDirectBroadcastName(v, new ListenerWifiManager() {
+            @Override
+            public void setDeviceName(String name) {
+                listenerWifiManager.setDeviceName(name);
+            }
+        });
+        nameRegistered = true;
+        context.registerReceiver(wifiDirectBroadcastName, intentFilter);
     }
 
     /**
@@ -87,10 +118,6 @@ public class WifiManager {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         //  Indicates a change in the list of available hashMapWifiDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        //  Indicates this device's details have changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        //  Update name
-        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
         WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
             @Override
@@ -108,7 +135,7 @@ public class WifiManager {
                         if (v)
                             Log.d(TAG, "Devices found: " +
                                     hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
-                        discoveryListener.onDiscoveryCompleted(ownName, hashMapWifiDevices);
+                        discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
@@ -121,12 +148,7 @@ public class WifiManager {
         };
 
         wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(v, wifiP2pManager, channel,
-                peerListListener, new ListenerWifiManager() {
-            @Override
-            public void setDeviceName(String name) {
-                ownName = name;
-            }
-        });
+                peerListListener);
         discoveryRegistered = true;
         context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
 
@@ -212,16 +234,27 @@ public class WifiManager {
      * @return a boolean value which represents the state of the wifi Direct.
      */
     public boolean isEnabled() {
-        return (wifiP2pManager != null && channel != null);
+
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return wifi != null && wifi.isWifiEnabled();
+    }
+
+    public void disable() {
+        wifiAdapterState(false);
     }
 
     /**
-     * Method allowing to enable the wifi Direct adapter.
+     * Method allowing to enable the wifi adapter.
      */
     public void enable() {
-        Intent discoverableIntent =
-                new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-        context.startActivity(discoverableIntent);
+        wifiAdapterState(true);
+    }
+
+    private void wifiAdapterState(boolean state) {
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null) {
+            wifi.setWifiEnabled(state);
+        }
     }
 
     /**
@@ -243,6 +276,14 @@ public class WifiManager {
         if (discoveryRegistered) {
             context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
             discoveryRegistered = false;
+        }
+    }
+
+    public void unregisterInitName(){
+        if (v) Log.d(TAG, "unregisterName()");
+        if (nameRegistered) {
+            context.unregisterReceiver(wifiDirectBroadcastName);
+            nameRegistered = false;
         }
     }
 
@@ -323,6 +364,10 @@ public class WifiManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void requestGO() {
+
     }
 
     public interface ListenerWifiManager {
