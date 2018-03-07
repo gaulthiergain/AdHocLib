@@ -78,7 +78,7 @@ public class DataLinkWifiManager implements IDataLink {
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
         this.activeConnections = new ActiveConnections();
-        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager(){
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager() {
 
             @Override
             public void setDeviceName(String name) {
@@ -179,9 +179,16 @@ public class DataLinkWifiManager implements IDataLink {
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObject);
                 }
 
-                if(ownIpAddress == null){
-                    //ownIpAddress = "192.168.49.1";
-                    wifiAdHocManager.requestGO();
+                if (ownIpAddress == null) {
+                    wifiAdHocManager.requestGO(new WifiAdHocManager.ListenerWifiGroupOwner() {
+                        @Override
+                        public void getGroupOwner(String address) {
+                            Log.d(TAG, ">>>> GO: " + address);
+                            ownIpAddress = address;
+                            listenerDataLinkAodv.getDeviceAddress(address);
+                            wifiAdHocManager.unregisterGroupOwner();
+                        }
+                    });
                 }
 
                 break;

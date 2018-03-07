@@ -154,7 +154,6 @@ public class ThreadServer extends Thread {
                 }
 
             } catch (SocketException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
                 break;
             } catch (IOException e){
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
