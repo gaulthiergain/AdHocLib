@@ -33,12 +33,14 @@ public class DataLinkBtManager implements IDataLink {
 
     //Helper
     public static final String ID_APP = "#e091#";
-    private final static int LOW = 24;
-    private final static int END = 36;
-    private final static int NB_THREAD = 8;
     private final static int ATTEMPTS = 3;
 
+    // Constants for taking only the last part of the UUID
+    private final static int LOW = 24;
+    private final static int END = 36;
+
     private final boolean v;
+    private final int nbThreads;
     private final boolean secure;
     private final Context context;
     private final String TAG = "[AdHoc][DataLinkBt]";
@@ -62,34 +64,39 @@ public class DataLinkBtManager implements IDataLink {
      * @param verbose              a boolean value to set the debug/verbose mode.
      * @param context              a Context object which gives global information about an
      *                             application environment.
-     * @param ownUUID              a UUID object which represents the UUID of the current device.
-     * @param ownName              a String value which represents the name of the current device.
      * @param secure               a boolean value to determine if the connection is secure.
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a listenerDataLinkAodv object which serves as callback functions.
      * @throws IOException     Signals that an I/O exception of some sort has occurred.
      * @throws DeviceException Signals that a Bluetooth Device Exception exception has occurred.
      */
-    public DataLinkBtManager(boolean verbose, Context context, UUID ownUUID, String ownName, boolean secure,
+    public DataLinkBtManager(boolean verbose, Context context, boolean secure, int nbThreads,
                              ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) throws IOException, DeviceException {
 
 
         this.v = verbose;
         this.context = context;
+        this.secure = secure;
+        this.nbThreads = nbThreads;
         this.bluetoothManager = new BluetoothManager(verbose, context);
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
-        this.ownStringUUID = ownUUID.toString().substring(LOW, END); // Take only the last part
-        // (24-36) to optimize the process
-        this.ownName = ownName;
+
         this.ownMac = BluetoothUtil.getCurrentMac(context);
+        this.ownStringUUID = this.ownMac.replace(":", "").toLowerCase();
 
         this.hashMapDevices = new HashMap<>();
         this.activeConnections = new ActiveConnections();
 
-        this.updateName();
-        this.listenServer(ownUUID); // Listen on server threads
-        this.secure = secure;
+        this.updateName(); //must return new name
+        this.ownName = BluetoothUtil.getCurrentName(); // todo update with updateName
+
+        // callback
+        listenerDataLinkAodv.getDeviceAddress(ownStringUUID);
+        listenerDataLinkAodv.getDeviceName(ownName);
+
+        // Listen on server threads
+        this.listenServer(UUID.fromString(BluetoothUtil.UUID + ownStringUUID));
 
         //TODO check if bluetooth is active and set duration here
     }
@@ -325,7 +332,7 @@ public class DataLinkBtManager implements IDataLink {
         });
 
         // Start the bluetoothServiceServer listening process
-        bluetoothServiceServer.listen(NB_THREAD, secure, "secure",
+        bluetoothServiceServer.listen(nbThreads, secure, "secure",
                 BluetoothAdapter.getDefaultAdapter(), ownUUID);
 
     }

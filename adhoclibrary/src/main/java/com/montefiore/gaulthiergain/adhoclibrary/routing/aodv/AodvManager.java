@@ -31,14 +31,6 @@ public class AodvManager {
 
     private static final String TAG = "[AdHoc][AodvManager]";
 
-    // Constants for taking only the last part of the UUID
-    private final static int LOW = 24;
-    private final static int END = 36;
-
-    // Constants for displaying the routing table
-    private final static int DELAY = 60000;
-    private final static int PERIOD = DELAY;
-
     private IDataLink dataLink;
     private long ownSequenceNum;
     private MessageAdHoc dataMessage;
@@ -49,22 +41,18 @@ public class AodvManager {
     private final AodvHelper aodvHelper;
     private final ListenerAodv listenerAodv;
     private final HashMap<String, Long> mapDestSequenceNumber;
+    private ListenerDataLinkAodv listenerDataLink;
 
 
     /**
      * Constructor
      *
      * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param ownAddress   a String value which represents the address of the current device.
-     * @param ownName      a String value which represents the name of the current device.
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      */
-    private AodvManager(boolean verbose, String ownAddress, String ownName,
-                        ListenerAodv listenerAodv) {
+    private AodvManager(boolean verbose, ListenerAodv listenerAodv) {
         this.v = verbose;
         this.aodvHelper = new AodvHelper(v);
-        this.ownAddress = ownAddress;
-        this.ownName = ownName;
         this.ownSequenceNum = Constants.FIRST_SEQUENCE_NUMBER;
         this.listenerAodv = listenerAodv;
         this.mapDestSequenceNumber = new HashMap<>();
@@ -72,6 +60,32 @@ public class AodvManager {
             // Print routing table
             this.initTimerDebugRIB();
         }
+        this.listenerDataLink = new ListenerDataLinkAodv() {
+
+            @Override
+            public void brokenLink(String remoteNode) throws IOException {
+                brokenLinkDetected(remoteNode);
+            }
+
+            @Override
+            public void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException,
+                    AodvUnknownDestException, NoConnectionException {
+                processAodvMsgReceived(message);
+            }
+
+            @Override
+            public void getDeviceAddress(String address) {
+                ownAddress = address;
+                Log.d(TAG, "--------> Addr " + address);
+            }
+
+            @Override
+            public void getDeviceName(String name) {
+                ownName = name;
+                Log.d(TAG, "--------> Name " + name);
+            }
+        };
+
     }
 
     /**
@@ -80,16 +94,14 @@ public class AodvManager {
      * @param verbose      a boolean value to set the debug/verbose mode.
      * @param context      a Context object which gives global information about an application
      *                     environment.
-     * @param ownUUID      an UUID object which represents the UUID of the current device.
-     * @param ownName      a String value which represents the name of the current device
+     * @param nbThreads    an integer value which represents the number of listening threads
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws IOException     Signals that an I/O exception of some sort has occurred.
      * @throws DeviceException Signals that a DeviceException has occurred.
      */
-    public AodvManager(boolean verbose, Context context, UUID ownUUID, String ownName,
-                       ListenerAodv listenerAodv) throws IOException, DeviceException {
-        this(verbose, ownUUID.toString().substring(LOW, END), ownName, listenerAodv);
-        this.initDataLinkBt(verbose, context, ownUUID, ownName);
+    public AodvManager(boolean verbose, Context context, int nbThreads, ListenerAodv listenerAodv) throws IOException, DeviceException {
+        this(verbose, listenerAodv);
+        this.initDataLinkBt(verbose, context, nbThreads);
     }
 
     /**
@@ -98,12 +110,13 @@ public class AodvManager {
      * @param verbose      a boolean value to set the debug/verbose mode.
      * @param context      a Context object which gives global information about an application
      *                     environment.
+     * @param nbThreads    an integer value which represents the number of listening threads
      * @param serverPort   an integer value which represents the server port.
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      */
     public AodvManager(boolean verbose, Context context, int nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException {
-        this(verbose, "", "", listenerAodv); //update
+        this(verbose, listenerAodv);
         initDataLinkWifi(verbose, context, nbThreads, serverPort);
     }
 
@@ -144,60 +157,13 @@ public class AodvManager {
     private void initDataLinkWifi(boolean v, Context context, int nbThreads, int serverPort)
             throws DeviceException {
         dataLink = new DataLinkWifiManager(v, context, nbThreads, serverPort,
-                listenerAodv, new ListenerDataLinkAodv() {
-
-            @Override
-            public void brokenLink(String remoteNode) throws IOException {
-                brokenLinkDetected(remoteNode);
-            }
-
-            @Override
-            public void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException,
-                    AodvUnknownDestException, NoConnectionException {
-                processAodvMsgReceived(message);
-            }
-
-            @Override
-            public void getDeviceAddress(String address) {
-                ownAddress = address;
-                Log.d(TAG, "--------> Addr " + address);
-            }
-
-            @Override
-            public void getDeviceName(String name) {
-                ownName = name;
-                Log.d(TAG, "--------> Name " + name);
-            }
-        });
+                listenerAodv, listenerDataLink);
     }
 
-    private void initDataLinkBt(boolean v, Context context, UUID ownUUID, final String ownName)
-            throws IOException, DeviceException {
+    private void initDataLinkBt(boolean v, Context context, int nbThreads) throws IOException, DeviceException {
 
-        dataLink = new DataLinkBtManager(v, context, ownUUID, ownName, true,
-                listenerAodv, new ListenerDataLinkAodv() {
-
-            @Override
-            public void brokenLink(String remoteNode) throws IOException {
-                brokenLinkDetected(remoteNode);
-            }
-
-            @Override
-            public void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException, AodvUnknownDestException, NoConnectionException {
-                processAodvMsgReceived(message);
-            }
-
-            @Override
-            public void getDeviceAddress(String address) {
-                //todo
-            }
-
-            @Override
-            public void getDeviceName(String name) {
-                //todo
-            }
-        });
-
+        dataLink = new DataLinkBtManager(v, context, true, nbThreads,
+                listenerAodv, listenerDataLink);
     }
 
 
@@ -788,7 +754,7 @@ public class AodvManager {
             public void run() {
                 updateRoutingTable();
             }
-        }, DELAY, PERIOD);
+        }, Constants.DELAY, Constants.PERIOD);
     }
 
     /**

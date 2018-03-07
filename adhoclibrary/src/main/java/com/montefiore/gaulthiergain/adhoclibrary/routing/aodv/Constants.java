@@ -45,4 +45,8 @@ public interface Constants {
     //energy constants
     int FIRST_THRESHOLD = 15;
     int SECOND_THRESHOLD = 5;
+
+    // Constants for displaying the routing table
+    int DELAY = 60000;
+    int PERIOD = DELAY;
 }
