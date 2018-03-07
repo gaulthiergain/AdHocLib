@@ -11,6 +11,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothSer
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -66,20 +68,35 @@ public class DataLinkBtManager implements IDataLink {
      * @param context              a Context object which gives global information about an
      *                             application environment.
      * @param secure               a boolean value to determine if the connection is secure.
+     * @param nbThreads            an integer value to determine the number of threads managed by the
+     *                             server.
+     * @param duration             a short value between 0 and 3600 which represents the time of
+     *                             the discovery mode.
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a listenerDataLinkAodv object which serves as callback functions.
-     * @throws IOException     Signals that an I/O exception of some sort has occurred.
-     * @throws DeviceException Signals that a Bluetooth Device Exception exception has occurred.
+     * @throws IOException                Signals that an I/O exception of some sort has occurred.
+     * @throws DeviceException            Signals that a Bluetooth Device Exception exception has occurred.
+     * @throws BluetoothDisabledException Signals that a Bluetooth Disabled exception has occurred.
+     * @throws BluetoothBadDuration       Signals that a Bluetooth Bad Duration exception has occurred.
      */
     public DataLinkBtManager(boolean verbose, Context context, boolean secure, int nbThreads,
-                             ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) throws IOException, DeviceException {
-
+                             short duration, ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+            throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
 
         this.v = verbose;
         this.context = context;
         this.secure = secure;
         this.nbThreads = nbThreads;
         this.bluetoothManager = new BluetoothManager(verbose, context);
+
+        // Check if the bluetooth adapter is enabled
+        if (!bluetoothManager.isEnabled()) {
+            if (!bluetoothManager.enable()) {
+                throw new BluetoothDisabledException("Unable to enable Bluetooth adapter");
+            }
+            bluetoothManager.enableDiscovery(duration);
+        }
+
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
 
@@ -95,11 +112,8 @@ public class DataLinkBtManager implements IDataLink {
         // callback
         listenerDataLinkAodv.getDeviceAddress(ownStringUUID);
         listenerDataLinkAodv.getDeviceName(ownName);
-
         // Listen on server threads
         this.listenServer(UUID.fromString(BluetoothUtil.UUID + ownStringUUID));
-
-        //TODO check if bluetooth is active and set duration here
     }
 
     /**

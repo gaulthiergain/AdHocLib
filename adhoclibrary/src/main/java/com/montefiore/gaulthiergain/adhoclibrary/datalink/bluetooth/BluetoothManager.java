@@ -112,7 +112,7 @@ public class BluetoothManager {
             initName = bluetoothAdapter.getName();
         }
 
-        if(initName.contains("#e091#")){
+        if (initName.contains("#e091#")) {
             if (initName.split("#").length > 2) {
                 initName = initName.split("#")[2];
             }
@@ -196,11 +196,11 @@ public class BluetoothManager {
     /**
      * Method allowing to set the device into a discovery mode.
      *
-     * @param duration an integer value between 0 and 3600 which represents the time of
+     * @param duration a short value between 0 and 3600 which represents the time of
      *                 the discovery mode.
      * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
      */
-    public void enableDiscovery(int duration) throws BluetoothBadDuration {
+    public void enableDiscovery(short duration) throws BluetoothBadDuration {
         if (duration < 0 || duration > 3600) {
             throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
         }
@@ -209,6 +209,7 @@ public class BluetoothManager {
 
             Intent discoverableIntent =
                     new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
             context.startActivity(discoverableIntent);
         }
