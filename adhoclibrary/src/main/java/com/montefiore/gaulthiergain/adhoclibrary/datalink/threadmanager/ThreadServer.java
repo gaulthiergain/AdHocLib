@@ -35,7 +35,7 @@ public class ThreadServer extends Thread {
 
     private static final String TAG = "[AdHoc][ThreadServer]";
 
-    private final int nbThreads;
+    private final short nbThreads;
     private final boolean v;
     private UUID uuid;
     private final Handler handler;
@@ -49,7 +49,7 @@ public class ThreadServer extends Thread {
      *
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
-     * @param nbThreads        an integer value to determine the number of threads managed by the
+     * @param nbThreads        a short value to determine the number of threads managed by the
      *                         server.
      * @param verbose          a boolean value to set the debug/verbose mode.
      * @param secure           a boolean value to determine if the connection is secure.
@@ -61,7 +61,7 @@ public class ThreadServer extends Thread {
      *                         threadPool.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public ThreadServer(Handler handler, int nbThreads, boolean verbose, boolean secure, String name
+    public ThreadServer(Handler handler, short nbThreads, boolean verbose, boolean secure, String name
             , BluetoothAdapter mAdapter, UUID uuid, ListSocketDevice listSocketDevice)
             throws IOException {
 
@@ -86,7 +86,7 @@ public class ThreadServer extends Thread {
      *
      * @param handler          a Handler object which allows to send and process {@link Message}
      *                         and Runnable objects associated with a thread's.
-     * @param nbThreads        an integer value to determine the number of threads managed by the
+     * @param nbThreads        a short value to determine the number of threads managed by the
      *                         server.
      * @param verbose          a boolean value to set the debug/verbose mode.
      * @param port             an integer value to set the listening port number.
@@ -94,7 +94,7 @@ public class ThreadServer extends Thread {
      *                         threadPool.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public ThreadServer(Handler handler, int nbThreads, boolean verbose, int port,
+    public ThreadServer(Handler handler, short nbThreads, boolean verbose, int port,
                         ListSocketDevice listSocketDevice) throws IOException {
 
         this.handler = handler;

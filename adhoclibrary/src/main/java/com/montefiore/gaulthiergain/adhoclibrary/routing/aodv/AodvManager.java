@@ -105,7 +105,7 @@ public class AodvManager {
      * @throws BluetoothDisabledException Signals that a Bluetooth Disabled exception has occurred.a
      * @throws BluetoothBadDuration
      */
-    public AodvManager(boolean verbose, Context context, boolean secure, int nbThreads, short duration,
+    public AodvManager(boolean verbose, Context context, boolean secure, short nbThreads, short duration,
                        ListenerAodv listenerAodv)
             throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
         this(verbose, listenerAodv);
@@ -123,7 +123,7 @@ public class AodvManager {
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      */
-    public AodvManager(boolean verbose, Context context, int nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException {
+    public AodvManager(boolean verbose, Context context, short nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException {
         this(verbose, listenerAodv);
         initDataLinkWifi(verbose, context, nbThreads, serverPort);
     }
@@ -162,13 +162,13 @@ public class AodvManager {
 
     /**************************************************Private methods*************************************************/
 
-    private void initDataLinkWifi(boolean v, Context context, int nbThreads, int serverPort)
+    private void initDataLinkWifi(boolean v, Context context, short nbThreads, int serverPort)
             throws DeviceException {
         dataLink = new DataLinkWifiManager(v, context, nbThreads, serverPort,
                 listenerAodv, listenerDataLink);
     }
 
-    private void initDataLinkBt(boolean v, Context context, boolean secure, int nbThreads, short duration)
+    private void initDataLinkBt(boolean v, Context context, boolean secure, short nbThreads, short duration)
             throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
 
         dataLink = new DataLinkBtManager(v, context, secure, nbThreads, duration, listenerAodv,

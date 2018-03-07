@@ -35,7 +35,7 @@ public class DataLinkWifiManager implements IDataLink {
     private static final String TAG = "[AdHoc][DataLinkWifi]";
 
     private final boolean v;
-    private final int nbThreads;
+    private final short nbThreads;
     private final int serverPort;
     private final Context context;
     private final WifiManager wifiManager;
@@ -58,10 +58,14 @@ public class DataLinkWifiManager implements IDataLink {
      * @param verbose              a boolean value to set the debug/verbose mode.
      * @param context              a Context object which gives global information about an application
      *                             environment.
+     * @param nbThreads            a short value to determine the number of threads managed by the
+     *                             server.
+     * @param serverPort           an integer value which represents the server list port.
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
+     * @throws DeviceException
      */
-    public DataLinkWifiManager(boolean verbose, Context context, int nbThreads, int serverPort,
+    public DataLinkWifiManager(boolean verbose, Context context, short nbThreads, int serverPort,
                                ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException {
         this.v = verbose;

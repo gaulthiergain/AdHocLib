@@ -35,12 +35,12 @@ public class WifiServiceServer extends ServiceServer {
     /**
      * Method allowing to listen for incoming wifi connections.
      *
-     * @param nbThreads an integer value to determine the number of threads managed by the
+     * @param nbThreads a short value to determine the number of threads managed by the
      *                  server.
      * @param port      an integer value to set the listening port number.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public void listen(int nbThreads, int port) throws IOException {
+    public void listen(short nbThreads, int port) throws IOException {
         if (v) Log.d(TAG, "Listening()");
 
         // Cancel any thread currently running a connection

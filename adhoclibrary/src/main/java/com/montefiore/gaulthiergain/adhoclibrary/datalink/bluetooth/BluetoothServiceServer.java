@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BluetoothServiceServer extends ServiceServer {
 
-    private static final int MAX_THREAD = 8; //to check if good value
+    private static final short MAX_THREAD = 8; //todo check if good value
 
     /**
      * Constructor
@@ -40,7 +40,7 @@ public class BluetoothServiceServer extends ServiceServer {
     /**
      * Method allowing to listen for incoming bluetooth connections.
      *
-     * @param nbThreads        an integer value to determine the number of threads managed by the
+     * @param nbThreads        a short value to determine the number of threads managed by the
      *                         server.
      * @param secure           a boolean value to determine if the connection is secure.
      * @param name             a String value which represents the connection's name.
@@ -50,7 +50,7 @@ public class BluetoothServiceServer extends ServiceServer {
      * @throws IOException               Signals that an I/O exception of some sort has occurred.
      * @throws MaxThreadReachedException Signals that the maximum number of threads is reached.
      */
-    public void listen(int nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
+    public void listen(short nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
                        UUID uuid) throws IOException, MaxThreadReachedException {
         if (v) Log.d(TAG, "Listening()");
 

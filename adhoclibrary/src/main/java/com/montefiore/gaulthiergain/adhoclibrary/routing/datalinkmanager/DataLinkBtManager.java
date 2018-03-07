@@ -43,7 +43,7 @@ public class DataLinkBtManager implements IDataLink {
     private final static int END = 36;
 
     private final boolean v;
-    private final int nbThreads;
+    private final short nbThreads;
     private final boolean secure;
     private final Context context;
     private final String TAG = "[AdHoc][DataLinkBt]";
@@ -68,7 +68,7 @@ public class DataLinkBtManager implements IDataLink {
      * @param context              a Context object which gives global information about an
      *                             application environment.
      * @param secure               a boolean value to determine if the connection is secure.
-     * @param nbThreads            an integer value to determine the number of threads managed by the
+     * @param nbThreads            a short value to determine the number of threads managed by the
      *                             server.
      * @param duration             a short value between 0 and 3600 which represents the time of
      *                             the discovery mode.
@@ -79,7 +79,7 @@ public class DataLinkBtManager implements IDataLink {
      * @throws BluetoothDisabledException Signals that a Bluetooth Disabled exception has occurred.
      * @throws BluetoothBadDuration       Signals that a Bluetooth Bad Duration exception has occurred.
      */
-    public DataLinkBtManager(boolean verbose, Context context, boolean secure, int nbThreads,
+    public DataLinkBtManager(boolean verbose, Context context, boolean secure, short nbThreads,
                              short duration, ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
 
