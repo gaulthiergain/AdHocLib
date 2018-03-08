@@ -1,7 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
-import android.util.Log;
-
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,18 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 
-public class ActiveConnections {
+class ActiveConnections {
     private static final String TAG = "[AdHoc][AutoConActives]";
 
     private ConcurrentHashMap<String, NetworkObject> activesConnections;
-    private ConcurrentHashMap<String, Long> activesDataPath;
 
     /**
      * Constructor
      */
-    public ActiveConnections() {
+    ActiveConnections() {
         this.activesConnections = new ConcurrentHashMap<>();
-        this.activesDataPath = new ConcurrentHashMap<>();
     }
 
     /**
@@ -32,41 +28,26 @@ public class ActiveConnections {
      *
      * @param key           a String value which represents the address of a remote device.
      * @param networkObject a NetworkObject object which represents the state of the connection.
+     * @return a boolean value which is true if the pair <key, network> has been successfully added
+     * to the hashmap.
      */
-    public void addConnection(String key, NetworkObject networkObject) {
+    boolean addConnection(String key, NetworkObject networkObject) {
         if (!activesConnections.containsKey(key)) {
             activesConnections.put(key, networkObject);
-            Log.d(TAG, "Add " + key + " into active connection");
+            return true;
         }
-    }
 
-    /**
-     * Method allowing to update the Data Path (active data flow)
-     *
-     * @param key a String value which represents the address of a remote device.
-     */
-    public void updateDataPath(String key) {
-        activesDataPath.put(key, System.currentTimeMillis());
-        Log.d(TAG, "Update " + key + " in data path");
+        return false;
     }
 
     /**
      * Method allowing to get the active connections.
      *
-     * @return ConcurrentHashMap<String, NetworkObject> object which maps the remote node name to
+     * @return ConcurrentHashMap<String-NetworkObject> object which maps the remote node name to
      * a NetworkObject object.
      */
-    public ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
+    ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
         return activesConnections;
     }
 
-    /**
-     * Method allowing to get the active data path.
-     *
-     * @return ConcurrentHashMap<String, Long> object which maps the remote node name to
-     * a timestamp.
-     */
-    public ConcurrentHashMap<String, Long> getActivesDataPath() {
-        return activesDataPath;
-    }
 }
