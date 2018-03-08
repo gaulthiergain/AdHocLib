@@ -21,7 +21,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtD
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -50,15 +49,21 @@ public class WrapperBluetooth extends AbstractWrapper {
     BluetoothServiceServer bluetoothServiceServer;
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
-    public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads, short duration, ActiveConnections activeConnections, ListenerAodv listenerAodv,
-                            ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
 
-
+    private WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
+                             ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
         this.secure = secure;
         this.bluetoothManager = new BluetoothManager(v, context);
         this.hashMapDevices = new HashMap<>();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
+    }
+
+    public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads, short duration, ActiveConnections activeConnections, ListenerAodv listenerAodv,
+                            ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
+
+        this(v, context, secure, activeConnections, listenerAodv, listenerDataLinkAodv);
+
         this.ownAddress = ownMac.replace(":", "").toLowerCase();
         this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownAddress);
 
@@ -83,11 +88,9 @@ public class WrapperBluetooth extends AbstractWrapper {
     public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads, short duration,
                             String ownAddress, ActiveConnections activeConnections, ListenerAodv listenerAodv,
                             ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
-        super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
-        this.secure = secure;
-        this.bluetoothManager = new BluetoothManager(v, context);
-        this.hashMapDevices = new HashMap<>();
-        this.ownMac = BluetoothUtil.getCurrentMac(context);
+
+        this(v, context, secure, activeConnections, listenerAodv, listenerDataLinkAodv);
+
         this.ownAddress = ownAddress;
         this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownAddress);
 
