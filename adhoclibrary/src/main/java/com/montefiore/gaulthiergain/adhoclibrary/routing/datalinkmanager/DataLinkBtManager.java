@@ -43,13 +43,12 @@ public class DataLinkBtManager implements IDataLink {
     private final static int END = 36;
 
     private final boolean v;
-    private final short nbThreads;
     private final boolean secure;
     private final Context context;
     private final String TAG = "[AdHoc][DataLinkBt]";
 
-    private ListenerAodv listenerAodv;
-    private ListenerDataLinkAodv listenerDataLinkAodv;
+    private final ListenerAodv listenerAodv;
+    private final ListenerDataLinkAodv listenerDataLinkAodv;
 
     private final String ownStringUUID;
     private final String ownName;
@@ -86,7 +85,6 @@ public class DataLinkBtManager implements IDataLink {
         this.v = verbose;
         this.context = context;
         this.secure = secure;
-        this.nbThreads = nbThreads;
         this.bluetoothManager = new BluetoothManager(verbose, context);
 
         // Check if the bluetooth adapter is enabled
@@ -113,7 +111,7 @@ public class DataLinkBtManager implements IDataLink {
         listenerDataLinkAodv.getDeviceAddress(ownStringUUID);
         listenerDataLinkAodv.getDeviceName(ownName);
         // Listen on server threads
-        this.listenServer(UUID.fromString(BluetoothUtil.UUID + ownStringUUID));
+        this.listenServer(UUID.fromString(BluetoothUtil.UUID + ownStringUUID), nbThreads);
     }
 
     /**
@@ -284,7 +282,7 @@ public class DataLinkBtManager implements IDataLink {
      * @param ownUUID an UUID object which identify the physical device.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    private void listenServer(UUID ownUUID) throws IOException {
+    private void listenServer(UUID ownUUID, short nbThreads) throws IOException {
         bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {

@@ -58,22 +58,22 @@ public class WifiAdHocManager {
      * @param context a Context object which gives global information about an application
      *                environment.
      */
-    public WifiAdHocManager(boolean verbose, final Context context, ListenerWifiManager listenerWifiManager) throws DeviceException {
+    public WifiAdHocManager(boolean verbose, final Context context) throws DeviceException {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifi != null && wifi.isP2pSupported()) {
-                init(verbose, context, listenerWifiManager);
+                init(verbose, context);
             } else {
                 // Device does not support Wifi Direct
                 throw new DeviceException("Error device does not support Wifi Direct");
             }
         } else {
-            init(verbose, context, listenerWifiManager);
+            init(verbose, context);
         }
     }
 
-    private void init(boolean verbose, Context context, ListenerWifiManager listenerWifiManager) throws DeviceException {
+    private void init(boolean verbose, Context context) throws DeviceException {
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
             // Device does not support Wifi Direct
@@ -84,7 +84,6 @@ public class WifiAdHocManager {
             this.v = verbose;
             this.context = context;
             this.hashMapWifiDevices = new HashMap<>();
-            this.getDeviceName(listenerWifiManager);
         }
     }
 

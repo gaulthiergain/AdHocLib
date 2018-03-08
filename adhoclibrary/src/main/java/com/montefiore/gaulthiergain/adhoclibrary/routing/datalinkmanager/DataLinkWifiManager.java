@@ -37,7 +37,6 @@ public class DataLinkWifiManager implements IDataLink {
     private static final String TAG = "[AdHoc][DataLinkWifi]";
 
     private final boolean v;
-    private final short nbThreads;
     private final int serverPort;
     private final Context context;
     private final WifiAdHocManager wifiAdHocManager;
@@ -72,13 +71,13 @@ public class DataLinkWifiManager implements IDataLink {
             throws DeviceException, IOException {
         this.v = verbose;
         this.context = context;
-        this.nbThreads = nbThreads;
         this.serverPort = serverPort;
         this.peers = new Hashtable<>();
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
         this.activeConnections = new ActiveConnections();
-        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager() {
+        this.wifiAdHocManager = new WifiAdHocManager(v, context);
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
             @Override
             public void setDeviceName(String name) {
@@ -98,7 +97,7 @@ public class DataLinkWifiManager implements IDataLink {
             this.ownMacAddress = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         }
 
-        this.listenServer();
+        this.listenServer(nbThreads);
     }
 
     /**
@@ -106,7 +105,7 @@ public class DataLinkWifiManager implements IDataLink {
      *
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    private void listenServer() throws IOException {
+    private void listenServer(short nbThreads) throws IOException {
         wifiServiceServer = new WifiServiceServer(v, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -154,7 +153,7 @@ public class DataLinkWifiManager implements IDataLink {
             }
         });
 
-        // Start the bluetoothServiceServer listening process
+        // Start the  wifi server listening process
         wifiServiceServer.listen(nbThreads, serverPort);
     }
 
