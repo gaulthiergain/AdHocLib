@@ -392,7 +392,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
-                            entry.getValue().deviceName.contains(DataLinkBtManager.ID_APP)) {
+                            entry.getValue().deviceName.contains("#e091#")) {
                         peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().deviceAddress
                                 + " into hashMapDevices");

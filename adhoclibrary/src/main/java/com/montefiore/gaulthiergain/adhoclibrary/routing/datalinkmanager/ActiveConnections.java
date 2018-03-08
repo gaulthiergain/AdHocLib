@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 
-class ActiveConnections {
+public class ActiveConnections {
     private static final String TAG = "[AdHoc][AutoConActives]";
 
     private ConcurrentHashMap<String, NetworkObject> activesConnections;
@@ -28,10 +28,10 @@ class ActiveConnections {
      *
      * @param key           a String value which represents the address of a remote device.
      * @param networkObject a NetworkObject object which represents the state of the connection.
-     * @return a boolean value which is true if the pair <key, network> has been successfully added
+     * @return a boolean value which is true if the pair (key, network) has been successfully added
      * to the hashmap.
      */
-    boolean addConnection(String key, NetworkObject networkObject) {
+    public boolean addConnection(String key, NetworkObject networkObject) {
         if (!activesConnections.containsKey(key)) {
             activesConnections.put(key, networkObject);
             return true;
@@ -43,10 +43,10 @@ class ActiveConnections {
     /**
      * Method allowing to get the active connections.
      *
-     * @return ConcurrentHashMap<String-NetworkObject> object which maps the remote node name to
+     * @return a ConcurrentHashMap(String, NetworkObject) object which maps the remote node name to
      * a NetworkObject object.
      */
-    ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
+    public ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
         return activesConnections;
     }
 

@@ -175,7 +175,8 @@ public class AodvManager {
 
     private void initDataLinkWifi(boolean v, Context context, short nbThreads, int serverPort)
             throws DeviceException, IOException {
-        dataLink = new DataLinkWifiManager(v, context, nbThreads, serverPort,
+        //todo update variable
+        dataLink = new DataLinkWifiManager(v, context, true, nbThreads, serverPort,
                 listenerAodv, listenerDataLink);
     }
 
