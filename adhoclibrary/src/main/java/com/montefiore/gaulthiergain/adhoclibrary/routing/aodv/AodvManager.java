@@ -6,6 +6,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkWifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
@@ -126,6 +127,16 @@ public class AodvManager {
     public AodvManager(boolean verbose, Context context, short nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException, IOException {
         this(verbose, listenerAodv);
         initDataLinkWifi(verbose, context, nbThreads, serverPort);
+    }
+
+    public AodvManager(boolean verbose, Context context, short nbThreadsWifi, int serverPort,
+                       boolean secure, short nbThreadsBt, short duration,
+                       ListenerAodv listenerAodv)
+            throws DeviceException, IOException, BluetoothDisabledException, BluetoothBadDuration {
+
+        this(verbose, listenerAodv);
+        dataLink = new DataLinkHybridManager(verbose, context, nbThreadsWifi, serverPort,
+                secure, nbThreadsBt, duration, listenerAodv, listenerDataLink);
     }
 
     /**

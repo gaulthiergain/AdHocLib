@@ -76,7 +76,8 @@ public class DataLinkWifiManagerUdp implements IDataLink {
         this.serverPort = serverPort;
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
-        this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiManager(){
+        this.wifiAdHocManager = new WifiAdHocManager(v, context);
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
             @Override
             public void setDeviceName(String name) {
