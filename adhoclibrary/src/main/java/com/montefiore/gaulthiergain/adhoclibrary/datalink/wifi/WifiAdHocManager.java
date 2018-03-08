@@ -38,8 +38,6 @@ public class WifiAdHocManager {
     private String TAG = "[AdHoc][WifiManager]";
     private WifiP2pManager wifiP2pManager;
     private Channel channel;
-    private ListenerWifiManager listenerWifiManager;
-    private ListenerWifiGroupOwner listenerWifiGroupOwner;
     private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
     private boolean discoveryRegistered = false;
@@ -86,12 +84,11 @@ public class WifiAdHocManager {
             this.v = verbose;
             this.context = context;
             this.hashMapWifiDevices = new HashMap<>();
-            this.listenerWifiManager = listenerWifiManager;
-            this.initInfo();
+            this.getDeviceName(listenerWifiManager);
         }
     }
 
-    private void initInfo() {
+    public void getDeviceName(final ListenerWifiManager listenerWifiManager) {
         final IntentFilter intentFilter = new IntentFilter();
 
         //  Indicates this device's details have changed.
