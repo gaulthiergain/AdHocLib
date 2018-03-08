@@ -49,7 +49,6 @@ public class WrapperBluetooth extends AbstractWrapper {
     BluetoothServiceServer bluetoothServiceServer;
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
-
     private WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
                              ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);

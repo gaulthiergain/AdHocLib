@@ -17,7 +17,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -38,6 +37,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
     private String loopbackAddress;
     private Hashtable<String, NetworkObject> hashmapIpNetwork;
+    private ListenerConnection listenerConnection;
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreadsWifi, int serverPort,
                              String loopbackAddress, ActiveConnections activeConnections,
@@ -233,15 +233,18 @@ public class WrapperHybridWifi extends WrapperWifi {
                                 try {
                                     networkObject.sendObjectStream(new MessageAdHoc(
                                             new Header("CONNECT_WIFI_CLIENT", loopbackAddress, ownName), ownIpAddress));
+
+                                    if (listenerConnection != null) {
+                                        listenerConnection.onConnect();
+                                    }
+
                                 } catch (IOException e) {
                                     listenerAodv.catchException(e);
                                 }
-
                             }
                         }
                     });
                 }
-                //connectBt(); todo
                 break;
             case "CONNECT_WIFI_CLIENT":
                 NetworkObject networkObjectServer = hashmapIpNetwork.get(message.getPdu().toString());
@@ -250,8 +253,13 @@ public class WrapperHybridWifi extends WrapperWifi {
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
 
                     Log.d(TAG, "Add name : " + message.getHeader().getSenderName());
+
+                    if (listenerConnection != null) {
+                        listenerConnection.onConnect();
+                    }
                 }
-                //connectBt(); todo
+
+
                 break;
             default:
                 // Handle messages in protocol scope
@@ -286,5 +294,13 @@ public class WrapperHybridWifi extends WrapperWifi {
                 wifiAdHocManager.unregisterDiscovery();
             }
         });
+    }
+
+    public void setListenerConnection(ListenerConnection listenerConnection) {
+        this.listenerConnection = listenerConnection;
+    }
+
+    public interface ListenerConnection {
+        void onConnect();
     }
 }

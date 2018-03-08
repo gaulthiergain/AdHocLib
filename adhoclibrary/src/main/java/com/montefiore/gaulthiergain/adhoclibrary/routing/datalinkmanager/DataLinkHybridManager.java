@@ -39,10 +39,21 @@ public class DataLinkHybridManager implements IDataLink {
         //todo update this
         String loopbackAddress = BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
         listenerDataLinkAodv.getDeviceAddress(loopbackAddress);
+        listenerDataLinkAodv.getDeviceName(loopbackAddress);
 
         this.wrapperWifi =
                 new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, loopbackAddress,
                         activeConnections, listenerAodv, listenerDataLinkAodv);
+
+        if(wrapperWifi.isWifiEnabled()){
+            wrapperWifi.setListenerConnection(new WrapperHybridWifi.ListenerConnection() {
+                @Override
+                public void onConnect() {
+                    wrapperBluetooth.connect();
+                }
+            });
+        }
+
         this.wrapperBluetooth =
                 new WrapperBluetooth(v, context, secure, nbThreadsBt, duration, loopbackAddress,
                         activeConnections, listenerAodv, listenerDataLinkAodv);
