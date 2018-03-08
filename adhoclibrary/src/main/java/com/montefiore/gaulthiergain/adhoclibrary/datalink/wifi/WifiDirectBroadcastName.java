@@ -20,7 +20,7 @@ public class WifiDirectBroadcastName extends BroadcastReceiver {
         String action = intent.getAction();
         if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            listenerWifiManager.setDeviceName(device.deviceName);
+            listenerWifiManager.getDeviceName(device.deviceName);
         }
     }
 }

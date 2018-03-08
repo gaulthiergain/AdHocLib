@@ -65,7 +65,7 @@ public class WrapperWifi extends AbstractWrapper {
             this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
                 @Override
-                public void setDeviceName(String name) {
+                public void getDeviceName(String name) {
                     // Update ownName
                     ownName = name;
                     Log.d(TAG, "OWN NAME " + ownName);
@@ -341,7 +341,7 @@ public class WrapperWifi extends AbstractWrapper {
                     wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
                         @Override
-                        public void setDeviceName(String name) {
+                        public void getDeviceName(String name) {
                             // Update ownName
                             ownName = name;
                             Log.d(TAG, "OWN NAME " + ownName);

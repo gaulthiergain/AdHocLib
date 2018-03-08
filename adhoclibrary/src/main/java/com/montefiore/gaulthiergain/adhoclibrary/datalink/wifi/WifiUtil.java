@@ -13,7 +13,7 @@ public class WifiUtil {
         try {
 
             Method m = wifimngr.getClass().getMethod(
-                    "setDeviceName",
+                    "getDeviceName",
                     WifiP2pManager.Channel.class, String.class,
                     WifiP2pManager.ActionListener.class);
 

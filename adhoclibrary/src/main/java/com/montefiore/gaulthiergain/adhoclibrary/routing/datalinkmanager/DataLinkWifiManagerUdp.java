@@ -80,7 +80,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
         this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
             @Override
-            public void setDeviceName(String name) {
+            public void getDeviceName(String name) {
                 // Update ownName
                 ownName = name;
                 Log.d(TAG, "OWN NAME " + ownName);
