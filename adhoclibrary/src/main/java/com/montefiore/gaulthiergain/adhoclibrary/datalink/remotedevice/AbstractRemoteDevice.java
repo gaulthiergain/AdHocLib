@@ -2,7 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice;
 
 public abstract class AbstractRemoteDevice {
 
-    final String deviceAddress;
+    String deviceAddress;
 
     AbstractRemoteDevice(String deviceAddress) {
         this.deviceAddress = deviceAddress;
@@ -10,5 +10,9 @@ public abstract class AbstractRemoteDevice {
 
     public String getDeviceAddress() {
         return deviceAddress;
+    }
+
+    public void setDeviceAddress(String deviceAddress) {
+        this.deviceAddress = deviceAddress;
     }
 }

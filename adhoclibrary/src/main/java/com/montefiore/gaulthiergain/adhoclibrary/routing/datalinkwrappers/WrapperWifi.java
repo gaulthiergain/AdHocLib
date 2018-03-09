@@ -44,7 +44,6 @@ public class WrapperWifi extends AbstractWrapper {
     String groupOwnerAddr;
     WifiAdHocManager wifiAdHocManager;
     WifiServiceServer wifiServiceServer;
-    Hashtable<String, WifiP2pDevice> peers;
 
     public WrapperWifi(boolean v, Context context, boolean enable, short nbThreads, int serverPort,
                        ActiveConnections activeConnections, final ListenerAodv listenerAodv,
@@ -124,7 +123,6 @@ public class WrapperWifi extends AbstractWrapper {
         this.wifiEnabled = true;
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = serverPort;
-        this.peers = new Hashtable<>();
     }
 
     protected void listenServer(short nbThreads) throws IOException {
@@ -275,8 +273,7 @@ public class WrapperWifi extends AbstractWrapper {
 
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!peers.containsKey(entry.getValue().deviceAddress)) {
-                        peers.put(entry.getValue().deviceAddress, entry.getValue());
+                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().deviceAddress
                                 + " into hashMapDevices");
 

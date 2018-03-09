@@ -49,15 +49,6 @@ public class DataLinkHybridManager implements IDataLink {
                 new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
-        if (wrapperWifi.isWifiEnabled()) {
-            /*wrapperWifi.setListenerConnection(new WrapperHybridWifi.ListenerConnection() {
-                @Override
-                public void onConnect() {
-                    wrapperBluetooth.connect();
-                }
-            });*/ //todo remove
-        }
-
         wrapperBluetooth =
                 new WrapperHybridBt(v, context, secure, nbThreadsBt, duration, label,
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);

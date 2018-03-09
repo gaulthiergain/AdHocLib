@@ -40,7 +40,6 @@ public class WrapperHybridWifi extends WrapperWifi {
     private HashMap<String, String> mapLabelMac;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
     private Hashtable<String, NetworkObject> mapIpNetwork;
-    private ListenerConnection listenerConnection;
     private boolean finishDiscovery = false;
 
 
@@ -136,12 +135,14 @@ public class WrapperHybridWifi extends WrapperWifi {
             @Override
             public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
 
-                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+                //Get label from ip
+                String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
 
-                if (v) Log.d(TAG, "Server broken with " + remoteWifiDevice.getDeviceAddress());
+                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
 
                 try {
-                    listenerDataLinkAodv.brokenLink(remoteDevice.getDeviceAddress());
+                    remoteDevice.setDeviceAddress(remoteLabel);
+                    listenerDataLinkAodv.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
@@ -151,7 +152,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
             @Override
             public void onConnection(AbstractRemoteDevice remoteDevice) {
-                listenerAodv.onConnection(remoteDevice);
+
             }
         });
 
@@ -164,14 +165,26 @@ public class WrapperHybridWifi extends WrapperWifi {
                 groupOwnerAddr, serverPort, 10000, ATTEMPTS, new MessageListener() {
             @Override
             public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+
+                //Get label from ip
+                String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
+
+                if (v) Log.d(TAG, "Client broken with " + remoteLabel);
+
+                try {
+                    remoteDevice.setDeviceAddress(remoteLabel);
+                    listenerDataLinkAodv.brokenLink(remoteLabel);
+                } catch (IOException | NoConnectionException e) {
+                    listenerAodv.catchException(e);
+                }
+
                 listenerAodv.onConnectionClosed(remoteDevice);
-                //TODO update aodv code with good ip
             }
 
             @Override
             public void onConnection(AbstractRemoteDevice remoteDevice) {
-                //TODO update aodv code with good ip
-                listenerAodv.onConnection(remoteDevice);
+
+
             }
 
             @Override
@@ -224,7 +237,7 @@ public class WrapperHybridWifi extends WrapperWifi {
         wifiAdHocManager.connect(device.getAddress());
     }
 
-    public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+    public void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
@@ -241,6 +254,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                     // Add mapping MAC - label
                     mapLabelMac.put(networkObject.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
+
                 }
 
                 if (ownIpAddress == null) {
@@ -250,23 +264,11 @@ public class WrapperHybridWifi extends WrapperWifi {
                             Log.d(TAG, ">>>> GO: " + address);
                             ownIpAddress = address;
                             wifiAdHocManager.unregisterGroupOwner();
-
-                            if (networkObject != null) {
-                                // Send CONNECT message to establish the pairing
-                                try {
-                                    networkObject.sendObjectStream(new MessageAdHoc(
-                                            new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
-
-                                    if (listenerConnection != null) {
-                                        listenerConnection.onConnect();
-                                    }
-
-                                } catch (IOException e) {
-                                    listenerAodv.catchException(e);
-                                }
-                            }
+                            sendConnectClient(message, networkObject);
                         }
                     });
+                }else{
+                    sendConnectClient(message, networkObject);
                 }
                 break;
             case "CONNECT_CLIENT":
@@ -282,15 +284,32 @@ public class WrapperHybridWifi extends WrapperWifi {
                     mapLabelMac.put(networkObjectServer.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
-                    if (listenerConnection != null) {
-                        listenerConnection.onConnect();
-                    }
+                    // callback connection
+                    listenerAodv.onConnection(new RemoteWifiDevice(message.getHeader().getSenderAddr(),
+                            ownIpAddress));
                 }
 
                 break;
             default:
                 // Handle messages in protocol scope
                 listenerDataLinkAodv.processMsgReceived(message);
+        }
+    }
+
+    private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject){
+        if (networkObject != null) {
+            // Send CONNECT message to establish the pairing
+            try {
+                networkObject.sendObjectStream(new MessageAdHoc(
+                        new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
+
+                // callback connection
+                listenerAodv.onConnection(new RemoteWifiDevice(message.getHeader().getSenderAddr(),
+                        ownIpAddress));
+
+            } catch (IOException e) {
+                listenerAodv.catchException(e);
+            }
         }
     }
 
@@ -312,8 +331,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
                 // Add devices into the peers
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!peers.containsKey(entry.getValue().deviceAddress)) {
-                        peers.put(entry.getValue().deviceAddress, entry.getValue());
+                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,
                                 new DiscoveredDevice(entry.getValue().deviceAddress,
@@ -332,10 +350,6 @@ public class WrapperHybridWifi extends WrapperWifi {
         if (isWifiEnabled()) {
             wifiAdHocManager.updateName(name);
         }
-    }
-
-    public void setListenerConnection(ListenerConnection listenerConnection) {
-        this.listenerConnection = listenerConnection;
     }
 
     public interface ListenerConnection {
