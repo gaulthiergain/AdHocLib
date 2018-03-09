@@ -76,7 +76,43 @@ public class DataLinkWifiManagerUdp implements IDataLink {
         this.serverPort = serverPort;
         this.listenerAodv = listenerAodv;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
-        this.wifiAdHocManager = new WifiAdHocManager(v, context);
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
+            @Override
+            public void onConnectionStarted() {
+                Log.d(TAG, "Connection Started");
+            }
+
+            @Override
+            public void onConnectionFailed(int reasonCode) {
+                Log.d(TAG, "Connection Failed: " + reasonCode);
+            }
+
+            @Override
+            public void onGroupOwner(InetAddress groupOwnerAddress) {
+                ownIpAddress = groupOwnerAddress.getHostAddress();
+                groupOwner = true;
+
+                Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+            }
+
+            @Override
+            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                ownIpAddress = address.getHostAddress();
+                groupOwner = false;
+
+                Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
+                Log.d(TAG, "OWN IP address: " + ownIpAddress);
+
+                Header header = new Header("CONNECT", ownIpAddress, "client");
+                ackSet.add(groupOwnerAddress.getHostAddress() + "#" + seqNum);
+                Log.d(TAG, "Client add " + (groupOwnerAddress.getHostAddress() + "#" + seqNum) + " into set");
+                timerClientMessage(new MessageAdHoc(header, new UDPmsg(ownMacAddress, seqNum++, groupOwnerAddress.getHostAddress())),
+                        groupOwnerAddress.getHostAddress(), 1000);
+
+
+            }
+        });
         this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
             @Override
@@ -261,43 +297,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
     public void connect() {
         for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
-                @Override
-                public void onConnectionStarted() {
-                    Log.d(TAG, "Connection Started");
-                }
-
-                @Override
-                public void onConnectionFailed(int reasonCode) {
-                    Log.d(TAG, "Connection Failed: " + reasonCode);
-                }
-
-                @Override
-                public void onGroupOwner(InetAddress groupOwnerAddress) {
-                    ownIpAddress = groupOwnerAddress.getHostAddress();
-                    groupOwner = true;
-
-                    Log.d(TAG, "onGroupOwner: " + ownIpAddress);
-                }
-
-                @Override
-                public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
-
-                    ownIpAddress = address.getHostAddress();
-                    groupOwner = false;
-
-                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
-                    Log.d(TAG, "OWN IP address: " + ownIpAddress);
-
-                    Header header = new Header("CONNECT", ownIpAddress, "client");
-                    ackSet.add(groupOwnerAddress.getHostAddress() + "#" + seqNum);
-                    Log.d(TAG, "Client add " + (groupOwnerAddress.getHostAddress() + "#" + seqNum) + " into set");
-                    timerClientMessage(new MessageAdHoc(header, new UDPmsg(ownMacAddress, seqNum++, groupOwnerAddress.getHostAddress())),
-                            groupOwnerAddress.getHostAddress(), 1000);
-
-
-                }
-            });
+            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress);
         }
     }
 
@@ -399,7 +399,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
                     }
                 }
                 wifiAdHocManager.unregisterDiscovery();
-                listenerAodv.onDiscoveryCompleted();
+                listenerAodv.onDiscoveryCompleted(null); //todo update
             }
         });
     }

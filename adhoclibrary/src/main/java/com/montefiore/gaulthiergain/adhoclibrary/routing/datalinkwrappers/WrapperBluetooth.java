@@ -21,6 +21,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtD
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -293,6 +294,8 @@ public class WrapperBluetooth extends AbstractWrapper {
         bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                HashMap<String, DiscoveredDevice> mapAddressDevice = new HashMap<>();
+
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (entry.getValue().getDevice().getName() != null &&
@@ -300,9 +303,12 @@ public class WrapperBluetooth extends AbstractWrapper {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into hashMapDevices");
+                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
+                                        entry.getValue().getDevice().getName(), DiscoveredDevice.BLUETOOTH));
                     }
                 }
-                listenerAodv.onDiscoveryCompleted();
+                listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                 // Stop and unregister to the discovery process
                 bluetoothManager.unregisterDiscovery();
             }

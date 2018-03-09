@@ -19,6 +19,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -46,51 +47,84 @@ public class WrapperWifi extends AbstractWrapper {
     Hashtable<String, WifiP2pDevice> peers;
 
     public WrapperWifi(boolean v, Context context, boolean enable, short nbThreads, int serverPort,
-                       ActiveConnections activeConnections, ListenerAodv listenerAodv,
+                       ActiveConnections activeConnections, final ListenerAodv listenerAodv,
                        final ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, IOException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
 
         // Enable wifi adapter
-        this.wifiAdHocManager = new WifiAdHocManager(v, context);
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
+            @Override
+            public void onConnectionStarted() {
+                Log.d(TAG, "Connection Started");
+            }
+
+            @Override
+            public void onConnectionFailed(int reasonCode) {
+                Log.d(TAG, "Connection Failed: " + reasonCode);
+            }
+
+            @Override
+            public void onGroupOwner(InetAddress groupOwnerAddress) {
+                ownIpAddress = groupOwnerAddress.getHostAddress();
+                Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+
+                listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
+            }
+
+            @Override
+            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                groupOwnerAddr = groupOwnerAddress.getHostAddress();
+                ownIpAddress = address.getHostAddress();
+
+                listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
+
+                Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
+                Log.d(TAG, "OWN IP address: " + ownIpAddress);
+
+                try {
+                    stopListening();
+                } catch (IOException e) {
+                    listenerAodv.catchException(e);
+                }
+
+                _connect();
+
+            }
+        });
         if (enable && !wifiAdHocManager.isEnabled()) {
             wifiAdHocManager.enable();
             waitWifiAdapter(nbThreads, serverPort);
         } else if (!enable && !wifiAdHocManager.isEnabled()) {
             throw new DeviceException("Unable to enable wifi adapter");
         } else {
-            init(nbThreads, serverPort);
+            init(serverPort);
             this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
                 @Override
                 public void getDeviceName(String name) {
                     // Update ownName
                     ownName = name;
-                    Log.d(TAG, "OWN NAME " + ownName);
                     listenerDataLinkAodv.getDeviceName(ownName);
                     wifiAdHocManager.unregisterInitName();
                 }
             });
+            this.listenServer(nbThreads);
         }
     }
 
-    WrapperWifi(boolean v, Context context, short nbThreads, int serverPort,
-                ActiveConnections activeConnections, ListenerAodv listenerAodv,
-                ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, IOException {
+    WrapperWifi(boolean v, Context context,
+                ActiveConnections activeConnections, final ListenerAodv listenerAodv,
+                final ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, IOException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
-
-        this.wifiAdHocManager = new WifiAdHocManager(v, context);
-        if (wifiAdHocManager.isEnabled()) {
-            init(nbThreads, serverPort);
-        }
     }
 
-    private void init(short nbThreads, int serverPort) throws IOException {
+    void init(int serverPort) throws IOException {
         this.wifiEnabled = true;
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = serverPort;
         this.peers = new Hashtable<>();
-        this.listenServer(nbThreads);
     }
 
     protected void listenServer(short nbThreads) throws IOException {
@@ -219,46 +253,7 @@ public class WrapperWifi extends AbstractWrapper {
     public void connect() {
         for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress, new ConnectionListener() {
-                @Override
-                public void onConnectionStarted() {
-                    Log.d(TAG, "Connection Started");
-                }
-
-                @Override
-                public void onConnectionFailed(int reasonCode) {
-                    Log.d(TAG, "Connection Failed: " + reasonCode);
-                }
-
-                @Override
-                public void onGroupOwner(InetAddress groupOwnerAddress) {
-                    ownIpAddress = groupOwnerAddress.getHostAddress();
-                    Log.d(TAG, "onGroupOwner: " + ownIpAddress);
-
-                    listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
-                }
-
-                @Override
-                public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
-
-                    groupOwnerAddr = groupOwnerAddress.getHostAddress();
-                    ownIpAddress = address.getHostAddress();
-
-                    listenerDataLinkAodv.getDeviceAddress(ownIpAddress);
-
-                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
-                    Log.d(TAG, "OWN IP address: " + ownIpAddress);
-
-                    try {
-                        stopListening();
-                    } catch (IOException e) {
-                        listenerAodv.catchException(e);
-                    }
-
-                    _connect();
-
-                }
-            });
+            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress);
         }
     }
 
@@ -277,6 +272,9 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
+
+                HashMap<String, DiscoveredDevice> mapAddressDevice = new HashMap<>();
+
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
@@ -284,11 +282,15 @@ public class WrapperWifi extends AbstractWrapper {
                         peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().deviceAddress
                                 + " into hashMapDevices");
+
+                        mapAddressDevice.put(entry.getValue().deviceAddress,
+                                new DiscoveredDevice(entry.getValue().deviceAddress,
+                                        entry.getValue().deviceName, DiscoveredDevice.WIFI));
                     }
                 }
 
                 wifiAdHocManager.unregisterDiscovery();
-                listenerAodv.onDiscoveryCompleted();
+                listenerAodv.onDiscoveryCompleted(mapAddressDevice);
             }
         });
     }
@@ -335,7 +337,7 @@ public class WrapperWifi extends AbstractWrapper {
                     }
 
                     // Update info when adapter is enabled
-                    init(nbThreads, serverPort);
+                    init(serverPort);
                     wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
                         @Override
@@ -347,6 +349,7 @@ public class WrapperWifi extends AbstractWrapper {
                             wifiAdHocManager.unregisterInitName();
                         }
                     });
+                    listenServer(nbThreads);
                 } catch (Exception e) {
                     listenerAodv.catchException(e);
                 }

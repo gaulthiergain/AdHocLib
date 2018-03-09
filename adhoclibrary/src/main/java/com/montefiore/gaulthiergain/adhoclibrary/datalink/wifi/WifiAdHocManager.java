@@ -39,6 +39,7 @@ public class WifiAdHocManager {
     private String TAG = "[AdHoc][WifiManager]";
     private WifiP2pManager wifiP2pManager;
     private Channel channel;
+    private ConnectionListener connectionListener;
     private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
     private BroadcastWifi broadcastWifi;
@@ -47,11 +48,13 @@ public class WifiAdHocManager {
     /**
      * Constructor
      *
-     * @param verbose a boolean value to set the debug/verbose mode.
-     * @param context a Context object which gives global information about an application
-     *                environment.
+     * @param verbose            a boolean value to set the debug/verbose mode.
+     * @param context            a Context object which gives global information about an application
+     *                           environment.
+     * @param connectionListener a connectionListener object which serves as callback functions.
      */
-    public WifiAdHocManager(boolean verbose, final Context context) throws DeviceException {
+    public WifiAdHocManager(boolean verbose, final Context context,
+                            final ConnectionListener connectionListener) throws DeviceException {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
@@ -64,78 +67,41 @@ public class WifiAdHocManager {
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
             this.hashMapWifiDevices = new HashMap<>();
-            this.test();
+            this.connectionListener = connectionListener;
+            this.registerConnection();
         }
     }
 
-    public void test() {
+    private void registerConnection() {
         final IntentFilter intentFilter = new IntentFilter();
+
         //  Indicates a change in the Wi-Fi P2P status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
 
-        Testing test = new Testing(wifiP2pManager);
-        context.registerReceiver(test, intentFilter);
-    }
-
-    public class Testing extends BroadcastReceiver {
-
-        private WifiP2pManager manager;
-
-        public Testing(WifiP2pManager manager) {
-            this.manager = manager;
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
-
-                // State of Wifi P2P has change
-                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
-                if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                    if (v) Log.d(TAG, "P2P state enabled: " + state);
-                } else {
-                    if (v) Log.d(TAG, "P2P state disabled: " + state);
+        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
+            @Override
+            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+                if (v) {
+                    Log.d(TAG, "onConnectionInfoAvailable");
+                    Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
                 }
 
-            } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-
-                // Connection has changed
-                if (v) Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION");
-
-                if (manager != null) {
-                    NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-                    if (networkInfo.isConnected()) {
-                        // Connected with the other device, request connection info to find group owner
-                        Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION networkInfo.isConnected()");
-                        manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
-                            @Override
-                            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-                                if (v) {
-                                    Log.d(TAG, "onConnectionInfoAvailable");
-                                    Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
-                                }
-
-                                if (info.isGroupOwner) {
-                                    Log.d(TAG, "IS GROUP OWNER");
-                                } else {
-                                    try {
-                                        Log.d(TAG, "IS CLIENT" +
-                                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
-                                    } catch (UnknownHostException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION disconnect()");
+                if (info.isGroupOwner) {
+                    connectionListener.onGroupOwner(info.groupOwnerAddress);
+                } else {
+                    try {
+                        connectionListener.onClient(info.groupOwnerAddress,
+                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
                     }
                 }
-
             }
-        }
+        };
+
+        broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
     public void getDeviceName(final ListenerWifiDeviceName listenerWifiDeviceName) {
@@ -208,41 +174,10 @@ public class WifiAdHocManager {
     /**
      * Method allowing to connect to a remote wifi Direct peer.
      *
-     * @param address            a String value which represents the address of the remote wifi
-     *                           Direct peer.
-     * @param connectionListener a connectionListener object which serves as callback functions.
+     * @param address a String value which represents the address of the remote wifi
+     *                Direct peer.
      */
-    public void connect(String address, final ConnectionListener connectionListener) {
-
-        final IntentFilter intentFilter = new IntentFilter();
-
-        //  Indicates a change in the Wi-Fi P2P status.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-
-        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
-            @Override
-            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-                if (v) {
-                    Log.d(TAG, "onConnectionInfoAvailable");
-                    Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
-                }
-
-                if (info.isGroupOwner) {
-                    connectionListener.onGroupOwner(info.groupOwnerAddress);
-                } else {
-                    try {
-                        connectionListener.onClient(info.groupOwnerAddress,
-                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-
-        broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
+    public void connect(String address) {
 
         // Get The device from its address
         final WifiP2pDevice device = hashMapWifiDevices.get(address);

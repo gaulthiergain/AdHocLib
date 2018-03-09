@@ -16,6 +16,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtD
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -32,16 +33,17 @@ import java.util.UUID;
 public class WrapperHybridBt extends WrapperBluetooth {
 
     private static final String TAG = "[AdHoc][WrapperBtHy]";
-    private HashMap<String, String> mapAddressLabel;
+    private HashMap<String, DiscoveredDevice> mapAddressDevice;
     private HashMap<String, NetworkObject> hashmapUuidNetwork;
     private boolean finishDiscovery = false;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads, short duration,
-                           String ownAddress, ActiveConnections activeConnections, HashMap<String, String> mapAddressLabel,
+                           String ownAddress, ActiveConnections activeConnections,
+                           HashMap<String, DiscoveredDevice> mapAddressDevice,
                            ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
         super(v, context, secure, nbThreads, duration, ownAddress, activeConnections, listenerAodv, listenerDataLinkAodv);
-        this.mapAddressLabel = mapAddressLabel;
+        this.mapAddressDevice = mapAddressDevice;
         this.hashmapUuidNetwork = new HashMap<>();
     }
 
@@ -171,11 +173,15 @@ public class WrapperHybridBt extends WrapperBluetooth {
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (entry.getValue().getDevice().getName() != null &&
-                            entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)) {
+                    if (entry.getValue().getDevice().getName() != null
+                            && entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)
+                            && !hashMapDevices.containsKey(entry.getValue().getShortUuid())) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into hashMapDevices");
+                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
+                                        entry.getValue().getDevice().getName(), DiscoveredDevice.BLUETOOTH));
                     }
                 }
 

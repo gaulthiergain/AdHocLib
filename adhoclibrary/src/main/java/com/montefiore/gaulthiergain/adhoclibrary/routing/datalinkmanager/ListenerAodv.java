@@ -1,20 +1,17 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
-import java.io.IOException;
+import java.util.HashMap;
 
 public interface ListenerAodv {
 
     /**
      * Callback when the discovery is completed.
+     * @param mapAddressDevice
      */
-    void onDiscoveryCompleted();
+    void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
 
     /**
      * Callback when the getPairedDevices is completed.
