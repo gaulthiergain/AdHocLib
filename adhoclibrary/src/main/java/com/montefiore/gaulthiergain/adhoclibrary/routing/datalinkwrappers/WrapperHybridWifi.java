@@ -53,7 +53,6 @@ public class WrapperHybridWifi extends WrapperWifi {
         this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
             @Override
             public void onConnectionStarted() {
-
                 Log.d(TAG, "Connection Started");
             }
 
@@ -267,7 +266,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                             sendConnectClient(message, networkObject);
                         }
                     });
-                }else{
+                } else {
                     sendConnectClient(message, networkObject);
                 }
                 break;
@@ -296,7 +295,7 @@ public class WrapperHybridWifi extends WrapperWifi {
         }
     }
 
-    private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject){
+    private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject) {
         if (networkObject != null) {
             // Send CONNECT message to establish the pairing
             try {
@@ -350,10 +349,6 @@ public class WrapperHybridWifi extends WrapperWifi {
         if (isWifiEnabled()) {
             wifiAdHocManager.updateName(name);
         }
-    }
-
-    public interface ListenerConnection {
-        void onConnect();
     }
 
     public boolean isFinishDiscovery() {

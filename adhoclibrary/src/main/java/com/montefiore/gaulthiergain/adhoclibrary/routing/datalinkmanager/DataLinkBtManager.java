@@ -67,7 +67,6 @@ public class DataLinkBtManager implements IDataLink {
 
     @Override
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
-
         NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
         networkObject.sendObjectStream(message);
         if (v) Log.d(TAG, "Send directly to " + address);

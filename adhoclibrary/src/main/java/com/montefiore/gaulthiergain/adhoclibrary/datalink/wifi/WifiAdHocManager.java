@@ -315,17 +315,22 @@ public class WifiAdHocManager {
 
     public void updateName(String name) {
         try {
-            Method method = wifiP2pManager.getClass().getMethod("getDeviceName",
-                    WifiP2pManager.Channel.class, String.class, WifiP2pManager.ActionListener.class);
+            Method m = wifiP2pManager.getClass().getMethod(
+                    "setDeviceName",
+                    new Class[]{WifiP2pManager.Channel.class, String.class,
+                            WifiP2pManager.ActionListener.class});
 
-            method.invoke(wifiP2pManager, channel, "New Device Name", new WifiP2pManager.ActionListener() {
+            m.invoke(wifiP2pManager, channel, name, new WifiP2pManager.ActionListener() {
                 public void onSuccess() {
+                    //Code for Success in changing name
                 }
 
                 public void onFailure(int reason) {
+                    //Code to be done while name change Fails
                 }
             });
         } catch (Exception e) {
+
             e.printStackTrace();
         }
     }

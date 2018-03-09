@@ -4,14 +4,14 @@ import java.util.HashMap;
 
 
 public class MapNameAddr {
-    private final static HashMap<String, String> hashmapNameAddr = new HashMap<String, String>();
+    private final static HashMap<String, String> hashmapAddrName = new HashMap<String, String>();
 
-    public static void addMapping(String ip, String name) {
-        hashmapNameAddr.put(ip, name);
+    public static void addMapping(String mac, String name) {
+        hashmapAddrName.put(mac, name);
     }
 
-    public static void getMapping(String ip) {
-        hashmapNameAddr.get(ip);
+    public static void getName(String mac) {
+        hashmapAddrName.get(mac);
     }
 
 }
