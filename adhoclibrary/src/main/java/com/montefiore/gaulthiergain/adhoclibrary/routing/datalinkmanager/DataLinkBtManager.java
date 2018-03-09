@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.Wrappe
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DataLinkBtManager implements IDataLink {
@@ -53,7 +54,7 @@ public class DataLinkBtManager implements IDataLink {
 
 
     @Override
-    public void connect() {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
         wrapperBt.connect();
     }
 

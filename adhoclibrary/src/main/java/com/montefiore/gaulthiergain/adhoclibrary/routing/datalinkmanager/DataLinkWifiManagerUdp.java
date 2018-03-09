@@ -294,7 +294,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
     }
 
     @Override
-    public void connect() {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
         for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
             Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
             wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress);

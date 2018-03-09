@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * This interface allows to perform management of data layer from routing layer.
@@ -11,8 +12,9 @@ public interface IDataLink {
 
     /**
      * Method allowing to connect to other devices
+     * @param hashMap
      */
-    void connect();
+    void connect(HashMap<String, DiscoveredDevice> hashMap);
 
     /**
      * Method allowing to stop the threads.

@@ -8,6 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDi
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkWifiManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -157,9 +158,10 @@ public class AodvManager {
 
     /**
      * Method allowing to connect to other devices
+     * @param hashMap
      */
-    public void connect() {
-        dataLink.connect();
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
+        dataLink.connect(hashMap);
     }
 
     /**

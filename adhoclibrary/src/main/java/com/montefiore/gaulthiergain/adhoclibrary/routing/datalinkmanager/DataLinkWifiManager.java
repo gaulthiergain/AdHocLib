@@ -1,35 +1,16 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 public class DataLinkWifiManager implements IDataLink {
@@ -69,7 +50,7 @@ public class DataLinkWifiManager implements IDataLink {
 
 
     @Override
-    public void connect() {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
         wrapperWifi.connect();
     }
 

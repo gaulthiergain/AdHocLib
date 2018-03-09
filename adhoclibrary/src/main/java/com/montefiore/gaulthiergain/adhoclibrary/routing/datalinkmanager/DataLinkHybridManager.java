@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
@@ -10,8 +9,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDi
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.AbstractWrapper;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridBt;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -96,13 +93,14 @@ public class DataLinkHybridManager implements IDataLink {
     }
 
     @Override
-    public void connect() {
-        if (wrapperWifi.isWifiEnabled()) {
-            wrapperWifi.connect();
-        } else {
-            wrapperBluetooth.connect();
-        }
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
+        for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
+            if(entry.getValue().getType() == DiscoveredDevice.BLUETOOTH){
 
+            }else{
+                wrapperWifi.connect();
+            }
+        }
     }
 
     @Override

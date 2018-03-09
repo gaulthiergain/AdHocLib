@@ -13,11 +13,13 @@ public class DiscoveredDevice {
     private final String address;
     private final String name;
     private final byte type;
+    private boolean selected;
 
     public DiscoveredDevice(String address, String name, byte type) {
         this.address = address;
         this.name = name;
         this.type = type;
+        this.selected = false;
     }
 
     public String getName() {
@@ -33,12 +35,16 @@ public class DiscoveredDevice {
         return address;
     }
 
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
     @Override
     public String toString() {
-        return "DiscoveredDevice{" +
-                "address='" + address + '\'' +
-                ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
-                '}';
+        return address + " - " + name + " - " + type;
     }
 }
