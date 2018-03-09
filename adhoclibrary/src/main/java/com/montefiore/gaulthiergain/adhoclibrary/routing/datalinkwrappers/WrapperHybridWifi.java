@@ -35,18 +35,21 @@ public class WrapperHybridWifi extends WrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifiHy]";
 
-    private String loopbackAddress;
+    private String label;
+    private HashMap<String, String> mapAddressLabel;
     private Hashtable<String, NetworkObject> hashmapIpNetwork;
     private ListenerConnection listenerConnection;
 
+
     public WrapperHybridWifi(boolean v, Context context, short nbThreadsWifi, int serverPort,
-                             String loopbackAddress, ActiveConnections activeConnections,
-                             ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+                             String label, ActiveConnections activeConnections,
+                             HashMap<String, String> mapAddressLabel, ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, IOException {
         super(v, context, nbThreadsWifi, serverPort, activeConnections, listenerAodv, listenerDataLinkAodv);
 
         if (isWifiEnabled()) {
-            this.loopbackAddress = loopbackAddress;
+            this.mapAddressLabel = mapAddressLabel;
+            this.label = label;
             this.hashmapIpNetwork = new Hashtable<>();
         }
     }
@@ -153,7 +156,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new Header("CONNECT_WIFI_SERVER", loopbackAddress, ownName), ownIpAddress));
+                        new Header("CONNECT_WIFI_SERVER", label, ownName), ownIpAddress));
 
             }
         });
@@ -232,7 +235,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                                 // Send CONNECT message to establish the pairing
                                 try {
                                     networkObject.sendObjectStream(new MessageAdHoc(
-                                            new Header("CONNECT_WIFI_CLIENT", loopbackAddress, ownName), ownIpAddress));
+                                            new Header("CONNECT_WIFI_CLIENT", label, ownName), ownIpAddress));
 
                                     if (listenerConnection != null) {
                                         listenerConnection.onConnect();
@@ -268,7 +271,7 @@ public class WrapperHybridWifi extends WrapperWifi {
     }
 
     public void discovery() {
-        wifiAdHocManager.discover(new DiscoveryListener() {
+        wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
 
@@ -291,9 +294,17 @@ public class WrapperHybridWifi extends WrapperWifi {
                     }
                 }
 
+                listenerAodv.onDiscoveryCompleted(); //todo remove
+
                 wifiAdHocManager.unregisterDiscovery();
             }
         });
+    }
+
+    public void updateName(String name) {
+        if (isWifiEnabled()) {
+            wifiAdHocManager.updateName(name);
+        }
     }
 
     public void setListenerConnection(ListenerConnection listenerConnection) {

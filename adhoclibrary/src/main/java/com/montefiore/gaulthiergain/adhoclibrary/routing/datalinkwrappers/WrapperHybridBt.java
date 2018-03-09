@@ -23,18 +23,42 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
 public class WrapperHybridBt extends WrapperBluetooth {
 
     private static final String TAG = "[AdHoc][WrapperWifiHy]";
+    private HashMap<String, String> mapAddressLabel;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads, short duration,
-                           String ownAddress, ActiveConnections activeConnections, ListenerAodv listenerAodv,
-                           ListenerDataLinkAodv listenerDataLinkAodv)
+                           String ownAddress, ActiveConnections activeConnections, HashMap<String, String> mapAddressLabel,
+                           ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
         super(v, context, secure, nbThreads, duration, ownAddress, activeConnections, listenerAodv, listenerDataLinkAodv);
+        this.mapAddressLabel = mapAddressLabel;
+
+    }
+
+    public void connect() {
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
+            if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
+                //TODO remove
+                /*if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
+
+                } else if (ownName.equals("#eO91#Samsung_gt") && entry.getValue().getDevice().getName().equals("#e091#SamsungGT3")) {
+
+                } else {
+
+                }*/
+                _connect(entry.getValue());
+
+            } else {
+                if (v) Log.d(TAG, entry.getValue().getShortUuid() + " is already connected");
+            }
+        }
     }
 
 
@@ -126,5 +150,12 @@ public class WrapperHybridBt extends WrapperBluetooth {
                 // Handle messages in protocol scope
                 listenerDataLinkAodv.processMsgReceived(message);
         }
+    }
+
+    /**
+     * Method allowing to update the name of the device.
+     */
+    public void updateName(String name) {
+        bluetoothManager.updateDeviceName(name);
     }
 }

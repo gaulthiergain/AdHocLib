@@ -376,7 +376,7 @@ public class DataLinkWifiManagerUdp implements IDataLink {
 
     @Override
     public void discovery() {
-        wifiAdHocManager.discover(new DiscoveryListener() {
+        wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
 

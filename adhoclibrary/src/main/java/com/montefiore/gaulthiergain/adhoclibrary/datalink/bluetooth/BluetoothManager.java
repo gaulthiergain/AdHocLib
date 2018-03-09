@@ -107,7 +107,21 @@ public class BluetoothManager {
     }
 
     public void updateDeviceName(String name) {
+        bluetoothAdapter.setName(name);
+    }
 
+    public void resetDeviceName() throws DeviceException {
+        if (initName != null && !initName.contains("#e091#")) {
+            bluetoothAdapter.setName(initName);
+        } else if (initName != null && initName.contains("#e091#")) {
+            if (initName.split("#").length > 2) {
+                bluetoothAdapter.setName(initName.split("#")[2]);
+            } else {
+                throw new DeviceException("No initial name found");
+            }
+        }
+        /*
+        OLD update name
         if (initName == null) {
             initName = bluetoothAdapter.getName();
         }
@@ -121,22 +135,11 @@ public class BluetoothManager {
         if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
         bluetoothAdapter.setName(name + initName);
         if (v) Log.i(TAG, "localdevicename : " + name + initName);
-    }
-
-    public void resetDeviceName() throws DeviceException {
-        if (initName != null && !initName.contains("#e091#")) {
-            bluetoothAdapter.setName(initName);
-        } else if (initName != null && initName.contains("#e091#")) {
-            if (initName.split("#").length > 2) {
-                bluetoothAdapter.setName(initName.split("#")[2]);
-            } else {
-                throw new DeviceException("No initial name found");
-            }
-        }
+         */
     }
 
     /**
-     * Method allowing to discover other bluetooth devices.
+     * Method allowing to discovery other bluetooth devices.
      *
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */

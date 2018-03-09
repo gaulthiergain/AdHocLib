@@ -13,10 +13,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 
-abstract class AbstractWrapper {
+public abstract class AbstractWrapper {
 
+    public final static String ID_APP = "#e091#";
     final static int ATTEMPTS = 3;
-    final static String ID_APP = "#e091#";
 
     final boolean v;
     final Context context;

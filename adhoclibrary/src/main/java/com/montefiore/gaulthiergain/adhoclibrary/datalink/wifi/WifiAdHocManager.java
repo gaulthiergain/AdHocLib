@@ -90,11 +90,11 @@ public class WifiAdHocManager {
     }
 
     /**
-     * Method allowing to discover other wifi Direct hashMapWifiDevices.
+     * Method allowing to discovery other wifi Direct hashMapWifiDevices.
      *
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */
-    public void discover(final DiscoveryListener discoveryListener) {
+    public void discovery(final DiscoveryListener discoveryListener) {
 
         final IntentFilter intentFilter = new IntentFilter();
 

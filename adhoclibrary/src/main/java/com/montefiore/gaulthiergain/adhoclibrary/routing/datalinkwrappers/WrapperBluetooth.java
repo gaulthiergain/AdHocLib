@@ -45,9 +45,9 @@ public class WrapperBluetooth extends AbstractWrapper {
     boolean secure;
     String ownAddress;
     String ownMac;
-    private BluetoothManager bluetoothManager;
+    BluetoothManager bluetoothManager;
     BluetoothServiceServer bluetoothServiceServer;
-    private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
+    HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
     private WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
                              ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
@@ -65,9 +65,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
         this.ownAddress = ownMac.replace(":", "").toLowerCase();
         this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownAddress);
-
-        this.updateName(); //must return new name
-        this.ownName = BluetoothUtil.getCurrentName(); // todo update with updateName
+        this.ownName = BluetoothUtil.getCurrentName();
 
         // callback
         listenerDataLinkAodv.getDeviceAddress(ownAddress);
@@ -91,7 +89,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         this(v, context, secure, activeConnections, listenerAodv, listenerDataLinkAodv);
 
         this.ownAddress = ownAddress;
-        this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownAddress);
+        this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
 
         // Check if the bluetooth adapter is enabled
         if (!bluetoothManager.isEnabled()) {
@@ -102,14 +100,6 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
 
         this.listenServer(nbThreads);
-    }
-
-    /**
-     * Method allowing to update the name of the device.
-     */
-    private void updateName() {
-        //TODO update this
-        //bluetoothManager.updateDeviceName(Code.ID_APP );
     }
 
 
@@ -220,7 +210,6 @@ public class WrapperBluetooth extends AbstractWrapper {
                 if (v) Log.d(TAG, entry.getValue().getShortUuid() + " is already connected");
             }
         }
-
     }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {

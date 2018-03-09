@@ -19,7 +19,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -60,19 +59,6 @@ public class WrapperWifi extends AbstractWrapper {
         } else if (!enable && !wifiAdHocManager.isEnabled()) {
             throw new DeviceException("Unable to enable wifi adapter");
         } else {
-            this.wifiEnabled = true;
-            this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
-
-                @Override
-                public void getDeviceName(String name) {
-                    // Update ownName
-                    ownName = name;
-                    Log.d(TAG, "OWN NAME " + ownName);
-                    listenerDataLinkAodv.getDeviceName(ownName);
-                    wifiAdHocManager.unregisterInitName();
-                }
-            });
             init(nbThreads, serverPort);
         }
     }
@@ -90,8 +76,20 @@ public class WrapperWifi extends AbstractWrapper {
 
     private void init(short nbThreads, int serverPort) throws IOException {
         this.wifiEnabled = true;
+        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = serverPort;
         this.peers = new Hashtable<>();
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
+
+            @Override
+            public void getDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                Log.d(TAG, "OWN NAME " + ownName);
+                listenerDataLinkAodv.getDeviceName(ownName);
+                wifiAdHocManager.unregisterInitName();
+            }
+        });
         this.listenServer(nbThreads);
     }
 
@@ -266,7 +264,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     @Override
     public void discovery() {
-        wifiAdHocManager.discover(new DiscoveryListener() {
+        wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
 
@@ -335,20 +333,8 @@ public class WrapperWifi extends AbstractWrapper {
                         // Wait to connect
                         Thread.sleep(500);
                     }
-                    wifiEnabled = true;
-                    // Initialize MAC
-                    ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-                    wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
 
-                        @Override
-                        public void getDeviceName(String name) {
-                            // Update ownName
-                            ownName = name;
-                            Log.d(TAG, "OWN NAME " + ownName);
-                            listenerDataLinkAodv.getDeviceName(ownName);
-                            wifiAdHocManager.unregisterInitName();
-                        }
-                    });
+                    // Initialize MAC
                     init(nbThreads, serverPort);
                 } catch (Exception e) {
                     listenerAodv.catchException(e);

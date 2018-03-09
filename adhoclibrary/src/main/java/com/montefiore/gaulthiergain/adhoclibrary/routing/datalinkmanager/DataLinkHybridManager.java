@@ -9,12 +9,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDi
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridBt;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DataLinkHybridManager implements IDataLink {
@@ -23,9 +26,12 @@ public class DataLinkHybridManager implements IDataLink {
     private static final String TAG = "[AdHoc][DataLinkHybrid]";
 
     private final boolean v;
-    private final WrapperBluetooth wrapperBluetooth;
+    private final WrapperHybridBt wrapperBluetooth;
     private final WrapperHybridWifi wrapperWifi;
     private final ActiveConnections activeConnections;
+
+
+    private final HashMap<String, String> mapAddressLabel;
 
 
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
@@ -35,17 +41,19 @@ public class DataLinkHybridManager implements IDataLink {
 
         this.v = verbose;
         this.activeConnections = new ActiveConnections();
+        this.mapAddressLabel = new HashMap<>();
 
-        //todo update this
-        String loopbackAddress = BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
-        listenerDataLinkAodv.getDeviceAddress(loopbackAddress);
-        listenerDataLinkAodv.getDeviceName(loopbackAddress);
+        String label = "1234567890" +
+                BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
+        listenerDataLinkAodv.getDeviceAddress(label);
 
-        this.wrapperWifi =
-                new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, loopbackAddress,
-                        activeConnections, listenerAodv, listenerDataLinkAodv);
+        wrapperWifi =
+                new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
+                        activeConnections, mapAddressLabel, listenerAodv, listenerDataLinkAodv);
 
-        if(wrapperWifi.isWifiEnabled()){
+        listenerDataLinkAodv.getDeviceName(label);
+
+        if (wrapperWifi.isWifiEnabled()) {
             wrapperWifi.setListenerConnection(new WrapperHybridWifi.ListenerConnection() {
                 @Override
                 public void onConnect() {
@@ -54,10 +62,25 @@ public class DataLinkHybridManager implements IDataLink {
             });
         }
 
-        this.wrapperBluetooth =
-                new WrapperBluetooth(v, context, secure, nbThreadsBt, duration, loopbackAddress,
-                        activeConnections, listenerAodv, listenerDataLinkAodv);
+        wrapperBluetooth =
+                new WrapperHybridBt(v, context, secure, nbThreadsBt, duration, label,
+                        activeConnections, mapAddressLabel, listenerAodv, listenerDataLinkAodv);
 
+    }
+
+    @Override
+    public void discovery() {
+
+        /*new Thread(new Runnable() {
+            @Override
+            public void run() {
+                wrapperBluetooth.discovery();
+            }
+        }).start();*/
+
+        if (wrapperWifi.isWifiEnabled()) {
+            wrapperWifi.discovery();
+        }
     }
 
     @Override
@@ -110,20 +133,7 @@ public class DataLinkHybridManager implements IDataLink {
         }
     }
 
-    @Override
-    public void discovery() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                wrapperBluetooth.discovery();
-            }
-        }).start();
-
-        if (wrapperWifi.isWifiEnabled()) {
-            wrapperWifi.discovery();
-        }
-    }
 
 
     @Override
