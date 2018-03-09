@@ -1,18 +1,22 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
@@ -33,6 +37,7 @@ import java.util.UUID;
 public class WrapperHybridBt extends WrapperBluetooth {
 
     private static final String TAG = "[AdHoc][WrapperBtHy]";
+    private HashMap<String, String> mapLabelUuid;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
     private HashMap<String, NetworkObject> hashmapUuidNetwork;
     private boolean finishDiscovery = false;
@@ -43,12 +48,13 @@ public class WrapperHybridBt extends WrapperBluetooth {
                            ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
         super(v, context, secure, nbThreads, duration, ownAddress, activeConnections, listenerAodv, listenerDataLinkAodv);
+        this.mapLabelUuid = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
         this.hashmapUuidNetwork = new HashMap<>();
+        this.listenServer(nbThreads);
     }
 
     public void connect(DiscoveredDevice device) {
-
 
         String shortUuid = device.getAddress().replace(":", "").toLowerCase();
         BluetoothAdHocDevice btDevice = hashMapDevices.get(shortUuid);
@@ -64,6 +70,68 @@ public class WrapperHybridBt extends WrapperBluetooth {
         }
     }
 
+    public void listenServer(short nbThreads) throws IOException {
+        bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerAodv.catchException(e);
+                }
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerAodv.catchException(e);
+            }
+
+            @Override
+            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+
+                //Get label from ip
+                String remoteLabel = mapLabelUuid.get(remoteDevice.getDeviceAddress());
+
+                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
+
+                try {
+                    listenerDataLinkAodv.brokenLink(remoteLabel);
+                } catch (IOException e) {
+                    listenerAodv.catchException(e);
+                } catch (NoConnectionException e) {
+                    listenerAodv.catchException(e);
+                }
+
+                remoteDevice.setDeviceAddress(remoteLabel);
+
+                listenerAodv.onConnectionClosed(remoteDevice);
+            }
+
+            @Override
+            public void onConnection(AbstractRemoteDevice remoteDevice) {
+
+            }
+        });
+
+        // Start the bluetoothServiceServer listening process
+        try {
+            bluetoothServiceServer.listen(nbThreads, secure, "secure",
+                    BluetoothAdapter.getDefaultAdapter(), ownUUID);
+        } catch (MaxThreadReachedException e) {
+            listenerAodv.catchException(e);
+        }
+
+    }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
@@ -95,26 +163,27 @@ public class WrapperHybridBt extends WrapperBluetooth {
                     @Override
                     public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
 
-                        RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
+                        //Get label from ip
+                        String remoteLabel = mapLabelUuid.get(remoteDevice.getDeviceAddress());
 
-                        // Get the remote UUID
-                        String remoteUuid = remoteBtDevice.getDeviceAddress().
-                                replace(":", "").toLowerCase();
-
-                        if (v) Log.d(TAG, "Link broken with " + remoteUuid);
+                        if (v) Log.d(TAG, "Link broken with " + remoteLabel);
 
                         try {
-                            listenerDataLinkAodv.brokenLink(remoteUuid);
-                        } catch (IOException | NoConnectionException e) {
+                            listenerDataLinkAodv.brokenLink(remoteLabel);
+                        } catch (IOException e) {
+                            listenerAodv.catchException(e);
+                        } catch (NoConnectionException e) {
                             listenerAodv.catchException(e);
                         }
+
+                        remoteDevice.setDeviceAddress(remoteLabel);
 
                         listenerAodv.onConnectionClosed(remoteDevice);
                     }
 
                     @Override
                     public void onConnection(AbstractRemoteDevice remoteDevice) {
-                        listenerAodv.onConnection(remoteDevice);
+
                     }
 
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
@@ -150,6 +219,17 @@ public class WrapperHybridBt extends WrapperBluetooth {
 
                     networkObjectBt.sendObjectStream(new MessageAdHoc(
                             new Header("CONNECT_CLIENT", ownAddress, ownName), ownUUID.toString()));
+
+                    Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                            + " " + message.getHeader().getSenderAddr());
+
+                    // Add mapping MAC - label
+                    mapLabelUuid.put(message.getPdu().toString(),
+                            message.getHeader().getSenderAddr());
+
+                    // callback connection
+                    listenerAodv.onConnection(new RemoteBtDevice(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName()));
                 }
                 break;
             case "CONNECT_CLIENT":
@@ -157,6 +237,17 @@ public class WrapperHybridBt extends WrapperBluetooth {
                 if (networkObjectServer != null) {
                     // Add the active connection into the autoConnectionActives object
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
+
+                    Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                            + " " + message.getHeader().getSenderAddr());
+
+                    // Add mapping MAC - label
+                    mapLabelUuid.put(message.getPdu().toString(),
+                            message.getHeader().getSenderAddr());
+
+                    // callback connection
+                    listenerAodv.onConnection(new RemoteBtDevice(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName()));
                 }
                 break;
             default:

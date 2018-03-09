@@ -100,7 +100,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             bluetoothManager.enableDiscovery(duration);
         }
 
-        this.listenServer(nbThreads);
+
     }
 
 
