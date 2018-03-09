@@ -277,8 +277,7 @@ public class WrapperWifi extends AbstractWrapper {
 
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (entry.getValue().deviceName != null &&
-                            entry.getValue().deviceName.contains(AbstractWrapper.ID_APP)) {
+                    if (!peers.containsKey(entry.getValue().deviceAddress)) {
                         peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().deviceAddress
                                 + " into hashMapDevices");

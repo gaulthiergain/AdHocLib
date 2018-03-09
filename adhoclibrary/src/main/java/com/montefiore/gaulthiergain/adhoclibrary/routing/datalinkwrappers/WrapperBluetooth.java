@@ -298,15 +298,14 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (entry.getValue().getDevice().getName() != null &&
-                            entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)) {
-                        hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
-                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
-                                + " into hashMapDevices");
-                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
-                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
-                                        entry.getValue().getDevice().getName(), DiscoveredDevice.BLUETOOTH));
-                    }
+
+                    hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
+                    if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
+                            + " into hashMapDevices");
+                    mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                            new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
+                                    entry.getValue().getDevice().getName(), DiscoveredDevice.BLUETOOTH));
+
                 }
                 listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                 // Stop and unregister to the discovery process
@@ -334,7 +333,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
         // Add paired devices into the hashMapDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
-            if (entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)) {
+            if (!hashMapDevices.containsKey(entry.getValue().getShortUuid())) {
                 hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
                         + " into hashMapDevices");

@@ -313,8 +313,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
                 // Add devices into the peers
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (entry.getValue().deviceName != null &&
-                            entry.getValue().deviceName.contains(AbstractWrapper.ID_APP)) {
+                    if (!peers.containsKey(entry.getValue().deviceAddress)) {
                         peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,

@@ -47,7 +47,7 @@ public class DataLinkHybridManager implements IDataLink {
         //todo update this with random address
         String label = BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
         listenerDataLinkAodv.getDeviceAddress(label);
-        listenerDataLinkAodv.getDeviceName(AbstractWrapper.ID_APP + label);
+        listenerDataLinkAodv.getDeviceName(label);
 
         wrapperWifi =
                 new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
@@ -98,10 +98,7 @@ public class DataLinkHybridManager implements IDataLink {
     @Override
     public void connect() {
         if (wrapperWifi.isWifiEnabled()) {
-
-
             wrapperWifi.connect();
-
         } else {
             wrapperBluetooth.connect();
         }
@@ -149,36 +146,8 @@ public class DataLinkHybridManager implements IDataLink {
         }
     }
 
-
     @Override
     public void getPaired() {
         wrapperBluetooth.getPaired();
-    }
-
-    private static class Testing extends AsyncTask<Object, Void, String> {
-
-
-        protected String doInBackground(Object... params) {
-
-            WrapperHybridBt wrapperBluetooth = (WrapperHybridBt) params[0];
-            WrapperHybridWifi wrapperWifi = (WrapperHybridWifi) params[1];
-            ListenerAodv listenerAodv = (ListenerAodv) params[2];
-            HashMap<String, DiscoveredDevice> mapAddressDevice = (HashMap) params[3];
-
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (wrapperBluetooth.isFinishDiscovery() && wrapperWifi.isFinishDiscovery()) {
-                    break;
-                }
-            }
-            wrapperWifi.setFinishDiscovery(false);
-            wrapperBluetooth.setFinishDiscovery(false);
-            return "";
-        }
-
     }
 }

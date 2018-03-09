@@ -173,9 +173,7 @@ public class WrapperHybridBt extends WrapperBluetooth {
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
                 // Add no paired devices into the hashMapDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (entry.getValue().getDevice().getName() != null
-                            && entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)
-                            && !hashMapDevices.containsKey(entry.getValue().getShortUuid())) {
+                    if (!hashMapDevices.containsKey(entry.getValue().getShortUuid())) {
                         hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into hashMapDevices");

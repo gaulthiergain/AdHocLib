@@ -15,7 +15,6 @@ import java.io.IOException;
 
 public abstract class AbstractWrapper {
 
-    public final static String ID_APP = "#e091#";
     final static int ATTEMPTS = 3;
 
     final boolean v;
