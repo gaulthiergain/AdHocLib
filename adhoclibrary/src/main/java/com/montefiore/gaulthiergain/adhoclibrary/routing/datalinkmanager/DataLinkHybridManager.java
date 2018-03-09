@@ -40,6 +40,7 @@ public class DataLinkHybridManager implements IDataLink {
         this.activeConnections = new ActiveConnections();
         this.mapAddressLabel = new HashMap<>();
 
+        //todo update this with random address
         String label = "1234567890" +
                 BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
         listenerDataLinkAodv.getDeviceAddress(label);

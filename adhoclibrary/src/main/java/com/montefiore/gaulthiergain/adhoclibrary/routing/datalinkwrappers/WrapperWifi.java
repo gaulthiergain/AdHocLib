@@ -79,7 +79,7 @@ public class WrapperWifi extends AbstractWrapper {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = serverPort;
         this.peers = new Hashtable<>();
-        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiManager() {
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
             @Override
             public void getDeviceName(String name) {

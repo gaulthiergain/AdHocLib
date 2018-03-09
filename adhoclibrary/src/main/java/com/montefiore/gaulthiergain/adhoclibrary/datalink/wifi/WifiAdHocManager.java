@@ -78,7 +78,7 @@ public class WifiAdHocManager {
         }
     }
 
-    public void getDeviceName(final ListenerWifiManager listenerWifiManager) {
+    public void getDeviceName(final ListenerWifiDeviceName listenerWifiDeviceName) {
         final IntentFilter intentFilter = new IntentFilter();
 
         //  Indicates this device's details have changed.
@@ -86,7 +86,7 @@ public class WifiAdHocManager {
         //  Update name
         intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
-        broadcastWifi.registerName(intentFilter, listenerWifiManager);
+        broadcastWifi.registerName(intentFilter, listenerWifiDeviceName);
     }
 
     /**
@@ -340,7 +340,7 @@ public class WifiAdHocManager {
         }
     }
 
-    public interface ListenerWifiManager {
+    public interface ListenerWifiDeviceName {
         void getDeviceName(String name);
     }
 
@@ -364,11 +364,11 @@ public class WifiAdHocManager {
         }
 
         void registerName(IntentFilter intentFilter,
-                          final ListenerWifiManager listenerWifiManager) {
-            wifiDirectBroadcastName = new WifiDirectBroadcastName(new ListenerWifiManager() {
+                          final ListenerWifiDeviceName listenerWifiDeviceName) {
+            wifiDirectBroadcastName = new WifiDirectBroadcastName(new ListenerWifiDeviceName() {
                 @Override
                 public void getDeviceName(String name) {
-                    listenerWifiManager.getDeviceName(name);
+                    listenerWifiDeviceName.getDeviceName(name);
                 }
             });
             nameRegistered = true;

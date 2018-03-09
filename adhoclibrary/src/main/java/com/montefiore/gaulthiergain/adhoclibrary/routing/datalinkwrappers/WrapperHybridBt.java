@@ -156,7 +156,6 @@ public class WrapperHybridBt extends WrapperBluetooth {
                 if (networkObjectServer != null) {
                     // Add the active connection into the autoConnectionActives object
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
-                    Log.d(TAG, "ADDED !!!");
                 }
                 break;
             default:

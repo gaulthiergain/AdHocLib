@@ -156,7 +156,7 @@ public class WrapperHybridWifi extends WrapperWifi {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new Header("CONNECT_WIFI_SERVER", label, ownName), ownIpAddress));
+                        new Header("CONNECT_SERVER", label, ownName), ownIpAddress));
 
             }
         });
@@ -212,7 +212,7 @@ public class WrapperHybridWifi extends WrapperWifi {
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
-            case "CONNECT_WIFI_SERVER":
+            case "CONNECT_SERVER":
 
                 final NetworkObject networkObject = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
                 if (networkObject != null) {
@@ -235,10 +235,9 @@ public class WrapperHybridWifi extends WrapperWifi {
                                 // Send CONNECT message to establish the pairing
                                 try {
                                     networkObject.sendObjectStream(new MessageAdHoc(
-                                            new Header("CONNECT_WIFI_CLIENT", label, ownName), ownIpAddress));
+                                            new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
 
                                     if (listenerConnection != null) {
-                                        Log.d(TAG, "OnConnect");
                                         listenerConnection.onConnect();
                                     }
 
@@ -250,7 +249,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                     });
                 }
                 break;
-            case "CONNECT_WIFI_CLIENT":
+            case "CONNECT_CLIENT":
                 NetworkObject networkObjectServer = hashmapIpNetwork.get(message.getPdu().toString());
                 if (networkObjectServer != null) {
                     // Add the active connection into the autoConnectionActives object
@@ -259,11 +258,9 @@ public class WrapperHybridWifi extends WrapperWifi {
                     Log.d(TAG, "Add name : " + message.getHeader().getSenderName());
 
                     if (listenerConnection != null) {
-                        Log.d(TAG, "OnConnect");
                         listenerConnection.onConnect();
                     }
                 }
-
 
                 break;
             default:

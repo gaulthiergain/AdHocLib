@@ -9,10 +9,10 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 public class WifiDirectBroadcastName extends BroadcastReceiver {
 
-    private WifiAdHocManager.ListenerWifiManager listenerWifiManager;
+    private WifiAdHocManager.ListenerWifiDeviceName listenerWifiDeviceName;
 
-    public WifiDirectBroadcastName(WifiAdHocManager.ListenerWifiManager listenerWifiManager) {
-        this.listenerWifiManager = listenerWifiManager;
+    public WifiDirectBroadcastName(WifiAdHocManager.ListenerWifiDeviceName listenerWifiDeviceName) {
+        this.listenerWifiDeviceName = listenerWifiDeviceName;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class WifiDirectBroadcastName extends BroadcastReceiver {
         String action = intent.getAction();
         if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            listenerWifiManager.getDeviceName(device.deviceName);
+            listenerWifiDeviceName.getDeviceName(device.deviceName);
         }
     }
 }
