@@ -238,6 +238,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                                             new Header("CONNECT_WIFI_CLIENT", label, ownName), ownIpAddress));
 
                                     if (listenerConnection != null) {
+                                        Log.d(TAG, "OnConnect");
                                         listenerConnection.onConnect();
                                     }
 
@@ -258,6 +259,7 @@ public class WrapperHybridWifi extends WrapperWifi {
                     Log.d(TAG, "Add name : " + message.getHeader().getSenderName());
 
                     if (listenerConnection != null) {
+                        Log.d(TAG, "OnConnect");
                         listenerConnection.onConnect();
                     }
                 }
@@ -293,8 +295,6 @@ public class WrapperHybridWifi extends WrapperWifi {
                                 + " into hashMapDevices");
                     }
                 }
-
-                listenerAodv.onDiscoveryCompleted(); //todo remove
 
                 wifiAdHocManager.unregisterDiscovery();
             }

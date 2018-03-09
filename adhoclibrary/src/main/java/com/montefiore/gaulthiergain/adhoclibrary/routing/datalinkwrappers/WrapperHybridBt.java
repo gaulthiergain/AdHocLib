@@ -1,5 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
@@ -32,6 +33,7 @@ public class WrapperHybridBt extends WrapperBluetooth {
 
     private static final String TAG = "[AdHoc][WrapperWifiHy]";
     private HashMap<String, String> mapAddressLabel;
+    private HashMap<String, NetworkObject> hashmapUuidNetwork;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads, short duration,
                            String ownAddress, ActiveConnections activeConnections, HashMap<String, String> mapAddressLabel,
@@ -39,7 +41,7 @@ public class WrapperHybridBt extends WrapperBluetooth {
             throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
         super(v, context, secure, nbThreads, duration, ownAddress, activeConnections, listenerAodv, listenerDataLinkAodv);
         this.mapAddressLabel = mapAddressLabel;
-
+        this.hashmapUuidNetwork = new HashMap<>();
     }
 
     public void connect() {
@@ -120,12 +122,12 @@ public class WrapperHybridBt extends WrapperBluetooth {
             @Override
             public void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException {
 
-                // Add the active connection into the autoConnectionActives object
-                activeConnections.addConnection(uuid.toString().substring(LOW, END).toLowerCase(), network);
+                // Add network to temporary hashmap
+                hashmapUuidNetwork.put(uuid.toString(), network);
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
-                        new Header("CONNECT", ownAddress, ownName), ownMac));
+                        new Header("CONNECT_SERVER", ownAddress, ownName), ownMac));
 
             }
         });
@@ -138,12 +140,23 @@ public class WrapperHybridBt extends WrapperBluetooth {
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
-            case "CONNECT":
+            case "CONNECT_SERVER":
                 NetworkObject networkObjectBt = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
 
                 if (networkObjectBt != null) {
                     // Add the active connection into the autoConnectionActives object
                     activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectBt);
+
+                    networkObjectBt.sendObjectStream(new MessageAdHoc(
+                            new Header("CONNECT_CLIENT", ownAddress, ownName), ownUUID.toString()));
+                }
+                break;
+            case "CONNECT_CLIENT":
+                NetworkObject networkObjectServer = hashmapUuidNetwork.get(message.getPdu().toString());
+                if (networkObjectServer != null) {
+                    // Add the active connection into the autoConnectionActives object
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
+                    Log.d(TAG, "ADDED !!!");
                 }
                 break;
             default:

@@ -41,10 +41,10 @@ public class WrapperBluetooth extends AbstractWrapper {
     final static int LOW = 24;
     final static int END = 36;
 
-    private UUID ownUUID;
+    UUID ownUUID;
+    String ownMac;
     boolean secure;
     String ownAddress;
-    String ownMac;
     BluetoothManager bluetoothManager;
     BluetoothServiceServer bluetoothServiceServer;
     HashMap<String, BluetoothAdHocDevice> hashMapDevices;

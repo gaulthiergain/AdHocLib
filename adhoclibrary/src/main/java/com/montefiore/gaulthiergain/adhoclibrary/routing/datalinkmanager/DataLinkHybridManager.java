@@ -9,11 +9,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDi
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.AbstractWrapper;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridBt;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -31,7 +28,7 @@ public class DataLinkHybridManager implements IDataLink {
     private final ActiveConnections activeConnections;
 
 
-    private final HashMap<String, String> mapAddressLabel;
+    private final HashMap<String, String> mapAddressLabel; //todo for new neighbors
 
 
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
@@ -71,12 +68,12 @@ public class DataLinkHybridManager implements IDataLink {
     @Override
     public void discovery() {
 
-        /*new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 wrapperBluetooth.discovery();
             }
-        }).start();*/
+        }).start();
 
         if (wrapperWifi.isWifiEnabled()) {
             wrapperWifi.discovery();
