@@ -39,6 +39,7 @@ public class WrapperHybridWifi extends WrapperWifi {
     private HashMap<String, String> mapAddressLabel;
     private Hashtable<String, NetworkObject> hashmapIpNetwork;
     private ListenerConnection listenerConnection;
+    private boolean finishDiscovery = false;
 
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreadsWifi, int serverPort,
@@ -273,25 +274,29 @@ public class WrapperHybridWifi extends WrapperWifi {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-
+                if (v) Log.d(TAG, "onDiscoveryStarted");
             }
 
             @Override
             public void onDiscoveryFailed(int reasonCode) {
-
+                Log.d(TAG, "onDiscoveryFailed"); //todo exception here
             }
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
-                // Add no paired devices into the hashMapDevices
+                if (v) Log.d(TAG, "onDiscoveryCompleted");
+
+                // Add devices into the peers
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
                     if (entry.getValue().deviceName != null &&
                             entry.getValue().deviceName.contains(AbstractWrapper.ID_APP)) {
                         peers.put(entry.getValue().deviceAddress, entry.getValue());
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName
-                                + " into hashMapDevices");
+                                + " into peers");
                     }
                 }
+
+                finishDiscovery = true;
 
                 wifiAdHocManager.unregisterDiscovery();
             }
@@ -310,5 +315,13 @@ public class WrapperHybridWifi extends WrapperWifi {
 
     public interface ListenerConnection {
         void onConnect();
+    }
+
+    public boolean isFinishDiscovery() {
+        return finishDiscovery;
+    }
+
+    public void setFinishDiscovery(boolean finishDiscovery) {
+        this.finishDiscovery = finishDiscovery;
     }
 }

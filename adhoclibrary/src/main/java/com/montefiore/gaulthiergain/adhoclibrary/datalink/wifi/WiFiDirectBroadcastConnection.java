@@ -54,8 +54,6 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
                 }
             }
 
-        } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-            if (v) Log.d(TAG, "P2P WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
         }
     }
 }

@@ -60,6 +60,17 @@ public class WrapperWifi extends AbstractWrapper {
             throw new DeviceException("Unable to enable wifi adapter");
         } else {
             init(nbThreads, serverPort);
+            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+
+                @Override
+                public void getDeviceName(String name) {
+                    // Update ownName
+                    ownName = name;
+                    Log.d(TAG, "OWN NAME " + ownName);
+                    listenerDataLinkAodv.getDeviceName(ownName);
+                    wifiAdHocManager.unregisterInitName();
+                }
+            });
         }
     }
 
@@ -79,17 +90,6 @@ public class WrapperWifi extends AbstractWrapper {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = serverPort;
         this.peers = new Hashtable<>();
-        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-            @Override
-            public void getDeviceName(String name) {
-                // Update ownName
-                ownName = name;
-                Log.d(TAG, "OWN NAME " + ownName);
-                listenerDataLinkAodv.getDeviceName(ownName);
-                wifiAdHocManager.unregisterInitName();
-            }
-        });
         this.listenServer(nbThreads);
     }
 
@@ -334,8 +334,19 @@ public class WrapperWifi extends AbstractWrapper {
                         Thread.sleep(500);
                     }
 
-                    // Initialize MAC
+                    // Update info when adapter is enabled
                     init(nbThreads, serverPort);
+                    wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+
+                        @Override
+                        public void getDeviceName(String name) {
+                            // Update ownName
+                            ownName = name;
+                            Log.d(TAG, "OWN NAME " + ownName);
+                            listenerDataLinkAodv.getDeviceName(ownName);
+                            wifiAdHocManager.unregisterInitName();
+                        }
+                    });
                 } catch (Exception e) {
                     listenerAodv.catchException(e);
                 }

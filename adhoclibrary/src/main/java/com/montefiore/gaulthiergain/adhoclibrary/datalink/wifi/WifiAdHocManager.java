@@ -1,7 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -50,31 +53,88 @@ public class WifiAdHocManager {
      */
     public WifiAdHocManager(boolean verbose, final Context context) throws DeviceException {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifi != null && wifi.isP2pSupported()) {
-                init(verbose, context);
-            } else {
-                // Device does not support Wifi Direct
-                throw new DeviceException("Error device does not support Wifi Direct");
-            }
-        } else {
-            init(verbose, context);
-        }
-    }
-
-    private void init(boolean verbose, Context context) throws DeviceException {
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
             // Device does not support Wifi Direct
             throw new DeviceException("Error device does not support Wifi Direct");
         } else {
             // Device supports Wifi Direct
-            this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.v = verbose;
+            this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
             this.hashMapWifiDevices = new HashMap<>();
+            this.test();
+        }
+    }
+
+    public void test() {
+        final IntentFilter intentFilter = new IntentFilter();
+        //  Indicates a change in the Wi-Fi P2P status.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+
+        Testing test = new Testing(wifiP2pManager);
+        context.registerReceiver(test, intentFilter);
+    }
+
+    public class Testing extends BroadcastReceiver {
+
+        private WifiP2pManager manager;
+
+        public Testing(WifiP2pManager manager) {
+            this.manager = manager;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
+
+                // State of Wifi P2P has change
+                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
+                if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+                    if (v) Log.d(TAG, "P2P state enabled: " + state);
+                } else {
+                    if (v) Log.d(TAG, "P2P state disabled: " + state);
+                }
+
+            } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+
+                // Connection has changed
+                if (v) Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION");
+
+                if (manager != null) {
+                    NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                    if (networkInfo.isConnected()) {
+                        // Connected with the other device, request connection info to find group owner
+                        Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION networkInfo.isConnected()");
+                        manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
+                            @Override
+                            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+                                if (v) {
+                                    Log.d(TAG, "onConnectionInfoAvailable");
+                                    Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
+                                }
+
+                                if (info.isGroupOwner) {
+                                    Log.d(TAG, "IS GROUP OWNER");
+                                } else {
+                                    try {
+                                        Log.d(TAG, "IS CLIENT" +
+                                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
+                                    } catch (UnknownHostException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION disconnect()");
+                    }
+                }
+
+            }
         }
     }
 
@@ -113,23 +173,34 @@ public class WifiAdHocManager {
                 refreshedPeers.addAll(peerList.getDeviceList());
 
                 for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
+                    if (v)
+                        Log.d(TAG, "Devices found: " + wifiP2pDevice.deviceAddress
+                                + " " + wifiP2pDevice.deviceName);
+
                     if (!hashMapWifiDevices.containsKey(wifiP2pDevice.deviceAddress)) {
                         hashMapWifiDevices.put(wifiP2pDevice.deviceAddress, wifiP2pDevice);
-                        if (v) Log.d(TAG, "Size: " + hashMapWifiDevices.size());
                         if (v)
-                            Log.d(TAG, "Devices found: " +
+                            Log.d(TAG, "Devices added: " +
                                     hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
-                        discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
+                        MapNameAddr.addMapping(wifiP2pDevice.deviceAddress, wifiP2pDevice.deviceName);
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
                 }
-
-                if (hashMapWifiDevices.size() == 0) {
-                    if (v) Log.d(TAG, "No devices found");
-                }
             }
         };
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
+            }
+        }).start();
 
         broadcastWifi.registerDiscovery(intentFilter, discoveryListener, peerListListener);
     }
@@ -149,8 +220,6 @@ public class WifiAdHocManager {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         // Indicates the state of Wi-Fi P2P connectivity has changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        // Indicates this device's details have changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
             @Override
@@ -285,17 +354,14 @@ public class WifiAdHocManager {
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
-                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                        if (inetAddress instanceof Inet4Address) {
                             return inetAddress.getAddress();
                         }
-                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
                     }
                 }
             }
-        } catch (SocketException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
-        } catch (NullPointerException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        } catch (SocketException | NullPointerException e) {
+            e.printStackTrace();
         }
         return null;
     }

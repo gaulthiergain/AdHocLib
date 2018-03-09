@@ -31,9 +31,10 @@ import java.util.UUID;
 
 public class WrapperHybridBt extends WrapperBluetooth {
 
-    private static final String TAG = "[AdHoc][WrapperWifiHy]";
+    private static final String TAG = "[AdHoc][WrapperBtHy]";
     private HashMap<String, String> mapAddressLabel;
     private HashMap<String, NetworkObject> hashmapUuidNetwork;
+    private boolean finishDiscovery = false;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads, short duration,
                            String ownAddress, ActiveConnections activeConnections, HashMap<String, String> mapAddressLabel,
@@ -46,7 +47,7 @@ public class WrapperHybridBt extends WrapperBluetooth {
 
     public void connect() {
         for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
-            if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
+            if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getDevice().getName())) {
                 //TODO remove
                 /*if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
 
@@ -164,10 +165,55 @@ public class WrapperHybridBt extends WrapperBluetooth {
         }
     }
 
+    public void discovery() {
+        bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
+            @Override
+            public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                // Add no paired devices into the hashMapDevices
+                for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
+                    if (entry.getValue().getDevice().getName() != null &&
+                            entry.getValue().getDevice().getName().contains(AbstractWrapper.ID_APP)) {
+                        hashMapDevices.put(entry.getValue().getShortUuid(), entry.getValue());
+                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
+                                + " into hashMapDevices");
+                    }
+                }
+
+                finishDiscovery = true;
+
+                // Stop and unregister to the discovery process
+                bluetoothManager.unregisterDiscovery();
+            }
+
+            @Override
+            public void onDiscoveryStarted() {
+
+            }
+
+            @Override
+            public void onDeviceFound(BluetoothDevice device) {
+
+            }
+
+            @Override
+            public void onScanModeChange(int currentMode, int oldMode) {
+
+            }
+        });
+    }
+
     /**
      * Method allowing to update the name of the device.
      */
     public void updateName(String name) {
         bluetoothManager.updateDeviceName(name);
+    }
+
+    public boolean isFinishDiscovery() {
+        return finishDiscovery;
+    }
+
+    public void setFinishDiscovery(boolean finishDiscovery) {
+        this.finishDiscovery = finishDiscovery;
     }
 }
