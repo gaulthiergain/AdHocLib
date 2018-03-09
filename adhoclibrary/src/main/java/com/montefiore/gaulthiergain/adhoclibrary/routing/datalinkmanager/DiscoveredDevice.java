@@ -45,6 +45,14 @@ public class DiscoveredDevice {
 
     @Override
     public String toString() {
-        return address + " - " + name + " - " + type;
+        return address + " - " + name + " - " + display(type);
+    }
+
+    private String display(byte type) {
+        if (type == BLUETOOTH) {
+            return "Bt";
+        }
+
+        return "Wifi";
     }
 }

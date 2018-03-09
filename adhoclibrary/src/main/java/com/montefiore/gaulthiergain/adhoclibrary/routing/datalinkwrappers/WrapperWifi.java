@@ -250,11 +250,9 @@ public class WrapperWifi extends AbstractWrapper {
 
 
     @Override
-    public void connect() {
-        for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
-            Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress);
-        }
+    public void connect(DiscoveredDevice device) {
+        Log.d(TAG, "Remote Address" + device.getAddress());
+        wifiAdHocManager.connect(device.getAddress());
     }
 
     @Override
@@ -366,5 +364,9 @@ public class WrapperWifi extends AbstractWrapper {
         }
 
         return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
+    }
+
+    public void unregisterConnection() {
+        wifiAdHocManager.unregisterConnection();
     }
 }

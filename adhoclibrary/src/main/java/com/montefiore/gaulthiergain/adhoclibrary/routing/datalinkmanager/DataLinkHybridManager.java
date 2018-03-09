@@ -30,7 +30,6 @@ public class DataLinkHybridManager implements IDataLink {
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
     private ListenerAodv listenerAodv;
 
-
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
                                  int serverPort, boolean secure, short nbThreadsBt, short duration,
                                  ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
@@ -51,19 +50,19 @@ public class DataLinkHybridManager implements IDataLink {
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
         if (wrapperWifi.isWifiEnabled()) {
-            wrapperWifi.setListenerConnection(new WrapperHybridWifi.ListenerConnection() {
+            /*wrapperWifi.setListenerConnection(new WrapperHybridWifi.ListenerConnection() {
                 @Override
                 public void onConnect() {
                     wrapperBluetooth.connect();
                 }
-            });
+            });*/ //todo remove
         }
 
         wrapperBluetooth =
                 new WrapperHybridBt(v, context, secure, nbThreadsBt, duration, label,
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
-        //wrapperBluetooth.updateName(AbstractWrapper.ID_APP + label);
+        //wrapperBluetooth.updateName(label);
     }
 
     @Override
@@ -95,10 +94,10 @@ public class DataLinkHybridManager implements IDataLink {
     @Override
     public void connect(HashMap<String, DiscoveredDevice> hashMap) {
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
-            if(entry.getValue().getType() == DiscoveredDevice.BLUETOOTH){
-
-            }else{
-                wrapperWifi.connect();
+            if (entry.getValue().getType() == DiscoveredDevice.BLUETOOTH) {
+                wrapperBluetooth.connect(entry.getValue());
+            } else {
+                wrapperWifi.connect(entry.getValue());
             }
         }
     }
@@ -107,6 +106,7 @@ public class DataLinkHybridManager implements IDataLink {
     public void stopListening() throws IOException {
         if (wrapperWifi.isWifiEnabled()) {
             wrapperWifi.stopListening();
+            wrapperWifi.unregisterConnection();
         }
         wrapperBluetooth.stopListening();
     }

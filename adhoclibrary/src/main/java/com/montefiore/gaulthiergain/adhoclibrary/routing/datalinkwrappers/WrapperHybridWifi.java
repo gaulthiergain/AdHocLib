@@ -54,6 +54,7 @@ public class WrapperHybridWifi extends WrapperWifi {
         this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
             @Override
             public void onConnectionStarted() {
+
                 Log.d(TAG, "Connection Started");
             }
 
@@ -218,11 +219,9 @@ public class WrapperHybridWifi extends WrapperWifi {
 
     }
 
-    public void connect() {
-        for (Map.Entry<String, WifiP2pDevice> deviceEntry : peers.entrySet()) {
-            Log.d(TAG, "Remote Address" + deviceEntry.getValue().deviceAddress);
-            wifiAdHocManager.connect(deviceEntry.getValue().deviceAddress);
-        }
+    public void connect(DiscoveredDevice device) {
+        Log.d(TAG, "Remote Address" + device.getAddress());
+        wifiAdHocManager.connect(device.getAddress());
     }
 
     public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,

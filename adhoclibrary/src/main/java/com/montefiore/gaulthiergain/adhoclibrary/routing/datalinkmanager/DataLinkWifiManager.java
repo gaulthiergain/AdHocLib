@@ -51,7 +51,9 @@ public class DataLinkWifiManager implements IDataLink {
 
     @Override
     public void connect(HashMap<String, DiscoveredDevice> hashMap) {
-        wrapperWifi.connect();
+        for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
+            wrapperWifi.connect(entry.getValue());
+        }
     }
 
     @Override

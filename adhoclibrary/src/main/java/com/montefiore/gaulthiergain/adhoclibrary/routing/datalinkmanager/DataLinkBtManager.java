@@ -55,7 +55,9 @@ public class DataLinkBtManager implements IDataLink {
 
     @Override
     public void connect(HashMap<String, DiscoveredDevice> hashMap) {
-        wrapperBt.connect();
+        for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
+            wrapperBt.connect(entry.getValue());
+        }
     }
 
     @Override

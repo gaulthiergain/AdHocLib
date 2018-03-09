@@ -194,22 +194,18 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
     }
 
-    public void connect() {
-        for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapDevices.entrySet()) {
-            if (!activeConnections.getActivesConnections().containsKey(entry.getValue().getShortUuid())) {
-                //TODO remove
-                /*if (ownName.equals("#eO91#SamsungGT3") && entry.getValue().getDevice().getName().equals("#e091#Samsung_gt")) {
+    public void connect(DiscoveredDevice device) {
 
-                } else if (ownName.equals("#eO91#Samsung_gt") && entry.getValue().getDevice().getName().equals("#e091#SamsungGT3")) {
-
-                } else {
-
-                }*/
-                _connect(entry.getValue());
-
+        String shortUuid = device.getAddress().replace(":", "").toLowerCase();
+        BluetoothAdHocDevice btDevice = hashMapDevices.get(shortUuid);
+        if (btDevice != null) {
+            if (!activeConnections.getActivesConnections().containsKey(btDevice.getShortUuid())) {
+                _connect(btDevice);
             } else {
-                if (v) Log.d(TAG, entry.getValue().getShortUuid() + " is already connected");
+                if (v) Log.d(TAG, btDevice.getShortUuid() + " is already connected");
             }
+        } else {
+            Log.d(TAG, "ERROR " + shortUuid);
         }
     }
 
