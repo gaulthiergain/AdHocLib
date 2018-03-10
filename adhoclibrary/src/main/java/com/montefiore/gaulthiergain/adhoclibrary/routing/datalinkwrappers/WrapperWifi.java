@@ -1,8 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
@@ -35,8 +33,6 @@ import java.util.Map;
 public class WrapperWifi extends AbstractWrapper {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
-
-    private boolean wifiEnabled = false;
 
     int serverPort;
     String ownIpAddress;
@@ -91,37 +87,27 @@ public class WrapperWifi extends AbstractWrapper {
 
             }
         });
-        if (enable && !wifiAdHocManager.isEnabled()) {
-            wifiAdHocManager.enable();
-            waitWifiAdapter(nbThreads, serverPort);
-        } else if (!enable && !wifiAdHocManager.isEnabled()) {
-            throw new DeviceException("Unable to enable wifi adapter");
-        } else {
-            init(serverPort);
-            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.serverPort = serverPort;
 
-                @Override
-                public void getDeviceName(String name) {
-                    // Update ownName
-                    ownName = name;
-                    listenerDataLinkAodv.getDeviceName(ownName);
-                    wifiAdHocManager.unregisterInitName();
-                }
-            });
-            this.listenServer(nbThreads);
-        }
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+
+            @Override
+            public void getDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                listenerDataLinkAodv.getDeviceName(ownName);
+                wifiAdHocManager.unregisterInitName();
+            }
+        });
+        this.listenServer(nbThreads);
+
     }
 
     WrapperWifi(boolean v, Context context,
                 ActiveConnections activeConnections, final ListenerAodv listenerAodv,
                 final ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, IOException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
-    }
-
-    void init(int serverPort) throws IOException {
-        this.wifiEnabled = true;
-        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-        this.serverPort = serverPort;
     }
 
     protected void listenServer(short nbThreads) throws IOException {
@@ -255,11 +241,6 @@ public class WrapperWifi extends AbstractWrapper {
 
     }
 
-    public boolean isWifiEnabled() {
-        return wifiEnabled;
-    }
-
-
     @Override
     public void connect(DiscoveredDevice device) {
         Log.d(TAG, "Remote Address" + device.getAddress());
@@ -330,50 +311,6 @@ public class WrapperWifi extends AbstractWrapper {
                 // Handle messages in protocol scope
                 listenerDataLinkAodv.processMsgReceived(message);
         }
-    }
-
-    private void waitWifiAdapter(final short nbThreads, final int serverPort) {
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    // Check if connected
-                    while (!isConnected(context)) {
-                        // Wait to connect
-                        Thread.sleep(500);
-                    }
-
-                    // Update info when adapter is enabled
-                    init(serverPort);
-                    wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-                        @Override
-                        public void getDeviceName(String name) {
-                            // Update ownName
-                            ownName = name;
-                            Log.d(TAG, "OWN NAME " + ownName);
-                            listenerDataLinkAodv.getDeviceName(ownName);
-                            wifiAdHocManager.unregisterInitName();
-                        }
-                    });
-                    listenServer(nbThreads);
-                } catch (Exception e) {
-                    listenerAodv.catchException(e);
-                }
-            }
-        };
-        t.start();
-    }
-
-    private boolean isConnected(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = null;
-        if (connectivityManager != null) {
-            networkInfo = connectivityManager.getActiveNetworkInfo();
-        }
-
-        return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
     }
 
     public void unregisterConnection() {

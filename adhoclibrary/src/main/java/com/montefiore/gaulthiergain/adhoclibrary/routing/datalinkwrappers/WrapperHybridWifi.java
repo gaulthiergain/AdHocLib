@@ -5,10 +5,10 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
@@ -41,7 +41,6 @@ public class WrapperHybridWifi extends WrapperWifi {
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
     private Hashtable<String, NetworkObject> mapIpNetwork;
     private boolean finishDiscovery = false;
-
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreads, int serverPort,
                              String label, ActiveConnections activeConnections,
@@ -86,23 +85,22 @@ public class WrapperHybridWifi extends WrapperWifi {
 
             }
         });
-        if (wifiAdHocManager.isEnabled()) {
-            init(serverPort);
-            this.label = label;
-            this.mapAddressDevice = mapAddressDevice;
-            this.mapLabelMac = new HashMap<>();
-            this.mapIpNetwork = new Hashtable<>();
-            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+        this.label = label;
+        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.serverPort = serverPort;
+        this.mapAddressDevice = mapAddressDevice;
+        this.mapLabelMac = new HashMap<>();
+        this.mapIpNetwork = new Hashtable<>();
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
-                @Override
-                public void getDeviceName(String name) {
-                    // Update ownName
-                    ownName = name;
-                    wifiAdHocManager.unregisterInitName();
-                }
-            });
-            this.listenServer(nbThreads);
-        }
+            @Override
+            public void getDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                wifiAdHocManager.unregisterInitName();
+            }
+        });
+        this.listenServer(nbThreads);
     }
 
     public void listenServer(short nbThreads) throws IOException {
@@ -346,9 +344,8 @@ public class WrapperHybridWifi extends WrapperWifi {
     }
 
     public void updateName(String name) {
-        if (isWifiEnabled()) {
-            wifiAdHocManager.updateName(name);
-        }
+        wifiAdHocManager.updateName(name);
+
     }
 
     public boolean isFinishDiscovery() {

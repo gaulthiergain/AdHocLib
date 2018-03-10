@@ -63,8 +63,10 @@ public class WifiAdHocManager {
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
             this.hashMapWifiDevices = new HashMap<>();
-            this.connectionListener = connectionListener;
-            this.registerConnection();
+            if (connectionListener != null) {
+                this.connectionListener = connectionListener;
+                this.registerConnection();
+            }
         }
     }
 

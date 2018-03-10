@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
@@ -99,18 +98,15 @@ public class AodvManager {
      *                     environment.
      * @param secure
      * @param nbThreads    an integer value which represents the number of listening threads
-     * @param duration
      * @param listenerAodv a ListenerAodv object which serves as callback functions.
-     * @throws IOException                Signals that an I/O exception of some sort has occurred.
-     * @throws DeviceException            Signals that a DeviceException has occurred.
-     * @throws BluetoothDisabledException Signals that a Bluetooth Disabled exception has occurred.a
-     * @throws BluetoothBadDuration
+     * @throws IOException     Signals that an I/O exception of some sort has occurred.
+     * @throws DeviceException Signals that a DeviceException has occurred.
      */
-    public AodvManager(boolean verbose, Context context, boolean secure, short nbThreads, short duration,
+    public AodvManager(boolean verbose, Context context, boolean secure, short nbThreads,
                        ListenerAodv listenerAodv)
-            throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
+            throws IOException, DeviceException {
         this(verbose, listenerAodv);
-        this.initDataLinkBt(verbose, context, secure, nbThreads, duration);
+        this.initDataLinkBt(verbose, context, secure, nbThreads);
     }
 
     /**
@@ -130,13 +126,13 @@ public class AodvManager {
     }
 
     public AodvManager(boolean verbose, Context context, short nbThreadsWifi, int serverPort,
-                       boolean secure, short nbThreadsBt, short duration,
+                       boolean secure, short nbThreadsBt,
                        ListenerAodv listenerAodv)
-            throws DeviceException, IOException, BluetoothDisabledException, BluetoothBadDuration {
+            throws DeviceException, IOException {
 
         this(verbose, listenerAodv);
         dataLink = new DataLinkHybridManager(verbose, context, nbThreadsWifi, serverPort,
-                secure, nbThreadsBt, duration, listenerAodv, listenerDataLink);
+                secure, nbThreadsBt, listenerAodv, listenerDataLink);
     }
 
     /**
@@ -182,10 +178,10 @@ public class AodvManager {
                 listenerAodv, listenerDataLink);
     }
 
-    private void initDataLinkBt(boolean v, Context context, boolean secure, short nbThreads, short duration)
-            throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
+    private void initDataLinkBt(boolean v, Context context, boolean secure, short nbThreads)
+            throws IOException, DeviceException {
 
-        dataLink = new DataLinkManager(v, context, secure, nbThreads, duration, listenerAodv,
+        dataLink = new DataLinkManager(v, context, secure, nbThreads, listenerAodv,
                 listenerDataLink);
     }
 

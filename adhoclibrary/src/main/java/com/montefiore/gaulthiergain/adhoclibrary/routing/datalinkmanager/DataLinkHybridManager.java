@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
@@ -31,9 +30,9 @@ public class DataLinkHybridManager implements IDataLink {
     private ListenerAodv listenerAodv;
 
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
-                                 int serverPort, boolean secure, short nbThreadsBt, short duration,
+                                 int serverPort, boolean secure, short nbThreadsBt,
                                  ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException, IOException, BluetoothDisabledException, BluetoothBadDuration {
+            throws DeviceException, IOException {
 
         this.v = verbose;
         this.listenerAodv = listenerAodv;
@@ -50,7 +49,7 @@ public class DataLinkHybridManager implements IDataLink {
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
         wrapperBluetooth =
-                new WrapperHybridBt(v, context, secure, nbThreadsBt, duration, label,
+                new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
                         activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
         //wrapperBluetooth.updateName(label);
@@ -58,8 +57,9 @@ public class DataLinkHybridManager implements IDataLink {
 
     @Override
     public void discovery() {
-        wrapperBluetooth.discovery();
+
         wrapperWifi.discovery();
+        wrapperBluetooth.discovery();
 
         new Thread(new Runnable() {
             @Override
@@ -95,10 +95,8 @@ public class DataLinkHybridManager implements IDataLink {
 
     @Override
     public void stopListening() throws IOException {
-        if (wrapperWifi.isWifiEnabled()) {
-            wrapperWifi.stopListening();
-            wrapperWifi.unregisterConnection();
-        }
+        wrapperWifi.stopListening();
+        wrapperWifi.unregisterConnection();
         wrapperBluetooth.stopListening();
     }
 
