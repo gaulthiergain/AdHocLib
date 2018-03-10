@@ -12,6 +12,7 @@ public interface IDataLink {
 
     /**
      * Method allowing to connect to other devices
+     *
      * @param hashMap
      */
     void connect(HashMap<String, DiscoveredDevice> hashMap);

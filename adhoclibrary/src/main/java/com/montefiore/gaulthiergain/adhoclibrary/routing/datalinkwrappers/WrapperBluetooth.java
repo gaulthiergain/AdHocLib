@@ -29,6 +29,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Listene
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -57,7 +58,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
     WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
-                             ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
+                     ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
         this.secure = secure;
         this.bluetoothManager = new BluetoothManager(v, context);
@@ -187,10 +188,9 @@ public class WrapperBluetooth extends AbstractWrapper {
             if (!activeConnections.getActivesConnections().containsKey(btDevice.getShortUuid())) {
                 _connect(btDevice);
             } else {
-                if (v) Log.d(TAG, btDevice.getShortUuid() + " is already connected");
+                listenerAodv.catchException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
+                        + " is already connected"));
             }
-        } else {
-            Log.d(TAG, "ERROR " + shortUuid);
         }
     }
 
