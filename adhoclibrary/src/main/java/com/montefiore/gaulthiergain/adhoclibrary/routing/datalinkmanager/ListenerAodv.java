@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.util.HashMap;
