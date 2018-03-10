@@ -20,7 +20,7 @@ import java.util.Map;
 public class DataLinkManager implements IDataLink {
 
     private final boolean v;
-    private final String TAG = "[AdHoc][DataLinkBt]";
+    private final String TAG = "[AdHoc][DataLink]";
     private final ActiveConnections activeConnections;
     private final AbstractWrapper wrapper;
 
@@ -60,16 +60,18 @@ public class DataLinkManager implements IDataLink {
      * @param verbose              a boolean value to set the debug/verbose mode.
      * @param context              a Context object which gives global information about an application
      *                             environment.
+     * @param enable
      * @param nbThreads            a short value to determine the number of threads managed by the
      *                             server.
      * @param serverPort           an integer value which represents the server list port.
      * @param listenerAodv         a ListenerAodv object which serves as callback functions.
      * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
-     * @throws DeviceException
+     * @throws IOException     Signals that an I/O exception of some sort has occurred.
+     * @throws DeviceException Signals that a Bluetooth Device Exception exception has occurred.
      */
     public DataLinkManager(boolean verbose, Context context, boolean enable, short nbThreads, int serverPort,
                            ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException, IOException {
+            throws IOException, DeviceException {
         this.v = verbose;
         this.activeConnections = new ActiveConnections();
 
