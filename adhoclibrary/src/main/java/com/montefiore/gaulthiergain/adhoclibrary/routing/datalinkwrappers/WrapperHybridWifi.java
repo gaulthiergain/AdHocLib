@@ -358,6 +358,10 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     }
                 }
 
+                if(discoveryListener != null){
+                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                }
+
                 finishDiscovery = true;
 
                 wifiAdHocManager.unregisterDiscovery();

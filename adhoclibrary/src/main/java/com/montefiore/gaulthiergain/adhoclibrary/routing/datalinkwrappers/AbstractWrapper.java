@@ -5,6 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -26,6 +27,7 @@ public abstract class AbstractWrapper {
 
     String ownMac;
     String ownName;
+    DataLinkHybridManager.ListenerDiscovery discoveryListener;
 
     AbstractWrapper(boolean v, Context context, ActiveConnections activeConnections,
                     ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) {
@@ -50,4 +52,8 @@ public abstract class AbstractWrapper {
     public abstract void stopListening() throws IOException;
 
     public abstract void getPaired();
+
+    public void setDiscoveryListener(DataLinkHybridManager.ListenerDiscovery discoveryListener) {
+        this.discoveryListener = discoveryListener;
+    }
 }

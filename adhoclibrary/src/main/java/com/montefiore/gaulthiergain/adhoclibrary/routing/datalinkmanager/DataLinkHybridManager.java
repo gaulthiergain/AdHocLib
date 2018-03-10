@@ -76,18 +76,33 @@ public class DataLinkHybridManager {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
+        if(bluetoothEnabled && wifiEnabled){
+            wifiBtDiscovery();
+        }
+
         if (bluetoothEnabled) {
             wrapperBluetooth.discovery();
-        } else {
-            wrapperBluetooth.setFinishDiscovery(true);
+            wrapperBluetooth.setDiscoveryListener(new ListenerDiscovery(){
+                @Override
+                public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                }
+            });
+
         }
 
         if (wifiEnabled) {
             wrapperWifi.discovery();
-        } else {
-            wrapperWifi.setFinishDiscovery(true);
+            wrapperWifi.setDiscoveryListener(new ListenerDiscovery(){
+                @Override
+                public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                }
+            });
         }
+    }
 
+    private void wifiBtDiscovery(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -108,6 +123,7 @@ public class DataLinkHybridManager {
             }
         }).start();
     }
+
 
     public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
 
@@ -170,5 +186,9 @@ public class DataLinkHybridManager {
 
     public void getPaired() {
         wrapperBluetooth.getPaired();
+    }
+
+    public interface ListenerDiscovery{
+        void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
     }
 }

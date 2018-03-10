@@ -319,6 +319,10 @@ public class WrapperHybridBt extends AbstractWrapper {
                     }
                 }
 
+                if(discoveryListener != null){
+                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                }
+
                 finishDiscovery = true;
 
                 // Stop and unregister to the discovery process
