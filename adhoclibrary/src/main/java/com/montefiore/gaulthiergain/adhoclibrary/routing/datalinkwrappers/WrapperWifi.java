@@ -6,11 +6,11 @@ import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
@@ -30,7 +30,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 public class WrapperWifi extends AbstractWrapper {
@@ -152,9 +151,9 @@ public class WrapperWifi extends AbstractWrapper {
             }
 
             @Override
-            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
 
-                RemoteWifiDevice remoteWifiDevice = (RemoteWifiDevice) remoteDevice;
+                RemoteWifiConnection remoteWifiDevice = (RemoteWifiConnection) remoteDevice;
 
                 if (v) Log.d(TAG, "Server broken with " + remoteWifiDevice.getDeviceAddress());
 
@@ -168,7 +167,7 @@ public class WrapperWifi extends AbstractWrapper {
             }
 
             @Override
-            public void onConnection(AbstractRemoteDevice remoteDevice) {
+            public void onConnection(AbstractRemoteConnection remoteDevice) {
                 listenerAodv.onConnection(remoteDevice);
             }
         });
@@ -181,13 +180,13 @@ public class WrapperWifi extends AbstractWrapper {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true, groupOwnerAddr, serverPort,
                 10000, ATTEMPTS, new MessageListener() {
             @Override
-            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
                 listenerAodv.onConnectionClosed(remoteDevice);
                 //TODO update aodv code
             }
 
             @Override
-            public void onConnection(AbstractRemoteDevice remoteDevice) {
+            public void onConnection(AbstractRemoteConnection remoteDevice) {
                 listenerAodv.onConnection(remoteDevice);
             }
 

@@ -4,10 +4,10 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
@@ -91,7 +91,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
                 // Notify handler
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                        new RemoteBtDevice(bluetoothSocket.getRemoteDevice().getAddress(),
+                        new RemoteBtConnection(bluetoothSocket.getRemoteDevice().getAddress(),
                                 bluetoothSocket.getRemoteDevice().getName(),
                                 bluetoothAdHocDevice.getUuid())).sendToTarget();
 

@@ -3,11 +3,11 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -51,14 +51,14 @@ class ThreadClient extends Thread {
                     if (socketDevice instanceof AdHocSocketWifi) {
                         // Notify handler
                         handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteWifiDevice(network.getISocket().getRemoteSocketAddress()))
+                                new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
                                 .sendToTarget();
                     } else {
                         // Get Socket
                         BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
                         // Notify handler
                         handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteBtDevice(socket.getRemoteDevice().getAddress(),
+                                new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
                                         socket.getRemoteDevice().getName())).sendToTarget();
                     }
 

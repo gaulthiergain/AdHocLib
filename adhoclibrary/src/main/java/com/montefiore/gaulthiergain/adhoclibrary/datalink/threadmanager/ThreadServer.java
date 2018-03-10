@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
@@ -13,8 +15,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWif
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 import java.io.IOException;
@@ -146,7 +146,7 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteWifiDevice(
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteWifiConnection(
                             isocket.getRemoteSocketAddress(),
                             socket.getLocalAddress().toString().substring(1))).sendToTarget();
                 } else {
@@ -181,7 +181,7 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteBtDevice(
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteBtConnection(
                             socket.getRemoteDevice().getAddress(),
                             socket.getRemoteDevice().getName(), uuid.toString())).sendToTarget();
                 } else {

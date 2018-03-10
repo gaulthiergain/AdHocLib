@@ -3,10 +3,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
@@ -18,7 +18,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * <p>This class defines the client's logic for bluetooth implementation. </p>
@@ -115,7 +114,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
 
                 // Notify handler
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                        new RemoteWifiDevice(socket.getRemoteSocketAddress().toString()
+                        new RemoteWifiConnection(socket.getRemoteSocketAddress().toString()
                                 .split(":")[0].substring(1),
                                 socket.getLocalAddress().toString().substring(1))).sendToTarget();
 

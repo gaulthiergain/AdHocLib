@@ -1,26 +1,19 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.connection;
 
-public class RemoteBtDevice extends AbstractRemoteDevice {
+public class RemoteBtConnection extends AbstractRemoteConnection {
 
-    private final String deviceName;
     private final String remoteUUID;
     private String deviceLocalAddress;
 
-    public RemoteBtDevice(String deviceAddress, String deviceName) {
-        super(deviceAddress);
+    public RemoteBtConnection(String deviceAddress, String deviceName) {
+        super(deviceAddress, deviceName);
         this.remoteUUID = deviceAddress.replace(":", "").toLowerCase();
-        this.deviceName = deviceName;
     }
 
-    public RemoteBtDevice(String deviceAddress, String deviceName, String deviceLocalAddress) {
-        super(deviceAddress);
-        this.deviceName = deviceName;
+    public RemoteBtConnection(String deviceAddress, String deviceName, String deviceLocalAddress) {
+        super(deviceAddress, deviceName);
         this.remoteUUID = deviceAddress.replace(":", "").toLowerCase();
         this.deviceLocalAddress = deviceLocalAddress;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
     }
 
     public String getDeviceLocalAddress() {
@@ -37,7 +30,7 @@ public class RemoteBtDevice extends AbstractRemoteDevice {
 
     @Override
     public String toString() {
-        return "RemoteBtDevice{" +
+        return "RemoteBtConnection{" +
                 "deviceAddress='" + deviceAddress + '\'' +
                 ", deviceName='" + deviceName + '\'' +
                 ", remoteUUID='" + remoteUUID + '\'' +

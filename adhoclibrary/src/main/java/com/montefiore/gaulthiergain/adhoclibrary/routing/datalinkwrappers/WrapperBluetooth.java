@@ -13,14 +13,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothMan
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteBtDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
@@ -116,9 +116,9 @@ public class WrapperBluetooth extends AbstractWrapper {
             }
 
             @Override
-            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
 
-                RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
+                RemoteBtConnection remoteBtDevice = (RemoteBtConnection) remoteDevice;
 
                 // Get the remote UUID
                 String remoteUuid = remoteBtDevice.getDeviceAddress()
@@ -138,7 +138,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             }
 
             @Override
-            public void onConnection(AbstractRemoteDevice remoteDevice) {
+            public void onConnection(AbstractRemoteConnection remoteDevice) {
                 listenerAodv.onConnection(remoteDevice);
             }
         });
@@ -222,9 +222,9 @@ public class WrapperBluetooth extends AbstractWrapper {
                     }
 
                     @Override
-                    public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+                    public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
 
-                        RemoteBtDevice remoteBtDevice = (RemoteBtDevice) remoteDevice;
+                        RemoteBtConnection remoteBtDevice = (RemoteBtConnection) remoteDevice;
 
                         // Get the remote UUID
                         String remoteUuid = remoteBtDevice.getDeviceAddress().
@@ -242,7 +242,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     }
 
                     @Override
-                    public void onConnection(AbstractRemoteDevice remoteDevice) {
+                    public void onConnection(AbstractRemoteConnection remoteDevice) {
                         listenerAodv.onConnection(remoteDevice);
                     }
 

@@ -4,11 +4,11 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.AbstractRemoteDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.remotedevice.RemoteWifiDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
@@ -132,7 +132,7 @@ public class WrapperHybridWifi extends WrapperWifi {
             }
 
             @Override
-            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
 
                 //Get label from ip
                 String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
@@ -150,7 +150,7 @@ public class WrapperHybridWifi extends WrapperWifi {
             }
 
             @Override
-            public void onConnection(AbstractRemoteDevice remoteDevice) {
+            public void onConnection(AbstractRemoteConnection remoteDevice) {
 
             }
         });
@@ -163,7 +163,7 @@ public class WrapperHybridWifi extends WrapperWifi {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true,
                 groupOwnerAddr, serverPort, 10000, ATTEMPTS, new MessageListener() {
             @Override
-            public void onConnectionClosed(AbstractRemoteDevice remoteDevice) {
+            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
 
                 //Get label from ip
                 String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
@@ -181,7 +181,7 @@ public class WrapperHybridWifi extends WrapperWifi {
             }
 
             @Override
-            public void onConnection(AbstractRemoteDevice remoteDevice) {
+            public void onConnection(AbstractRemoteConnection remoteDevice) {
 
 
             }
@@ -284,8 +284,8 @@ public class WrapperHybridWifi extends WrapperWifi {
                             message.getHeader().getSenderAddr());
 
                     // callback connection
-                    listenerAodv.onConnection(new RemoteWifiDevice(message.getHeader().getSenderAddr(),
-                            ownIpAddress));
+                    listenerAodv.onConnection(new RemoteWifiConnection(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName(), ownIpAddress));
                 }
 
                 break;
@@ -303,8 +303,8 @@ public class WrapperHybridWifi extends WrapperWifi {
                         new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
 
                 // callback connection
-                listenerAodv.onConnection(new RemoteWifiDevice(message.getHeader().getSenderAddr(),
-                        ownIpAddress));
+                listenerAodv.onConnection(new RemoteWifiConnection(message.getHeader().getSenderAddr(),
+                        message.getHeader().getSenderName(), ownIpAddress));
 
             } catch (IOException e) {
                 listenerAodv.catchException(e);
