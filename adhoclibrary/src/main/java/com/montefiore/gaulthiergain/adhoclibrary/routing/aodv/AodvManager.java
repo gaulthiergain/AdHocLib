@@ -3,11 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -33,7 +30,7 @@ public class AodvManager {
 
     private static final String TAG = "[AdHoc][AodvManager]";
 
-    private IDataLink dataLink;
+    private DataLinkHybridManager dataLink;
     private long ownSequenceNum;
     private MessageAdHoc dataMessage;
 
@@ -87,44 +84,23 @@ public class AodvManager {
                 Log.d(TAG, "--------> Name " + name);
             }
         };
-
-    }
-
-    /**
-     * Constructor
-     *
-     * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param context      a Context object which gives global information about an application
-     *                     environment.
-     * @param secure
-     * @param nbThreads    an integer value which represents the number of listening threads
-     * @param listenerAodv a ListenerAodv object which serves as callback functions.
-     * @throws IOException     Signals that an I/O exception of some sort has occurred.
-     * @throws DeviceException Signals that a DeviceException has occurred.
-     */
-    public AodvManager(boolean verbose, Context context, boolean secure, short nbThreads,
-                       ListenerAodv listenerAodv)
-            throws IOException, DeviceException {
-        this(verbose, listenerAodv);
-        this.initDataLinkBt(verbose, context, secure, nbThreads);
     }
 
     /**
      * Constructor wifi
      *
-     * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param context      a Context object which gives global information about an application
-     *                     environment.
-     * @param nbThreads    an integer value which represents the number of listening threads
-     * @param serverPort   an integer value which represents the server port.
-     * @param listenerAodv a ListenerAodv object which serves as callback functions.
+     * @param verbose       a boolean value to set the debug/verbose mode.
+     * @param context       a Context object which gives global information about an application
+     *                      environment.
+     * @param nbThreadsWifi an integer value which represents the number of listening threads wifi.
+     * @param serverPort    an integer value which represents the server port.
+     * @param secure        a boolean
+     * @param nbThreadsBt   an integer value which represents the number of listening bluetooth
+     *                      threads.
+     * @param listenerAodv  a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
+     * @throws IOException     Signals that an I/O exception of some sort has occurred.
      */
-    public AodvManager(boolean verbose, Context context, short nbThreads, int serverPort, ListenerAodv listenerAodv) throws DeviceException, IOException {
-        this(verbose, listenerAodv);
-        initDataLinkWifi(verbose, context, nbThreads, serverPort);
-    }
-
     public AodvManager(boolean verbose, Context context, short nbThreadsWifi, int serverPort,
                        boolean secure, short nbThreadsBt,
                        ListenerAodv listenerAodv)
@@ -156,7 +132,7 @@ public class AodvManager {
      *
      * @param hashMap
      */
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
         dataLink.connect(hashMap);
     }
 
@@ -165,26 +141,11 @@ public class AodvManager {
      *
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public void stopListening() throws IOException {
+    public void stopListening() throws IOException, DeviceException {
         dataLink.stopListening();
     }
 
-    /**************************************************Private methods*************************************************/
-
-    private void initDataLinkWifi(boolean v, Context context, short nbThreads, int serverPort)
-            throws DeviceException, IOException {
-        //todo update variable
-        dataLink = new DataLinkManager(v, context, true, nbThreads, serverPort,
-                listenerAodv, listenerDataLink);
-    }
-
-    private void initDataLinkBt(boolean v, Context context, boolean secure, short nbThreads)
-            throws IOException, DeviceException {
-
-        dataLink = new DataLinkManager(v, context, secure, nbThreads, listenerAodv,
-                listenerDataLink);
-    }
-
+    /*---------------------------------------Private methods---------------------------------------/
 
     /**
      * Method allowing to detect if a link is broken
@@ -850,7 +811,7 @@ public class AodvManager {
         dataLink.getPaired();
     }
 
-    public void discovery() {
+    public void discovery() throws DeviceException {
         dataLink.discovery();
     }
 }

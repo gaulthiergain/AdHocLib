@@ -32,21 +32,29 @@ import java.util.Hashtable;
 import java.util.Map;
 
 
-public class WrapperHybridWifi extends WrapperWifi {
+public class WrapperHybridWifi extends AbstractWrapper {
 
     private static final String TAG = "[AdHoc][WrapperWifiHy]";
 
+    private int serverPort;
     private String label;
-    private HashMap<String, String> mapLabelMac;
-    private HashMap<String, DiscoveredDevice> mapAddressDevice;
-    private Hashtable<String, NetworkObject> mapIpNetwork;
+    private String ownIpAddress;
+    private String groupOwnerAddr;
     private boolean finishDiscovery = false;
+    private WifiServiceServer wifiServiceServer;
+
+    private HashMap<String, String> mapLabelMac;
+    private Hashtable<String, NetworkObject> mapIpNetwork;
+    private HashMap<String, DiscoveredDevice> mapAddressDevice;
+
+    private final WifiAdHocManager wifiAdHocManager;
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreads, int serverPort,
                              String label, ActiveConnections activeConnections,
                              HashMap<String, DiscoveredDevice> mapAddressDevice,
                              final ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws DeviceException, IOException {
+
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
 
         this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
@@ -85,22 +93,26 @@ public class WrapperHybridWifi extends WrapperWifi {
 
             }
         });
-        this.label = label;
-        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-        this.serverPort = serverPort;
-        this.mapAddressDevice = mapAddressDevice;
-        this.mapLabelMac = new HashMap<>();
-        this.mapIpNetwork = new Hashtable<>();
-        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+        if (wifiAdHocManager.isEnabled()) {
+            this.label = label;
+            this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+            this.serverPort = serverPort;
+            this.mapAddressDevice = mapAddressDevice;
+            this.mapLabelMac = new HashMap<>();
+            this.mapIpNetwork = new Hashtable<>();
+            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
-            @Override
-            public void getDeviceName(String name) {
-                // Update ownName
-                ownName = name;
-                wifiAdHocManager.unregisterInitName();
-            }
-        });
-        this.listenServer(nbThreads);
+                @Override
+                public void getDeviceName(String name) {
+                    // Update ownName
+                    ownName = name;
+                    wifiAdHocManager.unregisterInitName();
+                }
+            });
+            this.listenServer(nbThreads);
+        } else {
+            throw new DeviceException("Wifi is disabled");
+        }
     }
 
     public void listenServer(short nbThreads) throws IOException {
@@ -293,6 +305,16 @@ public class WrapperHybridWifi extends WrapperWifi {
         }
     }
 
+    @Override
+    public void stopListening() throws IOException {
+        wifiServiceServer.stopListening();
+    }
+
+    @Override
+    public void getPaired() {
+
+    }
+
     private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject) {
         if (networkObject != null) {
             // Send CONNECT message to establish the pairing
@@ -354,5 +376,9 @@ public class WrapperHybridWifi extends WrapperWifi {
 
     public void setFinishDiscovery(boolean finishDiscovery) {
         this.finishDiscovery = finishDiscovery;
+    }
+
+    public void unregisterConnection() {
+        wifiAdHocManager.unregisterConnection();
     }
 }

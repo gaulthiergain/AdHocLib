@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
@@ -16,13 +15,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataLinkHybridManager implements IDataLink {
+public class DataLinkHybridManager {
 
     private static final String TAG = "[AdHoc][DataLinkHybrid]";
 
+    private boolean wifiEnabled;
+    private boolean bluetoothEnabled;
+
     private final boolean v;
-    private final WrapperHybridBt wrapperBluetooth;
-    private final WrapperHybridWifi wrapperWifi;
+    private WrapperHybridBt wrapperBluetooth;
+    private WrapperHybridWifi wrapperWifi;
     private final ActiveConnections activeConnections;
 
 
@@ -32,7 +34,7 @@ public class DataLinkHybridManager implements IDataLink {
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
                                  int serverPort, boolean secure, short nbThreadsBt,
                                  ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException, IOException {
+            throws IOException, DeviceException {
 
         this.v = verbose;
         this.listenerAodv = listenerAodv;
@@ -44,22 +46,47 @@ public class DataLinkHybridManager implements IDataLink {
         listenerDataLinkAodv.getDeviceAddress(label);
         listenerDataLinkAodv.getDeviceName(label);
 
-        wrapperWifi =
-                new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
-                        activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+        try {
+            wrapperWifi =
+                    new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
+                            activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+            wifiEnabled = true;
+        } catch (DeviceException e) {
+            wifiEnabled = false;
+        }
 
-        wrapperBluetooth =
-                new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
-                        activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+        try {
+            wrapperBluetooth =
+                    new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
+                            activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+            //wrapperBluetooth.updateName(label);
+            bluetoothEnabled = true;
+        } catch (DeviceException e) {
+            bluetoothEnabled = false;
+        }
 
-        //wrapperBluetooth.updateName(label);
+        if (!bluetoothEnabled && !wifiEnabled) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
     }
 
-    @Override
-    public void discovery() {
+    public void discovery() throws DeviceException {
 
-        wrapperWifi.discovery();
-        wrapperBluetooth.discovery();
+        if (!bluetoothEnabled && !wifiEnabled) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
+        if (bluetoothEnabled) {
+            wrapperBluetooth.discovery();
+        } else {
+            wrapperBluetooth.setFinishDiscovery(true);
+        }
+
+        if (wifiEnabled) {
+            wrapperWifi.discovery();
+        } else {
+            wrapperWifi.setFinishDiscovery(true);
+        }
 
         new Thread(new Runnable() {
             @Override
@@ -82,8 +109,12 @@ public class DataLinkHybridManager implements IDataLink {
         }).start();
     }
 
-    @Override
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
+
+        if (!bluetoothEnabled && !wifiEnabled) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
             if (entry.getValue().getType() == DiscoveredDevice.BLUETOOTH) {
                 wrapperBluetooth.connect(entry.getValue());
@@ -93,27 +124,32 @@ public class DataLinkHybridManager implements IDataLink {
         }
     }
 
-    @Override
-    public void stopListening() throws IOException {
-        wrapperWifi.stopListening();
-        wrapperWifi.unregisterConnection();
-        wrapperBluetooth.stopListening();
+    public void stopListening() throws IOException, DeviceException {
+
+        if (!bluetoothEnabled && !wifiEnabled) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
+        if (wifiEnabled) {
+            wrapperWifi.stopListening();
+            wrapperWifi.unregisterConnection();
+        }
+
+        if (bluetoothEnabled) {
+            wrapperBluetooth.stopListening();
+        }
     }
 
-    @Override
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
-
         NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
         networkObject.sendObjectStream(message);
         if (v) Log.d(TAG, "Send directly to " + address);
     }
 
-    @Override
     public boolean isDirectNeighbors(String address) {
         return activeConnections.getActivesConnections().containsKey(address);
     }
 
-    @Override
     public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
             if (!entry.getKey().equals(originateAddr)) {
@@ -124,7 +160,6 @@ public class DataLinkHybridManager implements IDataLink {
         }
     }
 
-    @Override
     public void broadcast(MessageAdHoc message) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
             entry.getValue().sendObjectStream(message);
@@ -133,7 +168,6 @@ public class DataLinkHybridManager implements IDataLink {
         }
     }
 
-    @Override
     public void getPaired() {
         wrapperBluetooth.getPaired();
     }

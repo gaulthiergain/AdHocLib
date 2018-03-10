@@ -2,9 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import android.content.Context;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
@@ -18,8 +16,6 @@ public class TransferManager {
     private final boolean v;
     private final Context context;
 
-    private boolean wifiEnabled;
-    private boolean bluetoothEnabled;
     private AodvManager aodvManager;
 
     private boolean secure;
@@ -35,43 +31,18 @@ public class TransferManager {
         this.serverPort = 52000;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
-        this.checkConnectivity();
-    }
-
-    private void checkConnectivity() {
-
-        // Check if bluetooth is enabled
-        try {
-            bluetoothEnabled = new BluetoothManager(v, context).isEnabled();
-        } catch (DeviceException e) {
-            bluetoothEnabled = false;
-        }
-
-        // Check if Wifi is enabled
-        try {
-            wifiEnabled = new WifiAdHocManager(v, context, null).isEnabled();
-        } catch (DeviceException e) {
-            wifiEnabled = false;
-        }
     }
 
     public void start() throws DeviceException, IOException {
-        if (bluetoothEnabled && wifiEnabled) {
-            hybrid();
-        } else if (bluetoothEnabled) {
-            bluetooth();
-        } else if (wifiEnabled) {
-            wifi();
-        } else {
-            throw new DeviceException("No connectivity is enabled");
-        }
+        this.aodvManager = new AodvManager(v, context, nbThreadWifi, serverPort, secure, nbThreadBt,
+                listenerAodv);
     }
 
-    public void stopListening() throws IOException {
+    public void stopListening() throws IOException, DeviceException {
         aodvManager.stopListening();
     }
 
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) {
+    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
         aodvManager.connect(hashMap);
     }
 
@@ -79,22 +50,8 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, remoteDest);
     }
 
-    public void discovery() {
+    public void discovery() throws DeviceException {
         aodvManager.discovery();
-    }
-
-    private void hybrid() throws DeviceException, IOException {
-        this.aodvManager = new AodvManager(v, context, nbThreadWifi, serverPort, secure, nbThreadBt,
-                listenerAodv);
-    }
-
-    private void wifi() throws DeviceException, IOException {
-        this.aodvManager = new AodvManager(v, context, nbThreadWifi, serverPort, listenerAodv);
-
-    }
-
-    private void bluetooth() throws DeviceException, IOException {
-        this.aodvManager = new AodvManager(v, context, secure, nbThreadBt, listenerAodv);
     }
 
     //todo remove
