@@ -91,6 +91,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
         this.ownAddress = ownAddress;
         this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
+        this.ownName = BluetoothUtil.getCurrentName(); // todo update with label if necessary
 
         // Check if the bluetooth adapter is enabled
         if (!bluetoothManager.isEnabled()) {
