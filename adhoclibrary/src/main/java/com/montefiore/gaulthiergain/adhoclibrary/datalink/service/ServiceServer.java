@@ -47,6 +47,7 @@ public abstract class ServiceServer extends Service {
         if (threadListen != null) {
             if (v) Log.d(TAG, "Stop listening");
             threadListen.cancel();
+            threadListen = null;
             setState(STATE_NONE);
         }
     }

@@ -2,7 +2,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
@@ -42,6 +45,9 @@ public class WrapperBluetooth extends AbstractWrapper {
     final static int LOW = 24;
     final static int END = 36;
 
+    boolean registered = false;
+    BroadcastReceiver mReceiver;
+
     UUID ownUUID;
     String ownMac;
     boolean secure;
@@ -50,7 +56,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     BluetoothServiceServer bluetoothServiceServer;
     HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
-    private WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
+    WrapperBluetooth(boolean v, Context context, boolean secure, ActiveConnections activeConnections, ListenerAodv listenerAodv,
                              ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException {
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
         this.secure = secure;
@@ -59,7 +65,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         this.ownMac = BluetoothUtil.getCurrentMac(context);
     }
 
-    public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads, short duration, ActiveConnections activeConnections, ListenerAodv listenerAodv,
+    public WrapperBluetooth(boolean v, Context context, boolean secure, final short nbThreads, short duration, ActiveConnections activeConnections, final ListenerAodv listenerAodv,
                             ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
 
         this(v, context, secure, activeConnections, listenerAodv, listenerDataLinkAodv);
@@ -73,39 +79,17 @@ public class WrapperBluetooth extends AbstractWrapper {
         listenerDataLinkAodv.getDeviceName(ownName);
 
         // Check if the bluetooth adapter is enabled
-        if (!bluetoothManager.isEnabled()) {
-            if (!bluetoothManager.enable()) {
-                throw new BluetoothDisabledException("Unable to enable Bluetooth adapter");
-            }
-            bluetoothManager.enableDiscovery(duration);
-        }
-
-        this.listenServer(nbThreads);
+        checkBtAdapter(duration, nbThreads);
     }
-
-    public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads, short duration,
-                            String ownAddress, ActiveConnections activeConnections, ListenerAodv listenerAodv,
-                            ListenerDataLinkAodv listenerDataLinkAodv) throws DeviceException, BluetoothDisabledException, BluetoothBadDuration, IOException {
-
-        this(v, context, secure, activeConnections, listenerAodv, listenerDataLinkAodv);
-
-        this.ownAddress = ownAddress;
-        this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
-        this.ownName = BluetoothUtil.getCurrentName(); // todo update with label if necessary
-
-        // Check if the bluetooth adapter is enabled
-        if (!bluetoothManager.isEnabled()) {
-            if (!bluetoothManager.enable()) {
-                throw new BluetoothDisabledException("Unable to enable Bluetooth adapter");
-            }
-            bluetoothManager.enableDiscovery(duration);
-        }
-
-
-    }
-
 
     public void listenServer(short nbThreads) throws IOException {
+
+        // unregister receiver if needed
+        if (registered) {
+            registered = false;
+            context.unregisterReceiver(mReceiver);
+        }
+
         bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -338,5 +322,47 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
 
         listenerAodv.onPairedCompleted();
+    }
+
+    private void checkBtAdapter(short duration, final short nbThreads) throws BluetoothDisabledException, BluetoothBadDuration, IOException {
+        if (!bluetoothManager.isEnabled()) {
+
+            if (duration >= 0) {
+
+                if (bluetoothManager.enable()) {
+
+                    bluetoothManager.enableDiscovery(duration);
+
+                    //Set a filter to only receive bluetooth state changed events.
+                    mReceiver = new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            final String action = intent.getAction();
+                            if (action != null && action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                                final int bluetoothState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                                        BluetoothAdapter.ERROR);
+                                if (bluetoothState == BluetoothAdapter.STATE_ON) {
+                                    try {
+                                        listenServer(nbThreads);
+                                    } catch (IOException e) {
+                                        listenerAodv.catchException(e);
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    registered = true;
+                    IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+                    context.registerReceiver(mReceiver, filter);
+                } else {
+                    throw new BluetoothDisabledException("Unable to enable Bluetooth adapter");
+                }
+            } else {
+                throw new BluetoothDisabledException("Unable to enable Bluetooth adapter, " +
+                        "duration must be equal or higher than 0");
+            }
+        } else {
+            this.listenServer(nbThreads);
+        }
     }
 }
