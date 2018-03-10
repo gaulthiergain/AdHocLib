@@ -1,10 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -13,7 +10,6 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.os.Build;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -36,14 +32,14 @@ public class WifiAdHocManager {
 
     private boolean v;
     private Context context;
-    private String TAG = "[AdHoc][WifiManager]";
-    private WifiP2pManager wifiP2pManager;
     private Channel channel;
+    private BroadcastWifi broadcastWifi;
+    private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
     private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
-    private BroadcastWifi broadcastWifi;
-
+    public static final int DISCOVERY_TIME = 10000;
+    public static String TAG = "[AdHoc][WifiManager]";
 
     /**
      * Constructor
@@ -83,10 +79,8 @@ public class WifiAdHocManager {
         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
             @Override
             public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-                if (v) {
-                    Log.d(TAG, "onConnectionInfoAvailable");
-                    Log.d(TAG, "Addr groupOwner:" + String.valueOf(info.groupOwnerAddress.getHostAddress()));
-                }
+                if (v) Log.d(TAG, "Address groupOwner:"
+                        + String.valueOf(info.groupOwnerAddress.getHostAddress()));
 
                 if (info.isGroupOwner) {
                     connectionListener.onGroupOwner(info.groupOwnerAddress);
@@ -148,7 +142,6 @@ public class WifiAdHocManager {
                         if (v)
                             Log.d(TAG, "Devices added: " +
                                     hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
-                        MapNameAddr.addMapping(wifiP2pDevice.deviceAddress, wifiP2pDevice.deviceName);
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
@@ -160,7 +153,7 @@ public class WifiAdHocManager {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(DISCOVERY_TIME);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
