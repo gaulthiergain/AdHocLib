@@ -181,8 +181,17 @@ public class WrapperWifi extends AbstractWrapper {
                 10000, ATTEMPTS, new MessageListener() {
             @Override
             public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
+                RemoteWifiConnection remoteWifiDevice = (RemoteWifiConnection) remoteDevice;
+
+                if (v) Log.d(TAG, "Client broken with " + remoteWifiDevice.getDeviceAddress());
+
+                try {
+                    listenerDataLinkAodv.brokenLink(remoteDevice.getDeviceAddress());
+                } catch (IOException | NoConnectionException e) {
+                    listenerAodv.catchException(e);
+                }
+
                 listenerAodv.onConnectionClosed(remoteDevice);
-                //TODO update aodv code
             }
 
             @Override
