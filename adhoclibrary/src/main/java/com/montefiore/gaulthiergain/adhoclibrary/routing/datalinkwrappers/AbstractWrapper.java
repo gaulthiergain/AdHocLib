@@ -41,12 +41,14 @@ public abstract class AbstractWrapper {
 
     abstract void listenServer(short nbThreadsWifi) throws IOException;
 
-    abstract void discovery();
+    public abstract void discovery();
 
-    abstract void connect(DiscoveredDevice device);
+    public abstract void connect(DiscoveredDevice device);
 
     abstract void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException;
 
-    abstract void stopListening() throws IOException;
+    public abstract void stopListening() throws IOException;
+
+    public abstract void getPaired();
 }

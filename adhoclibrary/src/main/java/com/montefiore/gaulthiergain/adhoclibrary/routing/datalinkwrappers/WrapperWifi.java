@@ -242,6 +242,11 @@ public class WrapperWifi extends AbstractWrapper {
         wifiServiceServer.stopListening();
     }
 
+    @Override
+    public void getPaired() {
+
+    }
+
     public boolean isWifiEnabled() {
         return wifiEnabled;
     }

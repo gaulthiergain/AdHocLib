@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
+package com.montefiore.gaulthiergain.adhoclibrary.routing.tmp;
 
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -13,6 +13,9 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;

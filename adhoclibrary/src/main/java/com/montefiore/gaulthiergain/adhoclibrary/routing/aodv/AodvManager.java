@@ -5,9 +5,8 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDisabledException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkBtManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkWifiManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.IDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
@@ -158,6 +157,7 @@ public class AodvManager {
 
     /**
      * Method allowing to connect to other devices
+     *
      * @param hashMap
      */
     public void connect(HashMap<String, DiscoveredDevice> hashMap) {
@@ -178,14 +178,14 @@ public class AodvManager {
     private void initDataLinkWifi(boolean v, Context context, short nbThreads, int serverPort)
             throws DeviceException, IOException {
         //todo update variable
-        dataLink = new DataLinkWifiManager(v, context, true, nbThreads, serverPort,
+        dataLink = new DataLinkManager(v, context, true, nbThreads, serverPort,
                 listenerAodv, listenerDataLink);
     }
 
     private void initDataLinkBt(boolean v, Context context, boolean secure, short nbThreads, short duration)
             throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
 
-        dataLink = new DataLinkBtManager(v, context, secure, nbThreads, duration, listenerAodv,
+        dataLink = new DataLinkManager(v, context, secure, nbThreads, duration, listenerAodv,
                 listenerDataLink);
     }
 

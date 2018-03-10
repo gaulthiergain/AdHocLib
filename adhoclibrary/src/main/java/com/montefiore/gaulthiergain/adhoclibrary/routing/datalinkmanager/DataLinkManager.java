@@ -8,19 +8,21 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothDi
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataLinkBtManager implements IDataLink {
+public class DataLinkManager implements IDataLink {
 
     private final boolean v;
     private final String TAG = "[AdHoc][DataLinkBt]";
     private final ActiveConnections activeConnections;
-    private final WrapperBluetooth wrapperBt;
+    private final AbstractWrapper wrapper;
 
     /**
      * Constructor
@@ -40,29 +42,52 @@ public class DataLinkBtManager implements IDataLink {
      * @throws BluetoothDisabledException Signals that a Bluetooth Disabled exception has occurred.
      * @throws BluetoothBadDuration       Signals that a Bluetooth Bad Duration exception has occurred.
      */
-    public DataLinkBtManager(boolean verbose, Context context, boolean secure, short nbThreads,
-                             short duration, ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+    public DataLinkManager(boolean verbose, Context context, boolean secure, short nbThreads,
+                           short duration, ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws IOException, DeviceException, BluetoothDisabledException, BluetoothBadDuration {
 
         this.v = verbose;
         this.activeConnections = new ActiveConnections();
 
-        this.wrapperBt =
+        this.wrapper =
                 new WrapperBluetooth(v, context, secure, nbThreads, duration, activeConnections, listenerAodv, listenerDataLinkAodv);
 
     }
 
+    /**
+     * Constructor
+     *
+     * @param verbose              a boolean value to set the debug/verbose mode.
+     * @param context              a Context object which gives global information about an application
+     *                             environment.
+     * @param nbThreads            a short value to determine the number of threads managed by the
+     *                             server.
+     * @param serverPort           an integer value which represents the server list port.
+     * @param listenerAodv         a ListenerAodv object which serves as callback functions.
+     * @param listenerDataLinkAodv a ListenerDataLinkAodv object which serves as callback functions.
+     * @throws DeviceException
+     */
+    public DataLinkManager(boolean verbose, Context context, boolean enable, short nbThreads, int serverPort,
+                           ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
+            throws DeviceException, IOException {
+        this.v = verbose;
+        this.activeConnections = new ActiveConnections();
+
+        this.wrapper =
+                new WrapperWifi(v, context, enable, nbThreads, serverPort, activeConnections, listenerAodv, listenerDataLinkAodv);
+
+    }
 
     @Override
     public void connect(HashMap<String, DiscoveredDevice> hashMap) {
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
-            wrapperBt.connect(entry.getValue());
+            wrapper.connect(entry.getValue());
         }
     }
 
     @Override
     public void stopListening() throws IOException {
-        wrapperBt.stopListening();
+        wrapper.stopListening();
     }
 
     @Override
@@ -90,12 +115,12 @@ public class DataLinkBtManager implements IDataLink {
 
     @Override
     public void discovery() {
-        wrapperBt.discovery();
+        wrapper.discovery();
     }
 
     @Override
     public void getPaired() {
-        wrapperBt.getPaired();
+        wrapper.getPaired();
     }
 
     @Override
