@@ -76,33 +76,37 @@ public class DataLinkHybridManager {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        if(bluetoothEnabled && wifiEnabled){
+        if (bluetoothEnabled && wifiEnabled) {
             wifiBtDiscovery();
-        }
+        } else {
+            if (bluetoothEnabled) {
+                wrapperBluetooth.discovery();
+                wrapperBluetooth.setDiscoveryListener(new ListenerDiscovery() {
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                        listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                    }
+                });
 
-        if (bluetoothEnabled) {
-            wrapperBluetooth.discovery();
-            wrapperBluetooth.setDiscoveryListener(new ListenerDiscovery(){
-                @Override
-                public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
-                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
-                }
-            });
+            }
 
-        }
-
-        if (wifiEnabled) {
-            wrapperWifi.discovery();
-            wrapperWifi.setDiscoveryListener(new ListenerDiscovery(){
-                @Override
-                public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
-                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
-                }
-            });
+            if (wifiEnabled) {
+                wrapperWifi.discovery();
+                wrapperWifi.setDiscoveryListener(new ListenerDiscovery() {
+                    @Override
+                    public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                        listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                    }
+                });
+            }
         }
     }
 
-    private void wifiBtDiscovery(){
+    private void wifiBtDiscovery() {
+
+        wrapperBluetooth.discovery();
+        wrapperWifi.discovery();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -188,7 +192,7 @@ public class DataLinkHybridManager {
         wrapperBluetooth.getPaired();
     }
 
-    public interface ListenerDiscovery{
+    public interface ListenerDiscovery {
         void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
     }
 }
