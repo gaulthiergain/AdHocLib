@@ -8,6 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * <p>This class defines the client's logic and methods and aims to serve as a common interface for
@@ -19,10 +20,16 @@ import java.io.IOException;
  */
 public abstract class ServiceClient extends Service {
 
-    private ListenServiceThread threadListening;
+    protected static final short LOW = 1500;
+    protected static final short HIGH = 2500;
     protected static final String TAG = "[AdHoc][ServiceClient]";
-    protected final boolean background;
+
     protected NetworkObject network;
+    protected final short attempts;
+    protected final boolean background;
+
+    private long backOffTime;
+    private ListenServiceThread threadListening;
 
     /**
      * Constructor
@@ -30,13 +37,16 @@ public abstract class ServiceClient extends Service {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
+     * @param attempts        a short value which represents the number of attempts.
      * @param messageListener a messageListener object which serves as callback functions.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
      */
-    public ServiceClient(boolean verbose, Context context, MessageListener messageListener, boolean background) {
+    public ServiceClient(boolean verbose, Context context, short attempts, MessageListener messageListener, boolean background) {
         super(verbose, context, messageListener);
+        this.attempts = attempts;
         this.background = background;
+        this.backOffTime = (long) new Random().nextInt(HIGH - LOW) + LOW;
     }
 
     /**
@@ -122,5 +132,9 @@ public abstract class ServiceClient extends Service {
             // Update the state of the connection
             setState(STATE_NONE);
         }
+    }
+
+    protected long getBackOffTime() {
+        return (backOffTime *= 2);
     }
 }

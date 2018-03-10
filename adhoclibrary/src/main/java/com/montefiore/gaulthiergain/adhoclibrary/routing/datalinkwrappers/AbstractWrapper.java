@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public abstract class AbstractWrapper {
 
-    final static int ATTEMPTS = 3;
+    final static short ATTEMPTS = 3;
 
     final boolean v;
     final Context context;

@@ -27,13 +27,8 @@ import java.util.Random;
  */
 public class WifiServiceClient extends ServiceClient implements Runnable {
 
-    //todo refactor this? (backoff algorithm)
-    private static final int LOW = 500;
-    private static final int HIGH = 2500;
-
     private final int port;
     private final int timeOut;
-    private final int attempts;
     private final String remoteAddress;
 
     private ListenerAutoConnect listenerAutoConnect;
@@ -46,18 +41,20 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      *                        environment.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
-     * @param messageListener a messageListener object which serves as callback functions.
+     * @param remoteAddress
+     * @param port
      * @param timeOut         an integer value which represents the timeout of a connection.
+     * @param attempts        a short value which represents the number of attempts.
+     * @param messageListener a messageListener object which serves as callback functions.
      */
     public WifiServiceClient(boolean verbose, Context context, boolean background,
-                             String remoteAddress, int port, int timeOut, int attempts,
+                             String remoteAddress, int port, int timeOut, short attempts,
                              MessageListener messageListener) {
 
-        super(verbose, context, messageListener, background);
+        super(verbose, context, attempts, messageListener, background);
         this.remoteAddress = remoteAddress;
         this.port = port;
         this.timeOut = timeOut;
-        this.attempts = attempts;
     }
 
 
@@ -66,26 +63,22 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
         int i = 0;
         do {
             try {
+                i++;
                 connect();
-                i = attempts;
-            } catch (ConnectException | SocketTimeoutException e) {
-                i++;
+            } catch (NoConnectionException e) {
+
+                if (v) Log.e(TAG, "Attempts: " + i + " failed");
+                if (attempts == i) {
+                    handler.obtainMessage(Service.CATH_EXCEPTION,
+                            new NoConnectionException(e.getMessage())).sendToTarget();
+                    break;
+                }
+
                 try {
-                    long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
-                    Thread.sleep((result));
+                    Thread.sleep((getBackOffTime()));
                 } catch (InterruptedException e1) {
                     handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
                 }
-                Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
-            } catch (SocketException e) {
-                i++;
-                try {
-                    long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
-                    Thread.sleep((result));
-                } catch (InterruptedException e1) {
-                    handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
-                }
-                Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
             }
         } while (i < this.attempts);
     }
@@ -93,15 +86,16 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
     /**
      * Method allowing to connect to a remote bluetooth device.
      */
-    public void connect() throws SocketTimeoutException, SocketException {
+    public void connect() throws NoConnectionException {
         if (v) Log.d(TAG, "connect to: " + remoteAddress + ":" + port);
 
-        if (state == STATE_NONE) {
+        if (state == STATE_NONE || state == STATE_CONNECTING) {
 
             // Change the state
             setState(STATE_CONNECTING);
 
             try {
+
                 // Connect to the remote host
                 Socket socket = new Socket();
                 socket.bind(null);
@@ -127,9 +121,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
-            } catch (NoConnectionException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                throw new NoConnectionException("No remote connection to " + remoteAddress);
             }
         }
     }

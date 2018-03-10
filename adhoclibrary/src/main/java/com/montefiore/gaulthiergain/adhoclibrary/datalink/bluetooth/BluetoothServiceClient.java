@@ -24,12 +24,7 @@ import java.util.UUID;
  */
 public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
-    //todo refactor this? (backoff algorithm)
-    private static final int LOW = 500;
-    private static final int HIGH = 2500;
-
     private final boolean secure;
-    private final int attempts;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
 
     private ListenerAutoConnect listenerAutoConnect;
@@ -44,16 +39,15 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * @param background           a boolean value which defines if the service must listen messages
      *                             to background.
      * @param secure               a boolean value which represents the state of the connection.
-     * @param attempts             an integer value which represents the number of attempts.
+     * @param attempts             a short value which represents the number of attempts.
      * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
      *                             device.
      */
     public BluetoothServiceClient(boolean verbose, Context context, MessageListener messageListener,
-                                  boolean background, boolean secure, int attempts,
+                                  boolean background, boolean secure, short attempts,
                                   BluetoothAdHocDevice bluetoothAdHocDevice) {
-        super(verbose, context, messageListener, background);
+        super(verbose, context, attempts, messageListener, background);
         this.secure = secure;
-        this.attempts = attempts;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }
 
@@ -104,7 +98,8 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                throw new NoConnectionException("No remote connection");
+                throw new NoConnectionException("No remote connection to "
+                        + bluetoothAdHocDevice.getUuid());
             }
         }
     }
@@ -114,17 +109,22 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
         int i = 0;
         do {
             try {
-                connect();
-                i = attempts;
-            } catch (NoConnectionException e) {
                 i++;
+                connect();
+            } catch (NoConnectionException e) {
+
+                if (v) Log.e(TAG, "Attempts: " + i + " failed");
+                if (attempts == i) {
+                    handler.obtainMessage(Service.CATH_EXCEPTION,
+                            new NoConnectionException(e.getMessage())).sendToTarget();
+                    break;
+                }
+
                 try {
-                    long result = (long) new Random().nextInt(HIGH - LOW) + LOW;
-                    Thread.sleep((result));
+                    Thread.sleep((getBackOffTime()));
                 } catch (InterruptedException e1) {
                     handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
                 }
-                Log.e(TAG, "Attempts: " + i + " failed in thread " + Thread.currentThread().getName());
             }
         } while (i < this.attempts);
     }
