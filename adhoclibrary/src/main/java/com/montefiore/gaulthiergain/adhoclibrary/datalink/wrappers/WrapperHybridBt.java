@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -34,10 +34,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class WrapperHybridBt extends AbstractWrapper {
-
-    // Constants for taking only the last part of the UUID
-    final static int LOW = 24;
-    final static int END = 36;
 
     private UUID ownUUID;
     private String ownMac;

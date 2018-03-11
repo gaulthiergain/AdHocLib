@@ -7,8 +7,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridBt;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers.WrapperHybridWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridBt;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;

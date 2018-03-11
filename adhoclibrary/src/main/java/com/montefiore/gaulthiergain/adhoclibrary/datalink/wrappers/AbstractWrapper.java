@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkwrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
 
