@@ -49,7 +49,7 @@ class ListenServiceThread extends Thread {
                 if (v) Log.d(TAG, "Waiting response from server ...");
 
                 // Get response MessageAdHoc
-                message = (MessageAdHoc) network.receiveObjectStream();
+                message = network.receiveObjectStream();
                 if (v) Log.d(TAG, "Response: " + message);
                 handler.obtainMessage(Service.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {

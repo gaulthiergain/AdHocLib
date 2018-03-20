@@ -1,16 +1,27 @@
 package com.montefiore.gaulthiergain.adhoclibrary.util;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.MessageDeserializer;
 
 /**
  * Created by gaulthiergain on 17/11/17.
  */
 
-public class MessageAdHoc implements Serializable {
+@JsonDeserialize(using = MessageDeserializer.class)
+public class MessageAdHoc {
+    @JsonProperty("header")
     private IHeader header;
-    private Serializable pdu;
 
-    public MessageAdHoc(IHeader header, Serializable pdu) {
+    @JsonSerialize(using = Serializer.class)
+    private Object pdu;
+
+    public MessageAdHoc() {
+    }
+
+    public MessageAdHoc(IHeader header, Object pdu) {
         this.header = header;
         this.pdu = pdu;
     }
@@ -19,7 +30,7 @@ public class MessageAdHoc implements Serializable {
         return header;
     }
 
-    public Serializable getPdu() {
+    public Object getPdu() {
         return pdu;
     }
 
@@ -31,7 +42,7 @@ public class MessageAdHoc implements Serializable {
                 '}';
     }
 
-    public void setPdu(Serializable pdu) {
+    public void setPdu(Object pdu) {
         this.pdu = pdu;
     }
 

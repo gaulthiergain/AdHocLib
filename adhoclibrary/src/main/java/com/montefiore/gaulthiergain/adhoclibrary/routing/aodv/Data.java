@@ -1,6 +1,17 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
-import java.io.Serializable;
+/**
+ * <p>This class represents a DATA message and all theses fields for the AODV protocol. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
+
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.DataDeserializer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
 
 /**
  * <p>This class represents a DATA message and all theses fields for the AODV protocol. </p>
@@ -8,21 +19,36 @@ import java.io.Serializable;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class Data implements Serializable {
+@JsonTypeName("Data")
+@JsonDeserialize(using = DataDeserializer.class)
+public class Data {
 
-    private final String destIpAddress;
-    private Serializable pdu;
+    @JsonProperty("destIpAddress")
+    private String destIpAddress;
+
+    @JsonProperty("payload")
+    @JsonSerialize(using = Serializer.class)
+    private Object payload;
+
+    public Data() {
+        destIpAddress = "";
+        payload = null;
+    }
 
     /**
      * Constructor
      *
      * @param destIpAddress a String value which represents the destination IP address of the
      *                      DATA message.
-     * @param pdu           a Serializable value which represents the PDU of the DATA message.
+     * @param payload       a Serializable value which represents the PDU of the DATA message.
      */
-    public Data(String destIpAddress, Serializable pdu) {
+    public Data(String destIpAddress, Object payload) {
         this.destIpAddress = destIpAddress;
-        this.pdu = pdu;
+        this.payload = payload;
+    }
+
+    public void setDestIpAddress(String destIpAddress) {
+        this.destIpAddress = destIpAddress;
     }
 
     /**
@@ -34,20 +60,26 @@ public class Data implements Serializable {
         return destIpAddress;
     }
 
+    public Object getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Object payload) {
+        this.payload = payload;
+    }
+
     /**
      * Method allowing to get the PDU of the DATA message.
      *
      * @return a Serializable object which represents the PDU of the DATA message.
      */
-    public Serializable getPdu() {
-        return pdu;
-    }
+
 
     @Override
     public String toString() {
         return "Data{" +
                 "destIpAddress='" + destIpAddress + '\'' +
-                ", pdu=" + pdu +
+                ", payload=" + payload +
                 '}';
     }
 }

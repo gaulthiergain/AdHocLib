@@ -11,6 +11,12 @@ public class Header implements Serializable, IHeader {
     private final String senderAddr;
     private final String senderName;
 
+    public Header() {
+        this.type = "";
+        this.senderAddr = "";
+        this.senderName = "";
+    }
+
     public Header(String type, String senderAddr, String senderName) {
         this.type = type;
         this.senderAddr = senderAddr;

@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.*;
 
 /**
  * <p>This class represents a RREQ message and all theses fields for the AODV protocol. </p>
@@ -8,14 +8,31 @@ import java.io.Serializable;
  * @author Gaulthier Gain
  * @version 1.0
  */
-class RREQ implements Serializable {
+
+@JsonTypeName("RREQ")
+public class RREQ {
+    @JsonProperty("type")
     private final int type;
+    @JsonProperty("hopCount")
     private int hopCount;
+    @JsonProperty("rreqId")
     private final long rreqId;
+    @JsonProperty("destSequenceNum")
     private long destSequenceNum;
+    @JsonProperty("destIpAddress")
     private final String destIpAddress;
+    @JsonProperty("originSequenceNum")
     private long originSequenceNum;
+    @JsonProperty("originIpAddress")
     private final String originIpAddress;
+
+    public RREQ() {
+        type = 0;
+        hopCount = 0;
+        destIpAddress = "";
+        originIpAddress = "";
+        rreqId = 0;
+    }
 
     /**
      * Constructor
@@ -32,8 +49,8 @@ class RREQ implements Serializable {
      * @param originIpAddress   a String value which represents the originator IP address of the RREQ
      *                          message.
      */
-    RREQ(int type, int hopCount, long rreqId, long destSequenceNum, String destIpAddress, long originSequenceNum,
-         String originIpAddress) {
+    public RREQ(int type, int hopCount, long rreqId, long destSequenceNum, String destIpAddress, long originSequenceNum,
+                String originIpAddress) {
         this.type = type;
         this.hopCount = hopCount;
         this.rreqId = rreqId;
@@ -115,6 +132,7 @@ class RREQ implements Serializable {
 
     /**
      * Method allowing to update the destination sequence number
+     *
      * @param destSequenceNum a long value which represents the destination sequence number of the RREQ message.
      */
     public void setDestSequenceNum(long destSequenceNum) {

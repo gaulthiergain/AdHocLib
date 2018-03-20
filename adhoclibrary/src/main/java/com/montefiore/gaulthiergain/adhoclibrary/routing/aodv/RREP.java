@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * <p>This class represents a RREP message and all theses fields for the AODV protocol. </p>
@@ -8,13 +9,30 @@ import java.io.Serializable;
  * @author Gaulthier Gain
  * @version 1.0
  */
-class RREP implements Serializable {
+
+@JsonTypeName("RREP")
+public class RREP {
+    @JsonProperty("type")
     private int type;
+    @JsonProperty("hopCount")
     private int hopCount;
+    @JsonProperty("destIpAddress")
     private final String destIpAddress;
+    @JsonProperty("sequenceNum")
     private long sequenceNum;
+    @JsonProperty("originIpAddress")
     private final String originIpAddress;
+    @JsonProperty("lifetime")
     private final long lifetime;
+
+    public RREP() {
+        type = 0;
+        hopCount = 0;
+        destIpAddress = "";
+        sequenceNum = 0;
+        originIpAddress = "";
+        lifetime = 0;
+    }
 
     /**
      * @param type            an integer value which represents the type of the RREP message.
@@ -27,8 +45,8 @@ class RREP implements Serializable {
      *                        message.
      * @param lifetime        a long value which represents the lifetime of the RREP message.
      */
-    RREP(int type, int hopCount, String destIpAddress, long sequenceNum, String originIpAddress,
-         long lifetime) {
+    public RREP(int type, int hopCount, String destIpAddress, long sequenceNum, String originIpAddress,
+                long lifetime) {
         this.type = type;
         this.hopCount = hopCount;
         this.destIpAddress = destIpAddress;
@@ -111,6 +129,4 @@ class RREP implements Serializable {
                 ", lifetime=" + lifetime +
                 '}';
     }
-
-
 }

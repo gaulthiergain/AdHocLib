@@ -77,6 +77,7 @@ public class TransferManager {
 
             @Override
             public void catchException(Exception e) {
+                e.printStackTrace();
                 listenerApp.catchException(e);
             }
 

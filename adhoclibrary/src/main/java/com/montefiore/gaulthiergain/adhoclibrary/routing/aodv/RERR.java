@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * <p>This class represents a RERR message and all theses fields for the AODV protocol. </p>
@@ -8,10 +9,21 @@ import java.io.Serializable;
  * @author Gaulthier Gain
  * @version 1.0
  */
-class RERR implements Serializable {
+@JsonTypeName("RERR")
+public class RERR {
+
+    @JsonProperty("type")
     private final int type;
+    @JsonProperty("unreachableDestIpAddress")
     private final String unreachableDestIpAddress;
-    private long unreachableDestSeqNum;
+    @JsonProperty("unreachableDestSeqNum")
+    private final long unreachableDestSeqNum;
+
+    public RERR() {
+        this.type = 0;
+        this.unreachableDestIpAddress = "";
+        this.unreachableDestSeqNum = 0;
+    }
 
     /**
      * Constructor
@@ -23,7 +35,7 @@ class RERR implements Serializable {
      * @param unreachableDestSeqNum    a long value which represents unreachable sequence number
      *                                 of the RERR message.
      */
-    RERR(int type, String unreachableDestIpAddress, long unreachableDestSeqNum) {
+    public RERR(int type, String unreachableDestIpAddress, long unreachableDestSeqNum) {
         this.type = type;
         this.unreachableDestIpAddress = unreachableDestIpAddress;
         this.unreachableDestSeqNum = unreachableDestSeqNum;
