@@ -96,19 +96,21 @@ public class DataLinkHybridManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                short finished = 0;
+
                 try {
                     // Use pooling to check if the discovery is completed
                     while (true) {
                         Thread.sleep(1000);
 
+                        boolean finished = true;
                         for (AbstractWrapper wrapper : wrappers) {
-                            if (wrapper.isDiscoveryCompleted()) {
-                                finished++;
+                            if (!wrapper.isDiscoveryCompleted()) {
+                                finished = false;
+                                break;
                             }
                         }
 
-                        if (finished == wrappers.length) {
+                        if (finished) {
                             listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                             break;
                         }
