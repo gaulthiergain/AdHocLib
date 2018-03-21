@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.util.HashMap;
@@ -68,7 +68,7 @@ public interface ListenerAodv {
      */
     void catchException(Exception e);
 
-    void onConnectionClosed(AbstractRemoteConnection remoteDevice);
+    void onConnectionClosed(RemoteConnection remoteDevice);
 
-    void onConnection(AbstractRemoteConnection remoteDevice);
+    void onConnection(RemoteConnection remoteDevice);
 }

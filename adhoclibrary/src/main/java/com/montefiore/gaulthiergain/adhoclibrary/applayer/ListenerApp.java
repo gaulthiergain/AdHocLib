@@ -1,8 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.util.HashMap;
 
@@ -37,7 +35,7 @@ public interface ListenerApp {
      */
     void catchException(Exception e);
 
-    void onConnectionClosed(AbstractRemoteConnection remoteDevice);
+    void onConnectionClosed(String remoteName, String remoteAddress);
 
-    void onConnection(AbstractRemoteConnection remoteDevice);
+    void onConnection(String remoteName, String remoteAddress);
 }

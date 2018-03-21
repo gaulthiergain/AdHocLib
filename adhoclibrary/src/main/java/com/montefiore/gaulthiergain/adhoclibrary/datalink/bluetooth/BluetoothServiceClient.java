@@ -85,8 +85,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 // Notify handler
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
                         new RemoteBtConnection(bluetoothSocket.getRemoteDevice().getAddress(),
-                                bluetoothSocket.getRemoteDevice().getName(),
-                                bluetoothAdHocDevice.getUuid())).sendToTarget();
+                                bluetoothSocket.getRemoteDevice().getName())).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);

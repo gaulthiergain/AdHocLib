@@ -7,7 +7,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ class ListenServiceThread extends Thread {
         if (network.getISocket() instanceof AdHocSocketWifi) {
             // Notify handler and set remote device address
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
+                    new RemoteConnection(network.getISocket().getRemoteSocketAddress()))
                     .sendToTarget();
         } else {
             // Get Socket

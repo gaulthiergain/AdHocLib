@@ -7,7 +7,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
@@ -146,9 +146,8 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteWifiConnection(
-                            isocket.getRemoteSocketAddress(),
-                            socket.getLocalAddress().toString().substring(1))).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteConnection(
+                            isocket.getRemoteSocketAddress(), "")).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
@@ -183,7 +182,7 @@ public class ThreadServer extends Thread {
                     // Notify handler
                     handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteBtConnection(
                             socket.getRemoteDevice().getAddress(),
-                            socket.getRemoteDevice().getName(), uuid.toString())).sendToTarget();
+                            socket.getRemoteDevice().getName())).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }

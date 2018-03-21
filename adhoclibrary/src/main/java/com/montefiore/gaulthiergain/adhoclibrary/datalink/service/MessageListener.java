@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 
 /**
  * <p>This interface allows to define callback functions for messages and connection handling.</p>
@@ -10,7 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRem
  */
 public interface MessageListener extends MessageMainListener {
 
-    void onConnectionClosed(AbstractRemoteConnection remoteDevice);
+    void onConnectionClosed(RemoteConnection remoteDevice);
 
-    void onConnection(AbstractRemoteConnection remoteDevice);
+    void onConnection(RemoteConnection remoteDevice);
 }

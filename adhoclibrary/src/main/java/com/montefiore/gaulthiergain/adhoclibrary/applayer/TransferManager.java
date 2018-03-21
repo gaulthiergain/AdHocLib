@@ -2,9 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import android.content.Context;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.BadServerPortException;
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.MaxThreadReachedException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
@@ -24,7 +22,7 @@ public class TransferManager {
     private ListenerAodv listenerAodv;
 
     private TransferManager(boolean verbose, Context context, final ListenerApp listenerApp,
-                            Config config){
+                            Config config) {
         this.v = verbose;
         this.context = context;
         this.config = config;
@@ -72,19 +70,19 @@ public class TransferManager {
             @Override
             public void catchException(Exception e) {
                 e.printStackTrace();
-                if(!(e instanceof IOException)){
+                if (!(e instanceof IOException)) {
                     listenerApp.catchException(e);
                 }
             }
 
             @Override
-            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
-                listenerApp.onConnectionClosed(remoteDevice);
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteDevice.getDeviceAddress());
             }
 
             @Override
-            public void onConnection(AbstractRemoteConnection remoteDevice) {
-                listenerApp.onConnection(remoteDevice);
+            public void onConnection(RemoteConnection remoteDevice) {
+                listenerApp.onConnection(remoteDevice.getDeviceName(), remoteDevice.getDeviceAddress());
             }
         };
     }

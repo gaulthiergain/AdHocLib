@@ -3,7 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -104,9 +104,8 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
 
                 // Notify handler
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                        new RemoteWifiConnection(socket.getRemoteSocketAddress().toString()
-                                .split(":")[0].substring(1),
-                                socket.getLocalAddress().toString().substring(1))).sendToTarget();
+                        new RemoteConnection(socket.getRemoteSocketAddress().toString()
+                                .split(":")[0].substring(1), "")).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);

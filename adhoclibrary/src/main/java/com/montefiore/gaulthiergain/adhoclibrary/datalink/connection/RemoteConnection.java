@@ -1,15 +1,15 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.connection;
 
-public abstract class AbstractRemoteConnection {
+public class RemoteConnection {
 
     String deviceAddress;
     String deviceName;
 
-    AbstractRemoteConnection(String deviceAddress) {
+    public RemoteConnection(String deviceAddress) {
         this.deviceAddress = deviceAddress;
     }
 
-    public AbstractRemoteConnection(String deviceAddress, String deviceName) {
+    public RemoteConnection(String deviceAddress, String deviceName) {
         this.deviceAddress = deviceAddress;
         this.deviceName = deviceName;
     }
@@ -22,11 +22,11 @@ public abstract class AbstractRemoteConnection {
         return deviceName;
     }
 
-    public void setDeviceAddress(String deviceAddress) {
-        this.deviceAddress = deviceAddress;
-    }
-
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    public void setDeviceAddress(String deviceAddress) {
+        this.deviceAddress = deviceAddress;
     }
 }

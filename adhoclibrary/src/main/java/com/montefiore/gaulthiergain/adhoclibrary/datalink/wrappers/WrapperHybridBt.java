@@ -10,8 +10,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothMan
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -135,7 +135,7 @@ public class WrapperHybridBt extends AbstractWrapper {
             }
 
             @Override
-            public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
 
                 //Get label from ip
                 String remoteLabel = mapLabelUuid.get(remoteDevice.getDeviceAddress());
@@ -156,7 +156,7 @@ public class WrapperHybridBt extends AbstractWrapper {
             }
 
             @Override
-            public void onConnection(AbstractRemoteConnection remoteDevice) {
+            public void onConnection(RemoteConnection remoteDevice) {
 
             }
         });
@@ -194,7 +194,7 @@ public class WrapperHybridBt extends AbstractWrapper {
                     }
 
                     @Override
-                    public void onConnectionClosed(AbstractRemoteConnection remoteDevice) {
+                    public void onConnectionClosed(RemoteConnection remoteDevice) {
 
                         //Get label from ip
                         String remoteLabel = mapLabelUuid.get(remoteDevice.getDeviceAddress());
@@ -215,7 +215,7 @@ public class WrapperHybridBt extends AbstractWrapper {
                     }
 
                     @Override
-                    public void onConnection(AbstractRemoteConnection remoteDevice) {
+                    public void onConnection(RemoteConnection remoteDevice) {
 
                     }
 
