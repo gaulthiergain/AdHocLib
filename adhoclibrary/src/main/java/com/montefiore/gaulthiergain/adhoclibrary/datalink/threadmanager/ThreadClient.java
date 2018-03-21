@@ -40,6 +40,8 @@ class ThreadClient extends Thread {
                 Thread.currentThread().interrupt();
             } catch (EOFException e) {
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+            } catch (NullPointerException e) {
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (IOException e) {
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } catch (ClassNotFoundException e) {

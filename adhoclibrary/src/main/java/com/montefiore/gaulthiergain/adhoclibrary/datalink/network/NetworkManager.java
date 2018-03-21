@@ -45,7 +45,7 @@ public class NetworkManager {
         Log.d(TAG, "Send message: " + msg);
     }
 
-    public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException {
+    public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException, NullPointerException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(ois));
         MessageAdHoc msg = mapper.readValue(in.readLine(), MessageAdHoc.class);
