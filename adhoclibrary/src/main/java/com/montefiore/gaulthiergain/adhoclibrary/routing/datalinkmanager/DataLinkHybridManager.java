@@ -39,8 +39,7 @@ public class DataLinkHybridManager {
         this.activeConnections = new ActiveConnections();
         this.mapAddressDevice = new HashMap<>();
 
-        //todo update this with random address
-        String label = BluetoothUtil.getCurrentMac(context).replace(":", "").toLowerCase();
+        String label = config.getLabel();
         listenerDataLinkAodv.getDeviceAddress(label);
         listenerDataLinkAodv.getDeviceName(label);
 

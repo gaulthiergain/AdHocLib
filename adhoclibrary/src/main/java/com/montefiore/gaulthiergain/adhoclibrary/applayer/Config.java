@@ -2,6 +2,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.BadServerPortException;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.MaxThreadReachedException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
+
+import java.util.UUID;
 
 /**
  * Created by gaulthiergain on 21/03/18.
@@ -17,20 +20,23 @@ public class Config {
     private int serverPort;
     private short nbThreadBt;
     private short nbThreadWifi;
+    private String label;
 
     public Config() {
         this.secure = true;
         this.serverPort = 52000;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
+        this.label = String.valueOf(UUID.randomUUID());
     }
 
-    public Config(boolean secure, int serverPort, int nbThreadBt, int nbThreadWifi)
+    public Config(boolean secure, int serverPort, int nbThreadBt, int nbThreadWifi, String label)
             throws BadServerPortException, MaxThreadReachedException {
         this.secure = secure;
         this.setServerPort(serverPort);
         this.setNbThreadBt(nbThreadBt);
         this.nbThreadWifi = (short) nbThreadWifi;
+        this.label = label;
     }
 
     public Config(boolean secure, int nbThreadBt) throws MaxThreadReachedException {
@@ -61,6 +67,10 @@ public class Config {
         return nbThreadWifi;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
@@ -87,6 +97,10 @@ public class Config {
         this.nbThreadWifi = (short) nbThreadWifi;
     }
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     @Override
     public String toString() {
         return "Config{" +
@@ -94,6 +108,7 @@ public class Config {
                 ", serverPort=" + serverPort +
                 ", nbThreadBt=" + nbThreadBt +
                 ", nbThreadWifi=" + nbThreadWifi +
+                ", label='" + label + '\'' +
                 '}';
     }
 }
