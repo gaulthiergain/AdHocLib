@@ -96,6 +96,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
+                this.wifiEnabled = true;
                 this.label = label;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = serverPort;
