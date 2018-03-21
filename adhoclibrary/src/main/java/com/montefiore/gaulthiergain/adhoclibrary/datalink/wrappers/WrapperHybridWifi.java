@@ -34,84 +34,89 @@ import java.util.Map;
 
 public class WrapperHybridWifi extends AbstractWrapper {
 
-    private static final String TAG = "[AdHoc][WrapperWifiHy]";
+    private static final String TAG = "[AdHoc][WrapperWifi]";
+    private boolean wifiEnabled;
 
     private int serverPort;
     private String label;
     private String ownIpAddress;
     private String groupOwnerAddr;
-    private boolean finishDiscovery = false;
     private WifiServiceServer wifiServiceServer;
 
     private HashMap<String, String> mapLabelMac;
     private Hashtable<String, NetworkObject> mapIpNetwork;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
 
-    private final WifiAdHocManager wifiAdHocManager;
+    private WifiAdHocManager wifiAdHocManager;
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreads, int serverPort,
                              String label, ActiveConnections activeConnections,
                              HashMap<String, DiscoveredDevice> mapAddressDevice,
                              final ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException, IOException {
+            throws IOException {
 
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
 
-        this.wifiAdHocManager = new WifiAdHocManager(v, context, new ConnectionListener() {
-            @Override
-            public void onConnectionStarted() {
-                Log.d(TAG, "Connection Started");
-            }
-
-            @Override
-            public void onConnectionFailed(int reasonCode) {
-                Log.d(TAG, "Connection Failed: " + reasonCode);
-            }
-
-            @Override
-            public void onGroupOwner(InetAddress groupOwnerAddress) {
-                ownIpAddress = groupOwnerAddress.getHostAddress();
-                Log.d(TAG, "onGroupOwner: " + ownIpAddress);
-            }
-
-            @Override
-            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
-
-                groupOwnerAddr = groupOwnerAddress.getHostAddress();
-                ownIpAddress = address.getHostAddress();
-
-                Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
-                Log.d(TAG, "OWN IP address: " + ownIpAddress);
-
-                try {
-                    wifiServiceServer.stopListening();
-                } catch (IOException e) {
-                    listenerAodv.catchException(e);
+        try {
+            ConnectionListener connectionListener = new ConnectionListener() {
+                @Override
+                public void onConnectionStarted() {
+                    Log.d(TAG, "Connection Started");
                 }
-
-                _connect();
-
-            }
-        });
-        if (wifiAdHocManager.isEnabled()) {
-            this.label = label;
-            this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-            this.serverPort = serverPort;
-            this.mapAddressDevice = mapAddressDevice;
-            this.mapLabelMac = new HashMap<>();
-            this.mapIpNetwork = new Hashtable<>();
-            this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
                 @Override
-                public void getDeviceName(String name) {
-                    // Update ownName
-                    ownName = name;
-                    wifiAdHocManager.unregisterInitName();
+                public void onConnectionFailed(int reasonCode) {
+                    Log.d(TAG, "Connection Failed: " + reasonCode);
                 }
-            });
-            this.listenServer(nbThreads);
-        } else {
-            throw new DeviceException("Wifi is disabled");
+
+                @Override
+                public void onGroupOwner(InetAddress groupOwnerAddress) {
+                    ownIpAddress = groupOwnerAddress.getHostAddress();
+                    Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+                }
+
+                @Override
+                public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                    groupOwnerAddr = groupOwnerAddress.getHostAddress();
+                    ownIpAddress = address.getHostAddress();
+
+                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
+                    Log.d(TAG, "OWN IP address: " + ownIpAddress);
+
+                    try {
+                        wifiServiceServer.stopListening();
+                    } catch (IOException e) {
+                        listenerAodv.catchException(e);
+                    }
+
+                    _connect();
+
+                }
+            };
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
+            if (wifiAdHocManager.isEnabled()) {
+                this.label = label;
+                this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+                this.serverPort = serverPort;
+                this.mapAddressDevice = mapAddressDevice;
+                this.mapLabelMac = new HashMap<>();
+                this.mapIpNetwork = new Hashtable<>();
+                this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+
+                    @Override
+                    public void getDeviceName(String name) {
+                        // Update ownName
+                        ownName = name;
+                        wifiAdHocManager.unregisterInitName();
+                    }
+                });
+                this.listenServer(nbThreads);
+            } else {
+                wifiEnabled = false;
+            }
+        } catch (DeviceException e) {
+            wifiEnabled = false;
         }
     }
 
@@ -315,6 +320,11 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
     }
 
+    @Override
+    public boolean isEnabled() {
+        return wifiEnabled;
+    }
+
     private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject) {
         if (networkObject != null) {
             // Send CONNECT message to establish the pairing
@@ -358,11 +368,11 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     }
                 }
 
-                if(discoveryListener != null){
+                if (discoveryListener != null) {
                     listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                 }
 
-                finishDiscovery = true;
+                discoveryCompleted = true;
 
                 wifiAdHocManager.unregisterDiscovery();
             }
@@ -372,14 +382,6 @@ public class WrapperHybridWifi extends AbstractWrapper {
     public void updateName(String name) {
         wifiAdHocManager.updateName(name);
 
-    }
-
-    public boolean isFinishDiscovery() {
-        return finishDiscovery;
-    }
-
-    public void setFinishDiscovery(boolean finishDiscovery) {
-        this.finishDiscovery = finishDiscovery;
     }
 
     public void unregisterConnection() {

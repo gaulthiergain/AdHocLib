@@ -27,6 +27,7 @@ public abstract class AbstractWrapper {
 
     String ownMac;
     String ownName;
+    boolean discoveryCompleted;
     DataLinkHybridManager.ListenerDiscovery discoveryListener;
 
     AbstractWrapper(boolean v, Context context, ActiveConnections activeConnections,
@@ -34,26 +35,39 @@ public abstract class AbstractWrapper {
 
         this.v = v;
         this.context = context;
+        this.discoveryCompleted = false;
         this.listenerAodv = listenerAodv;
         this.activeConnections = activeConnections;
         this.listenerDataLinkAodv = listenerDataLinkAodv;
 
     }
 
-    abstract void listenServer(short nbThreadsWifi) throws IOException;
+    public abstract void listenServer(short nbThreadsWifi) throws IOException;
 
     public abstract void discovery();
 
     public abstract void connect(DiscoveredDevice device);
 
-    abstract void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+    public abstract void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException;
 
     public abstract void stopListening() throws IOException;
 
     public abstract void getPaired();
 
+    public abstract boolean isEnabled();
+
+    public boolean isDiscoveryCompleted() {
+        return discoveryCompleted;
+    }
+
+    public void resetDiscoveryFlag() {
+        this.discoveryCompleted = false;
+    }
+
     public void setDiscoveryListener(DataLinkHybridManager.ListenerDiscovery discoveryListener) {
         this.discoveryListener = discoveryListener;
     }
+
+    public abstract void unregisterConnection();
 }

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridBt;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridWifi;
@@ -17,18 +18,14 @@ import java.util.Map;
 
 public class DataLinkHybridManager {
 
-    private static final String TAG = "[AdHoc][DataLinkHybrid]";
-
-    private boolean wifiEnabled;
-    private boolean bluetoothEnabled;
+    private static final String TAG = "[AdHoc][DataLink]";
 
     private final boolean v;
-    private WrapperHybridBt wrapperBluetooth;
-    private WrapperHybridWifi wrapperWifi;
+    private final AbstractWrapper wrappers[];
     private final ActiveConnections activeConnections;
-
-
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
+
+    private short enabled;
     private ListenerAodv listenerAodv;
 
     public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
@@ -37,6 +34,7 @@ public class DataLinkHybridManager {
             throws IOException, DeviceException {
 
         this.v = verbose;
+        this.enabled = 0;
         this.listenerAodv = listenerAodv;
         this.activeConnections = new ActiveConnections();
         this.mapAddressDevice = new HashMap<>();
@@ -46,81 +44,80 @@ public class DataLinkHybridManager {
         listenerDataLinkAodv.getDeviceAddress(label);
         listenerDataLinkAodv.getDeviceName(label);
 
-        try {
-            wrapperWifi =
-                    new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
-                            activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
-            wifiEnabled = true;
-        } catch (DeviceException e) {
-            wifiEnabled = false;
+        this.wrappers = new AbstractWrapper[2];
+        this.wrappers[0] = new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
+                activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+        this.wrappers[1] = new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
+                activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+
+        // Check if data link communications are enabled (0 : all is disabled)
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                enabled++;
+            }
         }
 
-        try {
-            wrapperBluetooth =
-                    new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
-                            activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
-            //wrapperBluetooth.updateName(label);
-            bluetoothEnabled = true;
-        } catch (DeviceException e) {
-            bluetoothEnabled = false;
-        }
-
-        if (!bluetoothEnabled && !wifiEnabled) {
+        if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
     }
 
     public void discovery() throws DeviceException {
 
-        if (!bluetoothEnabled && !wifiEnabled) {
+        if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        if (bluetoothEnabled && wifiEnabled) {
-            wifiBtDiscovery();
+        if (enabled == wrappers.length) {
+            // Both data link communications are enabled
+            bothDiscovery();
         } else {
-            if (bluetoothEnabled) {
-                wrapperBluetooth.discovery();
-                wrapperBluetooth.setDiscoveryListener(new ListenerDiscovery() {
-                    @Override
-                    public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
-                        listenerAodv.onDiscoveryCompleted(mapAddressDevice);
-                    }
-                });
-
-            }
-
-            if (wifiEnabled) {
-                wrapperWifi.discovery();
-                wrapperWifi.setDiscoveryListener(new ListenerDiscovery() {
-                    @Override
-                    public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
-                        listenerAodv.onDiscoveryCompleted(mapAddressDevice);
-                    }
-                });
+            // Discovery one by one depending their status
+            for (AbstractWrapper wrapper : wrappers) {
+                if (wrapper.isEnabled()) {
+                    wrapper.discovery();
+                    wrapper.setDiscoveryListener(new ListenerDiscovery() {
+                        @Override
+                        public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                            listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                        }
+                    });
+                }
             }
         }
     }
 
-    private void wifiBtDiscovery() {
+    private void bothDiscovery() {
 
-        wrapperBluetooth.discovery();
-        wrapperWifi.discovery();
+        for (AbstractWrapper wrapper : wrappers) {
+            wrapper.discovery();
+        }
 
         new Thread(new Runnable() {
             @Override
             public void run() {
+                short finished = 0;
                 try {
+                    // Use pooling to check if the discovery is completed
                     while (true) {
                         Thread.sleep(1000);
-                        if (wrapperBluetooth.isFinishDiscovery() && wrapperWifi.isFinishDiscovery()) {
+
+                        for (AbstractWrapper wrapper : wrappers) {
+                            if (wrapper.isDiscoveryCompleted()) {
+                                finished++;
+                            }
+                        }
+
+                        if (finished == wrappers.length) {
                             listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                             break;
                         }
                     }
-                    wrapperWifi.setFinishDiscovery(false);
-                    wrapperBluetooth.setFinishDiscovery(false);
 
+                    // Reset flag to perform a new discovery
+                    for (AbstractWrapper wrapper : wrappers) {
+                        wrapper.resetDiscoveryFlag();
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -131,32 +128,33 @@ public class DataLinkHybridManager {
 
     public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
 
-        if (!bluetoothEnabled && !wifiEnabled) {
+        if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
-            if (entry.getValue().getType() == DiscoveredDevice.BLUETOOTH) {
-                wrapperBluetooth.connect(entry.getValue());
-            } else {
-                wrapperWifi.connect(entry.getValue());
+            switch (entry.getValue().getType()) {
+                case DiscoveredDevice.WIFI:
+                    wrappers[0].connect(entry.getValue());
+                    break;
+                case DiscoveredDevice.BLUETOOTH:
+                    wrappers[1].connect(entry.getValue());
+                    break;
             }
         }
     }
 
     public void stopListening() throws IOException, DeviceException {
 
-        if (!bluetoothEnabled && !wifiEnabled) {
+        if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        if (wifiEnabled) {
-            wrapperWifi.stopListening();
-            wrapperWifi.unregisterConnection();
-        }
-
-        if (bluetoothEnabled) {
-            wrapperBluetooth.stopListening();
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.stopListening();
+                wrapper.unregisterConnection();
+            }
         }
     }
 
@@ -189,7 +187,11 @@ public class DataLinkHybridManager {
     }
 
     public void getPaired() {
-        wrapperBluetooth.getPaired();
+        wrappers[1].getPaired();
+    }
+
+    public void disconnect() {
+        //TODO implement
     }
 
     public interface ListenerDiscovery {

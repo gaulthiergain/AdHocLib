@@ -814,4 +814,8 @@ public class AodvManager {
     public void discovery() throws DeviceException {
         dataLink.discovery();
     }
+
+    public void disconnect(){
+        dataLink.disconnect();
+    }
 }

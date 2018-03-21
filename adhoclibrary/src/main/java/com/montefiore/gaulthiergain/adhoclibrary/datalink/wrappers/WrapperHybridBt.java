@@ -35,6 +35,8 @@ import java.util.UUID;
 
 public class WrapperHybridBt extends AbstractWrapper {
 
+    private boolean bluetoothEnabled;
+
     private UUID ownUUID;
     private String ownMac;
     private boolean secure;
@@ -43,29 +45,34 @@ public class WrapperHybridBt extends AbstractWrapper {
     private BluetoothServiceServer bluetoothServiceServer;
     private HashMap<String, BluetoothAdHocDevice> hashMapDevices;
 
-    private static final String TAG = "[AdHoc][WrapperBtHy]";
+    private static final String TAG = "[AdHoc][WrapperBt]";
     private HashMap<String, String> mapLabelUuid;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
     private HashMap<String, NetworkObject> hashmapUuidNetwork;
-    private boolean finishDiscovery = false;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads,
                            String ownAddress, ActiveConnections activeConnections,
                            HashMap<String, DiscoveredDevice> mapAddressDevice,
-                           ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
-            throws DeviceException, IOException {
+                           ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) throws IOException {
 
         super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
 
-        this.bluetoothManager = new BluetoothManager(v, context);
+        try {
+            this.bluetoothManager = new BluetoothManager(v, context);
+        } catch (DeviceException e) {
+            bluetoothEnabled = false;
+        }
         if (bluetoothManager.isEnabled()) {
+
+            this.bluetoothEnabled = true;
+
             this.secure = secure;
             this.hashMapDevices = new HashMap<>();
             this.ownMac = BluetoothUtil.getCurrentMac(context);
 
             this.ownAddress = ownAddress;
             this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
-            this.ownName = BluetoothUtil.getCurrentName(); // todo update with label if necessary
+            this.ownName = BluetoothUtil.getCurrentName();
 
             this.mapLabelUuid = new HashMap<>();
             this.mapAddressDevice = mapAddressDevice;
@@ -73,9 +80,17 @@ public class WrapperHybridBt extends AbstractWrapper {
 
             this.listenServer(nbThreads);
         } else {
-            throw new DeviceException("Bluetooth is disabled");
+            bluetoothEnabled = false;
         }
+    }
 
+    public boolean isEnabled() {
+        return bluetoothEnabled;
+    }
+
+    @Override
+    public void unregisterConnection() {
+        // not used
     }
 
     public void connect(DiscoveredDevice device) {
@@ -315,11 +330,11 @@ public class WrapperHybridBt extends AbstractWrapper {
                     }
                 }
 
-                if(discoveryListener != null){
+                if (discoveryListener != null) {
                     listenerAodv.onDiscoveryCompleted(mapAddressDevice);
                 }
 
-                finishDiscovery = true;
+                discoveryCompleted = true;
 
                 // Stop and unregister to the discovery process
                 bluetoothManager.unregisterDiscovery();
@@ -347,13 +362,5 @@ public class WrapperHybridBt extends AbstractWrapper {
      */
     public void updateName(String name) {
         bluetoothManager.updateDeviceName(name);
-    }
-
-    public boolean isFinishDiscovery() {
-        return finishDiscovery;
-    }
-
-    public void setFinishDiscovery(boolean finishDiscovery) {
-        this.finishDiscovery = finishDiscovery;
     }
 }
