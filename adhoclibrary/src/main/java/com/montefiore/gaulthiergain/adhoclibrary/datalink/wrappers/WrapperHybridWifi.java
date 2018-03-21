@@ -45,7 +45,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
     private HashMap<String, String> mapLabelMac;
     private Hashtable<String, NetworkManager> mapIpNetwork;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
-    private HashMap<String, RemoteConnection> mapLabelRemoteConnection;
+    private HashMap<String, String> mapLabelRemoteDeviceName;
 
     private WifiAdHocManager wifiAdHocManager;
 
@@ -104,7 +104,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 this.mapAddressDevice = mapAddressDevice;
                 this.mapLabelMac = new HashMap<>();
                 this.mapIpNetwork = new Hashtable<>();
-                this.mapLabelRemoteConnection = new HashMap<>();
+                this.mapLabelRemoteDeviceName = new HashMap<>();
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
                     @Override
@@ -159,12 +159,14 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
                 try {
                     remoteDevice.setDeviceAddress(remoteLabel);
+                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
+                    activeConnections.getActivesConnections().remove(remoteLabel);
                     listenerDataLinkAodv.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(mapLabelRemoteConnection.get(remoteLabel));
+                listenerAodv.onConnectionClosed(remoteDevice);
             }
 
             @Override
@@ -190,12 +192,14 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
                 try {
                     remoteDevice.setDeviceAddress(remoteLabel);
+                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
+                    activeConnections.getActivesConnections().remove(remoteLabel);
                     listenerDataLinkAodv.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(mapLabelRemoteConnection.get(remoteLabel));
+                listenerAodv.onConnectionClosed(remoteDevice);
             }
 
             @Override
@@ -305,7 +309,8 @@ public class WrapperHybridWifi extends AbstractWrapper {
                             message.getHeader().getSenderName());
 
                     // Add mapping label - remoteConnection
-                    mapLabelRemoteConnection.put(remoteConnection.getDeviceAddress(), remoteConnection);
+                    mapLabelRemoteDeviceName.put(remoteConnection.getDeviceAddress(),
+                            remoteConnection.getDeviceName());
 
                     // Callback connection
                     listenerAodv.onConnection(remoteConnection);
@@ -344,7 +349,8 @@ public class WrapperHybridWifi extends AbstractWrapper {
                         message.getHeader().getSenderName());
 
                 // Add mapping label - remoteConnection
-                mapLabelRemoteConnection.put(remoteConnection.getDeviceAddress(), remoteConnection);
+                mapLabelRemoteDeviceName.put(remoteConnection.getDeviceAddress(),
+                        remoteConnection.getDeviceName());
 
                 // Callback connection
                 listenerAodv.onConnection(remoteConnection);

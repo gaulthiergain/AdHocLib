@@ -143,6 +143,7 @@ public class WrapperHybridBt extends AbstractWrapper {
 
                 try {
                     listenerDataLinkAodv.brokenLink(remoteLabel);
+                    activeConnections.getActivesConnections().remove(remoteLabel);
                 } catch (IOException e) {
                     listenerAodv.catchException(e);
                 } catch (NoConnectionException e) {
@@ -202,6 +203,7 @@ public class WrapperHybridBt extends AbstractWrapper {
 
                         try {
                             listenerDataLinkAodv.brokenLink(remoteLabel);
+                            activeConnections.getActivesConnections().remove(remoteLabel);
                         } catch (IOException e) {
                             listenerAodv.catchException(e);
                         } catch (NoConnectionException e) {

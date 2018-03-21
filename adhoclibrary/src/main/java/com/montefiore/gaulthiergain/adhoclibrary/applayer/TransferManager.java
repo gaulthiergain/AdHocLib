@@ -116,4 +116,8 @@ public class TransferManager {
     public void discovery() throws DeviceException {
         aodvManager.discovery();
     }
+
+    public String getOwnAddress() {
+        return config.getLabel();
+    }
 }

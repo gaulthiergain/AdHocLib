@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.network;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.BufferedReader;
@@ -45,11 +46,16 @@ public class NetworkManager {
         Log.d(TAG, "Send message: " + msg);
     }
 
-    public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException, NullPointerException {
+    public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(ois));
-        MessageAdHoc msg = mapper.readValue(in.readLine(), MessageAdHoc.class);
-        Log.d(TAG, "Received message: " + msg);
+        MessageAdHoc msg;
+        try {
+            msg = mapper.readValue(in.readLine(), MessageAdHoc.class);
+            Log.d(TAG, "Received message: " + msg);
+        } catch (NullPointerException e) {
+            throw new IOException("Closed remote socket");
+        }
 
         return msg;
     }
