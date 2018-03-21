@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
@@ -89,26 +90,19 @@ public class AodvManager {
     /**
      * Constructor wifi
      *
-     * @param verbose       a boolean value to set the debug/verbose mode.
-     * @param context       a Context object which gives global information about an application
-     *                      environment.
-     * @param nbThreadsWifi an integer value which represents the number of listening threads wifi.
-     * @param serverPort    an integer value which represents the server port.
-     * @param secure        a boolean
-     * @param nbThreadsBt   an integer value which represents the number of listening bluetooth
-     *                      threads.
-     * @param listenerAodv  a ListenerAodv object which serves as callback functions.
+     * @param verbose      a boolean value to set the debug/verbose mode.
+     * @param context      a Context object which gives global information about an application
+     *                     environment.
+     * @param config       a Config object which contains specific configurations.
+     * @param listenerAodv a ListenerAodv object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      * @throws IOException     Signals that an I/O exception of some sort has occurred.
      */
-    public AodvManager(boolean verbose, Context context, short nbThreadsWifi, int serverPort,
-                       boolean secure, short nbThreadsBt,
-                       ListenerAodv listenerAodv)
+    public AodvManager(boolean verbose, Context context, Config config, ListenerAodv listenerAodv)
             throws DeviceException, IOException {
 
         this(verbose, listenerAodv);
-        dataLink = new DataLinkHybridManager(verbose, context, nbThreadsWifi, serverPort,
-                secure, nbThreadsBt, listenerAodv, listenerDataLink);
+        dataLink = new DataLinkHybridManager(verbose, context, config, listenerAodv, listenerDataLink);
     }
 
     /**
@@ -815,7 +809,7 @@ public class AodvManager {
         dataLink.discovery();
     }
 
-    public void disconnect(){
+    public void disconnect() {
         dataLink.disconnect();
     }
 }

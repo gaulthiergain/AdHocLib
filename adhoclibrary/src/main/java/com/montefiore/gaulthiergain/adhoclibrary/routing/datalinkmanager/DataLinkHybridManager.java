@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -28,8 +29,7 @@ public class DataLinkHybridManager {
     private short enabled;
     private ListenerAodv listenerAodv;
 
-    public DataLinkHybridManager(boolean verbose, Context context, short nbThreadsWifi,
-                                 int serverPort, boolean secure, short nbThreadsBt,
+    public DataLinkHybridManager(boolean verbose, Context context, Config config,
                                  ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
             throws IOException, DeviceException {
 
@@ -45,9 +45,9 @@ public class DataLinkHybridManager {
         listenerDataLinkAodv.getDeviceName(label);
 
         this.wrappers = new AbstractWrapper[2];
-        this.wrappers[0] = new WrapperHybridWifi(v, context, nbThreadsWifi, serverPort, label,
+        this.wrappers[0] = new WrapperHybridWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
                 activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
-        this.wrappers[1] = new WrapperHybridBt(v, context, secure, nbThreadsBt, label,
+        this.wrappers[1] = new WrapperHybridBt(v, context, config.getSecure(), config.getNbThreadBt(), label,
                 activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
         // Check if data link communications are enabled (0 : all is disabled)

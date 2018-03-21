@@ -12,28 +12,20 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.util.HashMap;
 
-
 public class TransferManager {
 
     private final boolean v;
     private final Context context;
 
+    private Config config;
     private AodvManager aodvManager;
-
-    private boolean secure;
-    private int serverPort;
-    private short nbThreadBt;
-    private short nbThreadWifi;
     private ListenerAodv listenerAodv;
 
-
-    public TransferManager(boolean verbose, Context context, final ListenerApp listenerApp) {
+    private TransferManager(boolean verbose, Context context, final ListenerApp listenerApp,
+                            Config config){
         this.v = verbose;
         this.context = context;
-        this.secure = true;
-        this.serverPort = 52000;
-        this.nbThreadBt = 7;
-        this.nbThreadWifi = 10;
+        this.config = config;
         this.listenerAodv = new ListenerAodv() {
             @Override
             public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
@@ -78,7 +70,9 @@ public class TransferManager {
             @Override
             public void catchException(Exception e) {
                 e.printStackTrace();
-                listenerApp.catchException(e);
+                if(!(e instanceof IOException)){
+                    listenerApp.catchException(e);
+                }
             }
 
             @Override
@@ -93,9 +87,18 @@ public class TransferManager {
         };
     }
 
+
+    public TransferManager(boolean verbose, Context context, final ListenerApp listenerApp) {
+        this(verbose, context, listenerApp, new Config(true, 52000, (short) 7, (short) 10));
+    }
+
+    public TransferManager(boolean verbose, Context context, Config config,
+                           final ListenerApp listenerApp) {
+        this(verbose, context, listenerApp, config);
+    }
+
     public void start() throws DeviceException, IOException {
-        this.aodvManager = new AodvManager(v, context, nbThreadWifi, serverPort, secure, nbThreadBt,
-                listenerAodv);
+        this.aodvManager = new AodvManager(v, context, config, listenerAodv);
     }
 
     public void stopListening() throws IOException, DeviceException {
