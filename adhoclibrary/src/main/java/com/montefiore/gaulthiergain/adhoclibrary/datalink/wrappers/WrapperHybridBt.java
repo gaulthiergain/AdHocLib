@@ -10,8 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothMan
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -261,7 +260,7 @@ public class WrapperHybridBt extends AbstractWrapper {
                             message.getHeader().getSenderAddr());
 
                     // callback connection
-                    listenerAodv.onConnection(new RemoteBtConnection(message.getHeader().getSenderAddr(),
+                    listenerAodv.onConnection(new RemoteConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName()));
                 }
                 break;
@@ -279,7 +278,7 @@ public class WrapperHybridBt extends AbstractWrapper {
                             message.getHeader().getSenderAddr());
 
                     // callback connection
-                    listenerAodv.onConnection(new RemoteBtConnection(message.getHeader().getSenderAddr(),
+                    listenerAodv.onConnection(new RemoteConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName()));
                 }
                 break;

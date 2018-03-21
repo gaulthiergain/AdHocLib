@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -45,8 +45,10 @@ public class WrapperHybridWifi extends AbstractWrapper {
     private HashMap<String, String> mapLabelMac;
     private Hashtable<String, NetworkManager> mapIpNetwork;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
+    private HashMap<String, RemoteConnection> mapLabelRemoteConnection;
 
     private WifiAdHocManager wifiAdHocManager;
+
 
     public WrapperHybridWifi(boolean v, Context context, short nbThreads, int serverPort,
                              String label, ActiveConnections activeConnections,
@@ -102,6 +104,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 this.mapAddressDevice = mapAddressDevice;
                 this.mapLabelMac = new HashMap<>();
                 this.mapIpNetwork = new Hashtable<>();
+                this.mapLabelRemoteConnection = new HashMap<>();
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
                     @Override
@@ -161,7 +164,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     listenerAodv.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(remoteDevice);
+                listenerAodv.onConnectionClosed(mapLabelRemoteConnection.get(remoteLabel));
             }
 
             @Override
@@ -192,7 +195,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     listenerAodv.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(remoteDevice);
+                listenerAodv.onConnectionClosed(mapLabelRemoteConnection.get(remoteLabel));
             }
 
             @Override
@@ -298,9 +301,14 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     mapLabelMac.put(networkManagerServer.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
-                    // callback connection
-                    listenerAodv.onConnection(new RemoteConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName()));
+                    RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName());
+
+                    // Add mapping label - remoteConnection
+                    mapLabelRemoteConnection.put(remoteConnection.getDeviceAddress(), remoteConnection);
+
+                    // Callback connection
+                    listenerAodv.onConnection(remoteConnection);
                 }
 
                 break;
@@ -332,9 +340,14 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 networkManager.sendMessage(new MessageAdHoc(
                         new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
 
-                // callback connection
-                listenerAodv.onConnection(new RemoteConnection(message.getHeader().getSenderAddr(),
-                        message.getHeader().getSenderName()));
+                RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
+                        message.getHeader().getSenderName());
+
+                // Add mapping label - remoteConnection
+                mapLabelRemoteConnection.put(remoteConnection.getDeviceAddress(), remoteConnection);
+
+                // Callback connection
+                listenerAodv.onConnection(remoteConnection);
 
             } catch (IOException e) {
                 listenerAodv.catchException(e);

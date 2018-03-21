@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 /**

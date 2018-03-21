@@ -6,8 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
@@ -154,7 +153,7 @@ public class ThreadServer extends Thread {
 
             } catch (SocketException e) {
                 break;
-            } catch (IOException e){
+            } catch (IOException e) {
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
                 break;
             }
@@ -180,7 +179,7 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteBtConnection(
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteConnection(
                             socket.getRemoteDevice().getAddress(),
                             socket.getRemoteDevice().getName())).sendToTarget();
                 } else {

@@ -6,8 +6,6 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -83,7 +81,7 @@ class ListenServiceThread extends Thread {
             BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
             // Notify handler and set remote device address and name
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
+                    new RemoteConnection(socket.getRemoteDevice().getAddress(),
                             socket.getRemoteDevice().getName())).sendToTarget();
         }
 

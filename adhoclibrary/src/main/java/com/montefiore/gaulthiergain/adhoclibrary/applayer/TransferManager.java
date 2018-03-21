@@ -2,7 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import android.content.Context;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;

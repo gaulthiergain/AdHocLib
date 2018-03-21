@@ -1,9 +1,9 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.connection;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 public class RemoteConnection {
 
-    String deviceAddress;
-    String deviceName;
+    private String deviceAddress;
+    private String deviceName;
 
     public RemoteConnection(String deviceAddress) {
         this.deviceAddress = deviceAddress;

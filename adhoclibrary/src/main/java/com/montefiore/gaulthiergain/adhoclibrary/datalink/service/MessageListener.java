@@ -1,7 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteConnection;
-
 /**
  * <p>This interface allows to define callback functions for messages and connection handling.</p>
  *
