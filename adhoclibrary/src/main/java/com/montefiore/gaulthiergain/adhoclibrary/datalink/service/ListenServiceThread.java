@@ -54,26 +54,7 @@ class ListenServiceThread extends Thread {
                 handler.obtainMessage(Service.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
                 if (network.getISocket() != null) {
-
-                    if (network.getISocket() instanceof AdHocSocketWifi) {
-                        // Notify handler and set remote device address
-                        handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
-                                .sendToTarget();
-                    } else {
-                        // Get Socket
-                        BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
-                        // Notify handler and set remote device address and name
-                        handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
-                                        socket.getRemoteDevice().getName())).sendToTarget();
-                    }
-
-                    try {
-                        network.closeConnection();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    processDisconnect();
                 }
                 break;
             } catch (ClassNotFoundException e) {
@@ -88,6 +69,28 @@ class ListenServiceThread extends Thread {
     void cancel() throws IOException {
         if (network.getISocket() != null) {
             network.closeConnection();
+        }
+    }
+
+    private void processDisconnect() {
+        if (network.getISocket() instanceof AdHocSocketWifi) {
+            // Notify handler and set remote device address
+            handler.obtainMessage(Service.CONNECTION_ABORTED,
+                    new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
+                    .sendToTarget();
+        } else {
+            // Get Socket
+            BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
+            // Notify handler and set remote device address and name
+            handler.obtainMessage(Service.CONNECTION_ABORTED,
+                    new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
+                            socket.getRemoteDevice().getName())).sendToTarget();
+        }
+
+        try {
+            network.closeConnection();
+        } catch (IOException e) {
+            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
         }
     }
 }
