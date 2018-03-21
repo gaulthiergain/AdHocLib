@@ -67,6 +67,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 @Override
                 public void onConnectionFailed(int reasonCode) {
                     Log.d(TAG, "Connection Failed: " + reasonCode);
+                    wifiAdHocManager.leaveWifiP2PGroup();
                 }
 
                 @Override
@@ -91,7 +92,6 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     }
 
                     _connect();
-
                 }
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);

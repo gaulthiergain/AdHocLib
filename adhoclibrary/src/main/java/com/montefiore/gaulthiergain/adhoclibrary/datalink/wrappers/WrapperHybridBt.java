@@ -13,7 +13,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
@@ -163,13 +162,8 @@ public class WrapperHybridBt extends AbstractWrapper {
         });
 
         // Start the bluetoothServiceServer listening process
-        try {
-            bluetoothServiceServer.listen(nbThreads, secure, "secure",
-                    BluetoothAdapter.getDefaultAdapter(), ownUUID);
-        } catch (MaxThreadReachedException e) {
-            listenerAodv.catchException(e);
-        }
-
+        bluetoothServiceServer.listen(nbThreads, secure, "secure",
+                BluetoothAdapter.getDefaultAdapter(), ownUUID);
     }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {

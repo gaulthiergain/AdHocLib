@@ -2,6 +2,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.BadServerPortException;
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
@@ -89,7 +91,7 @@ public class TransferManager {
 
 
     public TransferManager(boolean verbose, Context context, final ListenerApp listenerApp) {
-        this(verbose, context, listenerApp, new Config(true, 52000, (short) 7, (short) 10));
+        this(verbose, context, listenerApp, new Config());
     }
 
     public TransferManager(boolean verbose, Context context, Config config,
