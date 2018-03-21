@@ -108,11 +108,11 @@ public class AodvManager {
     /**
      * Method allowing to send a message to a remote address.
      *
-     * @param pdu     a Serializable value which represents the PDU of the message.
+     * @param pdu     an Object value which represents the PDU of the message.
      * @param address a String value which represents the destination address.
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
-    public void sendMessageTo(Serializable pdu, String address) throws IOException {
+    public void sendMessageTo(Object pdu, String address) throws IOException {
 
         // Create MessageAdHoc object
         Header header = new Header(TypeAodv.DATA.getCode(), ownAddress, ownName);
