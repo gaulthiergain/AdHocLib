@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -65,7 +65,7 @@ public abstract class ServiceServer extends Service {
             throws NoConnectionException, IOException {
 
         // Get remote connection
-        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkManager> hashMap = threadListen.getActiveConnexion();
 
         if (hashMap.size() == 0) {
             // If no remote device, return false
@@ -73,9 +73,9 @@ public abstract class ServiceServer extends Service {
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
+        for (Map.Entry<String, NetworkManager> pairs : hashMap.entrySet()) {
             if (!pairs.getKey().equals(address)) {
-                pairs.getValue().sendObjectStream(message);
+                pairs.getValue().sendMessage(message);
                 if (v) Log.d(TAG, "Send " + message + " to " + pairs.getKey());
             }
         }
@@ -94,15 +94,15 @@ public abstract class ServiceServer extends Service {
     private boolean _sendtoAll(MessageAdHoc message) throws IOException, NoConnectionException {
 
         // Get remote connection
-        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkManager> hashMap = threadListen.getActiveConnexion();
         if (hashMap.size() == 0) {
             // If no remote device, return false
             return false;
         }
 
         // Send message to all connected devices
-        for (Map.Entry<String, NetworkObject> pairs : hashMap.entrySet()) {
-            pairs.getValue().sendObjectStream(message);
+        for (Map.Entry<String, NetworkManager> pairs : hashMap.entrySet()) {
+            pairs.getValue().sendMessage(message);
             if (v) Log.d(TAG, "Send " + message + " to " + pairs.getKey());
         }
 
@@ -121,15 +121,15 @@ public abstract class ServiceServer extends Service {
         if (v) Log.d(TAG, "sendTo()");
 
         // Get remote connection
-        ConcurrentHashMap<String, NetworkObject> hashMap = threadListen.getActiveConnexion();
+        ConcurrentHashMap<String, NetworkManager> hashMap = threadListen.getActiveConnexion();
 
         // Get associated socket
-        NetworkObject network = hashMap.get(address);
+        NetworkManager network = hashMap.get(address);
         if (network == null) {
             throw new NoConnectionException("No remote connexion with " + address);
         } else {
             // Send message to connected device
-            network.sendObjectStream(message);
+            network.sendMessage(message);
             if (v)
                 Log.d(TAG, "Send " + message + " to " + address);
 

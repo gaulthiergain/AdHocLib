@@ -1,8 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,7 +19,7 @@ public class ListSocketDevice {
 
     private ArrayList<ISocket> listISockets;
     // Mapping between the remote address and a networkObject (a socket).
-    private ConcurrentHashMap<String, NetworkObject> hashMapNetwork;
+    private ConcurrentHashMap<String, NetworkManager> hashMapNetwork;
 
     /**
      * Constructor
@@ -48,13 +49,13 @@ public class ListSocketDevice {
      *
      * @param isocket a ISocket object which represents a socket between the server and the client.
      */
-    synchronized void addSocketClient(ISocket isocket) {
+    synchronized void addSocketClient(ISocket isocket) throws IOException {
 
         /* Add the ISocket object into hashMapNetwork to get a mapping between the remote address
         and a networkObject (respectively a socket). */
         String key = isocket.getRemoteSocketAddress();
         if (!hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.put(key, new NetworkObject(isocket));
+            hashMapNetwork.put(key, new NetworkManager(isocket));
         }
 
         listISockets.add(isocket);
@@ -64,16 +65,16 @@ public class ListSocketDevice {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkObject> which maps a remote device with a
-     * NetworkObject (socket).
+     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
+     * NetworkManager (socket).
      */
-    synchronized ConcurrentHashMap<String, NetworkObject> getActiveConnection() {
+    synchronized ConcurrentHashMap<String, NetworkManager> getActiveConnection() {
         return hashMapNetwork;
     }
 
     /**
      * Method allowing to remove an active connection (a socket) from the
-     * ConcurrentHashMap<String, NetworkObject>.
+     * ConcurrentHashMap<String, NetworkManager>.
      *
      * @param isocket a ISocket object which represents a socket between the server and the client.
      */

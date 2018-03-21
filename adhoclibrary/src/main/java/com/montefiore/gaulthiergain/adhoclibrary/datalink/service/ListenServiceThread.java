@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -21,7 +21,7 @@ import java.io.IOException;
 class ListenServiceThread extends Thread {
     private static final String TAG = "[AdHoc][ListenService]";
     private final boolean v;
-    private final NetworkObject network;
+    private final NetworkManager network;
     private final Handler handler;
 
     /**
@@ -30,7 +30,7 @@ class ListenServiceThread extends Thread {
      * @param handler a Handler object which allows to send and process {@link android.os.Message}
      *                and Runnable objects associated with a thread's.
      */
-    ListenServiceThread(boolean verbose, NetworkObject network, Handler handler) {
+    ListenServiceThread(boolean verbose, NetworkManager network, Handler handler) {
         this.v = verbose;
         this.network = network;
         this.handler = handler;
@@ -49,7 +49,7 @@ class ListenServiceThread extends Thread {
                 if (v) Log.d(TAG, "Waiting response from server ...");
 
                 // Get response MessageAdHoc
-                message = network.receiveObjectStream();
+                message = network.receiveMessage();
                 if (v) Log.d(TAG, "Response: " + message);
                 handler.obtainMessage(Service.MESSAGE_READ, message).sendToTarget();
             } catch (IOException e) {
@@ -69,7 +69,11 @@ class ListenServiceThread extends Thread {
                                         socket.getRemoteDevice().getName())).sendToTarget();
                     }
 
-                    network.closeConnection();
+                    try {
+                        network.closeConnection();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                 }
                 break;
             } catch (ClassNotFoundException e) {
@@ -81,7 +85,7 @@ class ListenServiceThread extends Thread {
     /**
      * Method allowing to close the remote connection.
      */
-    void cancel() {
+    void cancel() throws IOException {
         if (network.getISocket() != null) {
             network.closeConnection();
         }

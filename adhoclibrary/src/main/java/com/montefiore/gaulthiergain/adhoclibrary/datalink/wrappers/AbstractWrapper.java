@@ -46,6 +46,8 @@ public abstract class AbstractWrapper {
 
     public abstract void discovery();
 
+    public abstract void disconnect();
+
     public abstract void connect(DiscoveredDevice device);
 
     public abstract void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,

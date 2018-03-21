@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ActiveConnections {
     private static final String TAG = "[AdHoc][AutoConActives]";
 
-    private ConcurrentHashMap<String, NetworkObject> activesConnections;
+    private ConcurrentHashMap<String, NetworkManager> activesConnections;
 
     /**
      * Constructor
@@ -27,13 +27,13 @@ public class ActiveConnections {
      * Method allowing to add a connection into the activesConnections hashmap.
      *
      * @param key           a String value which represents the address of a remote device.
-     * @param networkObject a NetworkObject object which represents the state of the connection.
+     * @param networkManager a NetworkManager object which represents the state of the connection.
      * @return a boolean value which is true if the pair (key, network) has been successfully added
      * to the hashmap.
      */
-    public boolean addConnection(String key, NetworkObject networkObject) {
+    public boolean addConnection(String key, NetworkManager networkManager) {
         if (!activesConnections.containsKey(key)) {
-            activesConnections.put(key, networkObject);
+            activesConnections.put(key, networkManager);
             return true;
         }
 
@@ -43,10 +43,10 @@ public class ActiveConnections {
     /**
      * Method allowing to get the active connections.
      *
-     * @return a ConcurrentHashMap(String, NetworkObject) object which maps the remote node name to
-     * a NetworkObject object.
+     * @return a ConcurrentHashMap(String, NetworkManager) object which maps the remote node name to
+     * a NetworkManager object.
      */
-    public ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
+    public ConcurrentHashMap<String, NetworkManager> getActivesConnections() {
         return activesConnections;
     }
 

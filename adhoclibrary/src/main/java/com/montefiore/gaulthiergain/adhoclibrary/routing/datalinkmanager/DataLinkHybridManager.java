@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridBt;
@@ -159,8 +159,8 @@ public class DataLinkHybridManager {
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
-        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
-        networkObject.sendObjectStream(message);
+        NetworkManager networkManager = activeConnections.getActivesConnections().get(address);
+        networkManager.sendMessage(message);
         if (v) Log.d(TAG, "Send directly to " + address);
     }
 
@@ -169,9 +169,9 @@ public class DataLinkHybridManager {
     }
 
     public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+        for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
             if (!entry.getKey().equals(originateAddr)) {
-                entry.getValue().sendObjectStream(message);
+                entry.getValue().sendMessage(message);
                 if (v)
                     Log.d(TAG, "Broadcast Message to " + entry.getKey());
             }
@@ -179,8 +179,8 @@ public class DataLinkHybridManager {
     }
 
     public void broadcast(MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
-            entry.getValue().sendObjectStream(message);
+        for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
+            entry.getValue().sendMessage(message);
             if (v)
                 Log.d(TAG, "Broadcast Message to " + entry.getKey());
         }

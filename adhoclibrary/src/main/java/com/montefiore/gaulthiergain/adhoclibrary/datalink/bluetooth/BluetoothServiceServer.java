@@ -5,7 +5,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
@@ -78,10 +78,10 @@ public class BluetoothServiceServer extends ServiceServer {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkObject> which maps a remote device with a
-     * NetworkObject (socket).
+     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
+     * NetworkManager (socket).
      */
-    public ConcurrentHashMap<String, NetworkObject> getActiveConnections() {
+    public ConcurrentHashMap<String, NetworkManager> getActiveConnections() {
         return threadListen.getActiveConnexion();
     }
 }

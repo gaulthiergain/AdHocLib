@@ -8,7 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.AbstractRem
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
@@ -44,7 +44,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
     private WifiServiceServer wifiServiceServer;
 
     private HashMap<String, String> mapLabelMac;
-    private Hashtable<String, NetworkObject> mapIpNetwork;
+    private Hashtable<String, NetworkManager> mapIpNetwork;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     private WifiAdHocManager wifiAdHocManager;
@@ -228,7 +228,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
         wifiServiceClient.setListenerAutoConnect(new WifiServiceClient.ListenerAutoConnect() {
             @Override
-            public void connected(String remoteAddress, NetworkObject network) throws IOException,
+            public void connected(String remoteAddress, NetworkManager network) throws IOException,
                     NoConnectionException {
 
                 // Add mapping MAC - network
@@ -257,16 +257,16 @@ public class WrapperHybridWifi extends AbstractWrapper {
         switch (message.getHeader().getType()) {
             case "CONNECT_SERVER":
 
-                final NetworkObject networkObject = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
-                if (networkObject != null) {
+                final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
+                if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObject);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManager);
 
-                    Log.d(TAG, "Add couple: " + networkObject.getISocket().getRemoteSocketAddress()
+                    Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelMac.put(networkObject.getISocket().getRemoteSocketAddress(),
+                    mapLabelMac.put(networkManager.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                 }
@@ -278,24 +278,24 @@ public class WrapperHybridWifi extends AbstractWrapper {
                             Log.d(TAG, ">>>> GO: " + address);
                             ownIpAddress = address;
                             wifiAdHocManager.unregisterGroupOwner();
-                            sendConnectClient(message, networkObject);
+                            sendConnectClient(message, networkManager);
                         }
                     });
                 } else {
-                    sendConnectClient(message, networkObject);
+                    sendConnectClient(message, networkManager);
                 }
                 break;
             case "CONNECT_CLIENT":
-                NetworkObject networkObjectServer = mapIpNetwork.get(message.getPdu().toString());
-                if (networkObjectServer != null) {
+                NetworkManager networkManagerServer = mapIpNetwork.get(message.getPdu().toString());
+                if (networkManagerServer != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerServer);
 
-                    Log.d(TAG, "Add couple: " + networkObjectServer.getISocket().getRemoteSocketAddress()
+                    Log.d(TAG, "Add couple: " + networkManagerServer.getISocket().getRemoteSocketAddress()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelMac.put(networkObjectServer.getISocket().getRemoteSocketAddress(),
+                    mapLabelMac.put(networkManagerServer.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                     // callback connection
@@ -325,11 +325,11 @@ public class WrapperHybridWifi extends AbstractWrapper {
         return wifiEnabled;
     }
 
-    private void sendConnectClient(MessageAdHoc message, NetworkObject networkObject) {
-        if (networkObject != null) {
+    private void sendConnectClient(MessageAdHoc message, NetworkManager networkManager) {
+        if (networkManager != null) {
             // Send CONNECT message to establish the pairing
             try {
-                networkObject.sendObjectStream(new MessageAdHoc(
+                networkManager.sendMessage(new MessageAdHoc(
                         new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
 
                 // callback connection
@@ -377,6 +377,11 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 wifiAdHocManager.unregisterDiscovery();
             }
         });
+    }
+
+    @Override
+    public void disconnect() {
+        //todo add client into list and disconnect it
     }
 
     public void updateName(String name) {

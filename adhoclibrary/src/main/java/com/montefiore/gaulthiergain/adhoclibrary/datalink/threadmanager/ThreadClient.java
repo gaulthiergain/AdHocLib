@@ -6,7 +6,7 @@ import android.os.Handler;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -16,12 +16,10 @@ import java.io.IOException;
 
 class ThreadClient extends Thread {
 
-    private static final String TAG = "[AdHoc][ThreadClient]";
-
     private final ListSocketDevice listSocketDevice;
     private final String name;
     private final Handler handler;
-    private NetworkObject network = null;
+    private NetworkManager network = null;
 
     ThreadClient(ListSocketDevice listSocketDevice, String name, Handler handler) {
         this.listSocketDevice = listSocketDevice;
@@ -36,7 +34,7 @@ class ThreadClient extends Thread {
                 socketDevice = listSocketDevice.getSocketDevice();
                 network = listSocketDevice.getActiveConnection().get(socketDevice.getRemoteSocketAddress());
                 while (true) {
-                    processRequest((MessageAdHoc) network.receiveObjectStream());
+                    processRequest(network.receiveMessage());
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -48,33 +46,40 @@ class ThreadClient extends Thread {
                 handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
             } finally {
                 if (network != null) {
-                    if (socketDevice instanceof AdHocSocketWifi) {
-                        // Notify handler
-                        handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
-                                .sendToTarget();
-                    } else {
-                        // Get Socket
-                        BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
-                        // Notify handler
-                        handler.obtainMessage(Service.CONNECTION_ABORTED,
-                                new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
-                                        socket.getRemoteDevice().getName())).sendToTarget();
-                    }
-
-                    // Remove client from hashmap
-                    listSocketDevice.removeActiveConnexion(socketDevice);
-
-                    // Close network
-                    network.closeConnection();
+                    processDisconnect(socketDevice);
                 }
-
             }
         }
     }
 
     private void processRequest(MessageAdHoc request) throws IOException {
         handler.obtainMessage(Service.MESSAGE_READ, request).sendToTarget();
+    }
+
+    private void processDisconnect(ISocket socketDevice) {
+        if (socketDevice instanceof AdHocSocketWifi) {
+            // Notify handler
+            handler.obtainMessage(Service.CONNECTION_ABORTED,
+                    new RemoteWifiConnection(network.getISocket().getRemoteSocketAddress()))
+                    .sendToTarget();
+        } else {
+            // Get Socket
+            BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
+            // Notify handler
+            handler.obtainMessage(Service.CONNECTION_ABORTED,
+                    new RemoteBtConnection(socket.getRemoteDevice().getAddress(),
+                            socket.getRemoteDevice().getName())).sendToTarget();
+        }
+
+        // Remove client from hashmap
+        listSocketDevice.removeActiveConnexion(socketDevice);
+
+        // Close network
+        try {
+            network.closeConnection();
+        } catch (IOException e) {
+            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+        }
     }
 
     String getNameThread() {

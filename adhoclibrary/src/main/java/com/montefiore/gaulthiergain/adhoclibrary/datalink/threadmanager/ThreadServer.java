@@ -14,7 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBlu
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 import java.io.IOException;
@@ -215,10 +215,10 @@ public class ThreadServer extends Thread {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkObject> which maps a remote device with a
-     * NetworkObject (socket).
+     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
+     * NetworkManager (socket).
      */
-    public ConcurrentHashMap<String, NetworkObject> getActiveConnexion() {
+    public ConcurrentHashMap<String, NetworkManager> getActiveConnexion() {
         return listSocketDevice.getActiveConnection();
     }
 }

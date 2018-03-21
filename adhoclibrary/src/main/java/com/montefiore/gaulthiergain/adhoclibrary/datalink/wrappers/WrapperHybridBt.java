@@ -15,7 +15,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteBtCon
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
@@ -48,7 +48,7 @@ public class WrapperHybridBt extends AbstractWrapper {
     private static final String TAG = "[AdHoc][WrapperBt]";
     private HashMap<String, String> mapLabelUuid;
     private HashMap<String, DiscoveredDevice> mapAddressDevice;
-    private HashMap<String, NetworkObject> hashmapUuidNetwork;
+    private HashMap<String, NetworkManager> hashmapUuidNetwork;
 
     public WrapperHybridBt(boolean v, Context context, boolean secure, short nbThreads,
                            String ownAddress, ActiveConnections activeConnections,
@@ -229,7 +229,7 @@ public class WrapperHybridBt extends AbstractWrapper {
 
         bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
             @Override
-            public void connected(UUID uuid, NetworkObject network) throws IOException, NoConnectionException {
+            public void connected(UUID uuid, NetworkManager network) throws IOException, NoConnectionException {
 
                 // Add network to temporary hashmap
                 hashmapUuidNetwork.put(uuid.toString(), network);
@@ -250,13 +250,13 @@ public class WrapperHybridBt extends AbstractWrapper {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case "CONNECT_SERVER":
-                NetworkObject networkObjectBt = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
+                NetworkManager networkManagerBt = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
 
-                if (networkObjectBt != null) {
+                if (networkManagerBt != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectBt);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerBt);
 
-                    networkObjectBt.sendObjectStream(new MessageAdHoc(
+                    networkManagerBt.sendMessage(new MessageAdHoc(
                             new Header("CONNECT_CLIENT", ownAddress, ownName), ownUUID.toString()));
 
                     Log.d(TAG, "Add couple: " + message.getPdu().toString()
@@ -272,10 +272,10 @@ public class WrapperHybridBt extends AbstractWrapper {
                 }
                 break;
             case "CONNECT_CLIENT":
-                NetworkObject networkObjectServer = hashmapUuidNetwork.get(message.getPdu().toString());
-                if (networkObjectServer != null) {
+                NetworkManager networkManagerServer = hashmapUuidNetwork.get(message.getPdu().toString());
+                if (networkManagerServer != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkObjectServer);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerServer);
 
                     Log.d(TAG, "Add couple: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
@@ -355,6 +355,11 @@ public class WrapperHybridBt extends AbstractWrapper {
 
             }
         });
+    }
+
+    @Override
+    public void disconnect() {
+        //todo array list of bluetooth client and iterate over to disconnect
     }
 
     /**

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public abstract class ServiceClient extends Service {
     protected static final short HIGH = 2500;
     protected static final String TAG = "[AdHoc][ServiceClient]";
 
-    protected NetworkObject network;
+    protected NetworkManager network;
     protected final short attempts;
     protected final boolean background;
 
@@ -63,7 +63,7 @@ public abstract class ServiceClient extends Service {
             throw new NoConnectionException("No remote connection");
         } else {
             // Send message to remote device
-            network.sendObjectStream(msg);
+            network.sendMessage(msg);
 
             // Notify handler
             handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
@@ -73,7 +73,7 @@ public abstract class ServiceClient extends Service {
     /**
      * Method allowing to stop the background listening process.
      */
-    private void stopListeningInBackground() {
+    private void stopListeningInBackground() throws IOException {
         if (v) Log.d(TAG, "stopListeningInBackground()");
 
         if (state == STATE_LISTENING_CONNECTED) {
@@ -117,7 +117,7 @@ public abstract class ServiceClient extends Service {
      *
      * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
      */
-    public void disconnect() throws NoConnectionException {
+    public void disconnect() throws NoConnectionException, IOException {
         if (v) Log.d(TAG, "disconnect()");
 
         if (state == STATE_NONE) {

@@ -6,18 +6,14 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.connection.RemoteWifiConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Random;
 
 /**
  * <p>This class defines the client's logic for bluetooth implementation. </p>
@@ -101,7 +97,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 socket.bind(null);
                 socket.connect((new InetSocketAddress(remoteAddress, port)), timeOut);
 
-                network = new NetworkObject(new AdHocSocketWifi(socket));
+                network = new NetworkManager(new AdHocSocketWifi(socket));
                 if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(remoteAddress, network);
                 }
@@ -131,6 +127,6 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
     }
 
     public interface ListenerAutoConnect {
-        void connected(String remoteAddress, NetworkObject network) throws IOException, NoConnectionException;
+        void connected(String remoteAddress, NetworkManager network) throws IOException, NoConnectionException;
     }
 }
