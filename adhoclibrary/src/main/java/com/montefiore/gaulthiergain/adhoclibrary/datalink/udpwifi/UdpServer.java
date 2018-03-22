@@ -10,22 +10,26 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 class UdpServer extends Thread {
 
+    private final static String TAG = "[AdHoc][UdpServer]";
+
     private final boolean v;
     private final int serverPort;
     private final Handler handler;
-    private final static String TAG = "[AdHoc]";
     private DatagramSocket socket;
     private boolean running;
+    private final ObjectMapper mapper;
 
     UdpServer(boolean verbose, Handler handler, int serverPort) {
         this.v = verbose;
         this.handler = handler;
         this.serverPort = serverPort;
+        this.mapper = new ObjectMapper();
     }
 
     void setRunning(boolean running) {
@@ -82,9 +86,9 @@ class UdpServer extends Thread {
         }
     }
 
-    private static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        ObjectInputStream is = new ObjectInputStream(in);
-        return is.readObject();
+    private MessageAdHoc deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        MessageAdHoc msg = mapper.readValue(data, MessageAdHoc.class);
+        Log.d(TAG, "Received message: " + msg);
+        return msg;
     }
 }

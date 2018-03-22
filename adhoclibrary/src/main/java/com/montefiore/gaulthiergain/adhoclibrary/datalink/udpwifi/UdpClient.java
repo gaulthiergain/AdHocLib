@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
 import android.os.Handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -17,15 +18,15 @@ public class UdpClient extends Thread {
 
     private final boolean v;
     private final Handler handler;
-    private MessageAdHoc message;
-    private InetAddress serverAddr;
-    private int serverPort;
+    private final MessageAdHoc msg;
+    private final InetAddress serverAddr;
+    private final int serverPort;
     private static final String TAG = "[AdHoc][UDPClient]";
 
-    UdpClient(boolean verbose, Handler handler, MessageAdHoc message, InetAddress serverAddr, int serverPort) {
+    UdpClient(boolean verbose, Handler handler, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
         this.v = verbose;
         this.handler = handler;
-        this.message = message;
+        this.msg = msg;
         this.serverAddr = serverAddr;
         this.serverPort = serverPort;
     }
@@ -34,16 +35,15 @@ public class UdpClient extends Thread {
     public void run() {
 
         try {
-            byte[] msg = serializeMessage(message);
+            ObjectMapper mapper = new ObjectMapper();
+            byte[] msgBytes = mapper.writeValueAsString(msg).getBytes();
 
             DatagramSocket datagramSocket = null;
-
             try {
                 datagramSocket = new DatagramSocket();
-                DatagramPacket datagramPacket;
-                datagramPacket = new DatagramPacket(msg, msg.length, serverAddr, serverPort);
+                DatagramPacket datagramPacket = new DatagramPacket(msgBytes, msgBytes.length, serverAddr, serverPort);
                 datagramSocket.send(datagramPacket);
-                handler.obtainMessage(Service.MESSAGE_WRITE, message).sendToTarget();
+                handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -56,15 +56,6 @@ public class UdpClient extends Thread {
             handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
         }
 
-    }
-
-    private byte[] serializeMessage(MessageAdHoc message) throws IOException {
-        ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-        ObjectOutput oo = new ObjectOutputStream(bStream);
-        oo.writeObject(message);
-        oo.close();
-
-        return bStream.toByteArray();
     }
 }
 

@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUdp;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -40,8 +41,16 @@ public class DataLinkManager {
 
         String label = config.getLabel();
         this.wrappers = new AbstractWrapper[2];
-        this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
-                activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+
+        if (config.isReliableTransportWifi()) {
+            this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
+                    activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+        }else{
+            this.wrappers[0] = new WrapperWifiUdp(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
+                    activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+        }
+
+
         this.wrappers[1] = new WrapperBluetooth(v, context, config.getSecure(), config.getNbThreadBt(), label,
                 activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
 
