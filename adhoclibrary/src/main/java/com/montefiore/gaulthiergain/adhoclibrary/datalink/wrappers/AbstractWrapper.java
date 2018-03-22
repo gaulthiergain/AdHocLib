@@ -83,4 +83,6 @@ public abstract class AbstractWrapper {
     }
 
     public abstract void unregisterConnection();
+
+    public abstract void enable(int duration);
 }

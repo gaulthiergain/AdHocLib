@@ -191,6 +191,15 @@ public class DataLinkManager {
         //TODO implement
     }
 
+    public void enable(int duration) {
+
+        for (AbstractWrapper wrapper : wrappers) {
+            if (!wrapper.isEnabled()) {
+                wrapper.enable(duration);
+            }
+        }
+    }
+
     public interface ListenerDiscovery {
         void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
     }

@@ -394,4 +394,9 @@ public class WrapperWifi extends AbstractWrapper {
     public void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }
+
+    @Override
+    public void enable() {
+        wifiAdHocManager.enable();
+    }
 }

@@ -11,6 +11,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothMan
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -78,6 +79,15 @@ public class WrapperBluetooth extends AbstractWrapper {
     @Override
     public void unregisterConnection() {
         // Not used in bluetooth context
+    }
+
+    @Override
+    public void enable(int duration) {
+        try {
+            bluetoothManager.enableDiscovery(duration);
+        } catch (BluetoothBadDuration e) {
+            listenerApp.catchException(e);
+        }
     }
 
     public void connect(DiscoveredDevice device) {

@@ -55,6 +55,10 @@ public class TransferManager {
         aodvManager.discovery();
     }
 
+    public void enable(int duration) {
+        aodvManager.enable(duration);
+    }
+
     public String getOwnAddress() {
         return config.getLabel();
     }

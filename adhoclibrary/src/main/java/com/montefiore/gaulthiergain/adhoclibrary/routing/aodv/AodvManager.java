@@ -795,4 +795,8 @@ public class AodvManager {
     public void disconnect() {
         dataLink.disconnect();
     }
+
+    public void enable(int duration) {
+        dataLink.enable(duration);
+    }
 }
