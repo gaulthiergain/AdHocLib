@@ -13,13 +13,10 @@ import android.os.Parcelable;
  */
 public class BluetoothAdHocDevice implements Parcelable {
 
-    public static final String EXTRA_DEVICE = "com.montefiore.gaulthiergain.adhoclib.bluetooth.extra.DEVICE";
-
     private final String longUuidString;
     private final String shortUuidString;
     private final int rssi;
     private final BluetoothDevice device;
-
 
     /**
      * Constructor

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkHybridManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -15,7 +15,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 import java.util.Timer;
 
@@ -31,7 +30,7 @@ public class AodvManager {
 
     private static final String TAG = "[AdHoc][AodvManager]";
 
-    private DataLinkHybridManager dataLink;
+    private DataLinkManager dataLink;
     private long ownSequenceNum;
     private MessageAdHoc dataMessage;
 
@@ -102,7 +101,7 @@ public class AodvManager {
             throws DeviceException, IOException {
 
         this(verbose, listenerAodv);
-        dataLink = new DataLinkHybridManager(verbose, context, config, listenerAodv, listenerDataLink);
+        dataLink = new DataLinkManager(verbose, context, config, listenerAodv, listenerDataLink);
     }
 
     /**
@@ -115,7 +114,7 @@ public class AodvManager {
     public void sendMessageTo(Object pdu, String address) throws IOException {
 
         // Create MessageAdHoc object
-        Header header = new Header(TypeAodv.DATA.getCode(), ownAddress, ownName);
+        Header header = new Header(TypeAodv.DATA.getType(), ownAddress, ownName);
         MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
 
         send(msg, address);
@@ -186,7 +185,7 @@ public class AodvManager {
         if (dataLink.isDirectNeighbors(address)) {
 
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(address);
-            if (destNext != null && message.getHeader().getType().equals(TypeAodv.DATA.getCode())) {
+            if (destNext != null && message.getHeader().getType() == TypeAodv.DATA.getType()) {
                 // Update dataPath
                 destNext.updateDataPath(address);
             }
@@ -201,7 +200,7 @@ public class AodvManager {
 
                 if (v) Log.d(TAG, "Routing table contains " + destNext.getNext());
 
-                if (message.getHeader().getType().equals(TypeAodv.DATA.getCode())) {
+                if (message.getHeader().getType() == TypeAodv.DATA.getType()) {
                     // Update dataPath
                     destNext.updateDataPath(address);
                 }
@@ -209,7 +208,7 @@ public class AodvManager {
                 // Send message to remote device
                 sendDirect(message, destNext.getNext());
             }
-        } else if (message.getHeader().getType().equals(TypeAodv.RERR.getCode())) {
+        } else if (message.getHeader().getType() == TypeAodv.RERR.getType()) {
             if (v) Log.d(TAG, "RERR sent");
         } else {
             dataMessage = message;
@@ -261,7 +260,7 @@ public class AodvManager {
                 if (v) Log.d(TAG, "Destination reachable via " + entry.getNext());
 
                 // Send message to the next destination
-                send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownAddress, ownName), rrep),
+                send(new MessageAdHoc(new Header(TypeAodv.RREP.getType(), ownAddress, ownName), rrep),
                         entry.getNext());
 
                 //Run timer for this reverse route
@@ -279,7 +278,7 @@ public class AodvManager {
                 // Update PDU and Header
                 rreq.incrementHopCount();
                 message.setPdu(rreq);
-                message.setHeader(new Header(TypeAodv.RREQ.getCode(), ownAddress, ownName));
+                message.setHeader(new Header(TypeAodv.RREQ.getType(), ownAddress, ownName));
 
                 // Broadcast message to all directly connected devices
                 dataLink.broadcastExcept(originateAddr, message);
@@ -341,7 +340,7 @@ public class AodvManager {
 
                 // Increment HopCount and send message to the next destination
                 rrep.incrementHopCount();
-                send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownAddress, ownName)
+                send(new MessageAdHoc(new Header(TypeAodv.RREP.getType(), ownAddress, ownName)
                         , rrep), destNext.getNext());
 
                 // Update routing table
@@ -394,7 +393,7 @@ public class AodvManager {
                 timerFlushReverseRoute(rrep.getOriginIpAddress(), rrep.getSequenceNum());
 
                 // Update header
-                message.setHeader(new Header(TypeAodv.RREP_GRATUITOUS.getCode(), ownAddress, ownName));
+                message.setHeader(new Header(TypeAodv.RREP_GRATUITOUS.getType(), ownAddress, ownName));
 
                 // Send message to the next destination
                 send(message, destNext.getNext());
@@ -425,7 +424,7 @@ public class AodvManager {
             if (v) Log.d(TAG, "RERR received on the destination (stop forward)");
         } else if (aodvHelper.containsDest(rerr.getUnreachableDestIpAddress())) {
 
-            message.setHeader(new Header(TypeAodv.RERR.getCode(), ownAddress, ownName));
+            message.setHeader(new Header(TypeAodv.RERR.getType(), ownAddress, ownName));
             // Send to precursors
             ArrayList<String> precursors = aodvHelper.getPrecursorsFromDest(rerr.getUnreachableDestIpAddress());
             if (precursors != null) {
@@ -495,7 +494,7 @@ public class AodvManager {
 
 
         // Broadcast message to all directly connected devices
-        MessageAdHoc message = new MessageAdHoc(new Header(TypeAodv.RREQ.getCode(), ownAddress, ownName),
+        MessageAdHoc message = new MessageAdHoc(new Header(TypeAodv.RREQ.getType(), ownAddress, ownName),
                 new RREQ(TypeAodv.RREQ.getType(), Constants.INIT_HOP_COUNT,
                         aodvHelper.getIncrementRreqId(), getDestSequenceNumber(destAddr), destAddr, ownSequenceNum, ownAddress));
         dataLink.broadcast(message);
@@ -550,7 +549,7 @@ public class AodvManager {
                     for (String precursor : precursors) {
                         if (v)
                             Log.d(TAG, "send RERR to " + precursor);
-                        send(new MessageAdHoc(new Header(TypeAodv.RERR.getCode(), ownAddress, ownName), rrer),
+                        send(new MessageAdHoc(new Header(TypeAodv.RERR.getType(), ownAddress, ownName), rrer),
                                 precursor);
                     }
                 }
@@ -587,7 +586,7 @@ public class AodvManager {
                 rreq.getDestIpAddress(), ownSequenceNum, rreq.getOriginIpAddress(), Constants.LIFE_TIME);
 
         // Send gratuitous RREP message to the next destination
-        send(new MessageAdHoc(new Header(TypeAodv.RREP_GRATUITOUS.getCode(), ownAddress, ownName), rrep),
+        send(new MessageAdHoc(new Header(TypeAodv.RREP_GRATUITOUS.getType(), ownAddress, ownName), rrep),
                 entry.getNext());
         if (v) Log.d(TAG, "Send Gratuitous RREP to " + entry.getNext());
 
@@ -596,7 +595,7 @@ public class AodvManager {
                 rreq.getOriginIpAddress(), entry.getDestSeqNum(), entry.getDestIpAddress(), Constants.LIFE_TIME);
 
         // Send RREP message to the source
-        send(new MessageAdHoc(new Header(TypeAodv.RREP.getCode(), ownAddress, ownName), rrep),
+        send(new MessageAdHoc(new Header(TypeAodv.RREP.getType(), ownAddress, ownName), rrep),
                 rreq.getOriginIpAddress());
         if (v) Log.d(TAG, "Send RREP to " + rreq.getOriginIpAddress());
     }
@@ -686,31 +685,31 @@ public class AodvManager {
             AodvUnknownTypeException, AodvUnknownDestException, NoConnectionException {
 
         switch (message.getHeader().getType()) {
-            case "RREQ":
+            case Constants.RREQ:
                 if (listenerAodv != null) listenerAodv.receivedRREQ(message);
                 processRREQ(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
-            case "RREP":
+            case Constants.RREP:
                 if (listenerAodv != null) listenerAodv.receivedRREP(message);
                 processRREP(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
-            case "RREP_GRATUITOUS":
+            case Constants.RREP_GRATUITOUS:
                 if (listenerAodv != null) listenerAodv.receivedRREP_GRAT(message);
                 processRREP_GRATUITOUS(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
-            case "RERR":
+            case Constants.RERR:
                 if (listenerAodv != null) listenerAodv.receivedRERR(message);
                 processRERR(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
-            case "DATA":
+            case Constants.DATA:
                 processData(message);
                 break;
             default:

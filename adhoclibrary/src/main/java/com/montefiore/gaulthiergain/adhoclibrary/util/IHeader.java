@@ -5,7 +5,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.util;
  */
 
 public interface IHeader {
-    String getType();
+    int getType();
 
     String getSenderAddr();
 

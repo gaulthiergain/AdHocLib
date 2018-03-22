@@ -4,20 +4,19 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridBt;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperHybridWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataLinkHybridManager {
+public class DataLinkManager {
 
     private static final String TAG = "[AdHoc][DataLink]";
 
@@ -29,8 +28,8 @@ public class DataLinkHybridManager {
     private short enabled;
     private ListenerAodv listenerAodv;
 
-    public DataLinkHybridManager(boolean verbose, Context context, Config config,
-                                 ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
+    public DataLinkManager(boolean verbose, Context context, Config config,
+                           ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
             throws IOException, DeviceException {
 
         this.v = verbose;
@@ -44,9 +43,9 @@ public class DataLinkHybridManager {
         listenerDataLinkAodv.getDeviceName(label);
 
         this.wrappers = new AbstractWrapper[2];
-        this.wrappers[0] = new WrapperHybridWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
+        this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
                 activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
-        this.wrappers[1] = new WrapperHybridBt(v, context, config.getSecure(), config.getNbThreadBt(), label,
+        this.wrappers[1] = new WrapperBluetooth(v, context, config.getSecure(), config.getNbThreadBt(), label,
                 activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
 
         // Check if data link communications are enabled (0 : all is disabled)

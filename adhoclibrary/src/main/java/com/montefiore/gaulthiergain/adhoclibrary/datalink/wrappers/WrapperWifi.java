@@ -4,11 +4,11 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
@@ -27,36 +27,28 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
-
-public class WrapperHybridWifi extends AbstractWrapper {
+public class WrapperWifi extends AbstractWrapper {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
-    private boolean wifiEnabled;
 
     private int serverPort;
-    private String label;
     private String ownIpAddress;
     private String groupOwnerAddr;
+    private WifiAdHocManager wifiAdHocManager;
     private WifiServiceServer wifiServiceServer;
 
-    private HashMap<String, String> mapLabelMac;
-    private Hashtable<String, NetworkManager> mapIpNetwork;
-    private HashMap<String, DiscoveredDevice> mapAddressDevice;
+    private HashMap<String, NetworkManager> mapIpNetwork;
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
-    private WifiAdHocManager wifiAdHocManager;
-
-
-    public WrapperHybridWifi(boolean v, Context context, short nbThreads, int serverPort,
-                             String label, ActiveConnections activeConnections,
-                             HashMap<String, DiscoveredDevice> mapAddressDevice,
-                             final ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+    public WrapperWifi(boolean v, Context context, short nbThreads, int serverPort,
+                       String label, ActiveConnections activeConnections,
+                       HashMap<String, DiscoveredDevice> mapAddressDevice,
+                       final ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
             throws IOException {
 
-        super(v, context, activeConnections, listenerAodv, listenerDataLinkAodv);
+        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLinkAodv);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -97,13 +89,9 @@ public class WrapperHybridWifi extends AbstractWrapper {
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
-                this.wifiEnabled = true;
-                this.label = label;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = serverPort;
-                this.mapAddressDevice = mapAddressDevice;
-                this.mapLabelMac = new HashMap<>();
-                this.mapIpNetwork = new Hashtable<>();
+                this.mapIpNetwork = new HashMap<>();
                 this.mapLabelRemoteDeviceName = new HashMap<>();
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
@@ -116,10 +104,10 @@ public class WrapperHybridWifi extends AbstractWrapper {
                 });
                 this.listenServer(nbThreads);
             } else {
-                wifiEnabled = false;
+                enabled = false;
             }
         } catch (DeviceException e) {
-            wifiEnabled = false;
+            enabled = false;
         }
     }
 
@@ -153,7 +141,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
             public void onConnectionClosed(RemoteConnection remoteDevice) {
 
                 //Get label from ip
-                String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
 
                 if (v) Log.d(TAG, "Server broken with " + remoteLabel);
 
@@ -186,7 +174,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
             public void onConnectionClosed(RemoteConnection remoteDevice) {
 
                 //Get label from ip
-                String remoteLabel = mapLabelMac.get(remoteDevice.getDeviceAddress());
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
 
                 if (v) Log.d(TAG, "Client broken with " + remoteLabel);
 
@@ -243,7 +231,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new Header("CONNECT_SERVER", label, ownName), ownIpAddress));
+                        new Header(CONNECT_SERVER, label, ownName), ownIpAddress));
 
             }
         });
@@ -262,7 +250,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
-            case "CONNECT_SERVER":
+            case CONNECT_SERVER:
 
                 final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
                 if (networkManager != null) {
@@ -273,7 +261,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelMac.put(networkManager.getISocket().getRemoteSocketAddress(),
+                    mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                 }
@@ -292,7 +280,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                     sendConnectClient(message, networkManager);
                 }
                 break;
-            case "CONNECT_CLIENT":
+            case CONNECT_CLIENT:
                 NetworkManager networkManagerServer = mapIpNetwork.get(message.getPdu().toString());
                 if (networkManagerServer != null) {
                     // Add the active connection into the autoConnectionActives object
@@ -302,7 +290,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelMac.put(networkManagerServer.getISocket().getRemoteSocketAddress(),
+                    mapLabelAddr.put(networkManagerServer.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                     RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
@@ -330,12 +318,12 @@ public class WrapperHybridWifi extends AbstractWrapper {
 
     @Override
     public void getPaired() {
-
+        // Not used in wifi context
     }
 
     @Override
     public boolean isEnabled() {
-        return wifiEnabled;
+        return enabled;
     }
 
     private void sendConnectClient(MessageAdHoc message, NetworkManager networkManager) {
@@ -343,7 +331,7 @@ public class WrapperHybridWifi extends AbstractWrapper {
             // Send CONNECT message to establish the pairing
             try {
                 networkManager.sendMessage(new MessageAdHoc(
-                        new Header("CONNECT_CLIENT", label, ownName), ownIpAddress));
+                        new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
 
                 RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
                         message.getHeader().getSenderName());

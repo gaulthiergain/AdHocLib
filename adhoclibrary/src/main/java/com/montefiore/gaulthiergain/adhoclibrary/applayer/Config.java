@@ -2,7 +2,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.BadServerPortException;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.MaxThreadReachedException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 
 import java.util.UUID;
 
@@ -16,27 +15,31 @@ public class Config {
     private static final int MIN_PORT = 1023;
     private static final int MAX_PORT = 65535;
 
+    private String label;
     private boolean secure;
     private int serverPort;
     private short nbThreadBt;
     private short nbThreadWifi;
-    private String label;
+    private boolean reliableTransportWifi;
 
     public Config() {
         this.secure = true;
         this.serverPort = 52000;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
+        this.reliableTransportWifi = true;
         this.label = String.valueOf(UUID.randomUUID());
     }
 
-    public Config(boolean secure, int serverPort, int nbThreadBt, int nbThreadWifi, String label)
+    public Config(boolean secure, int serverPort, int nbThreadBt, int nbThreadWifi, String label,
+                  boolean reliableTransportWifi)
             throws BadServerPortException, MaxThreadReachedException {
         this.secure = secure;
         this.setServerPort(serverPort);
         this.setNbThreadBt(nbThreadBt);
         this.nbThreadWifi = (short) nbThreadWifi;
         this.label = label;
+        this.reliableTransportWifi = reliableTransportWifi;
     }
 
     public Config(boolean secure, int nbThreadBt) throws MaxThreadReachedException {
@@ -49,6 +52,14 @@ public class Config {
         this();
         this.setServerPort(serverPort);
         this.nbThreadWifi = (short) nbThreadWifi;
+    }
+
+    public Config(int serverPort, int nbThreadWifi, boolean reliableTransportWifi)
+            throws BadServerPortException {
+        this();
+        this.setServerPort(serverPort);
+        this.nbThreadWifi = (short) nbThreadWifi;
+        this.reliableTransportWifi = reliableTransportWifi;
     }
 
     public boolean getSecure() {
@@ -69,6 +80,10 @@ public class Config {
 
     public String getLabel() {
         return label;
+    }
+
+    public boolean isReliableTransportWifi() {
+        return reliableTransportWifi;
     }
 
     public void setSecure(boolean secure) {
@@ -101,14 +116,19 @@ public class Config {
         this.label = label;
     }
 
+    public void setReliableTransportWifi(boolean reliableTransportWifi) {
+        this.reliableTransportWifi = reliableTransportWifi;
+    }
+
     @Override
     public String toString() {
         return "Config{" +
-                "secure=" + secure +
+                "label='" + label + '\'' +
+                ", secure=" + secure +
                 ", serverPort=" + serverPort +
                 ", nbThreadBt=" + nbThreadBt +
                 ", nbThreadWifi=" + nbThreadWifi +
-                ", label='" + label + '\'' +
+                ", reliableTransportWifi=" + reliableTransportWifi +
                 '}';
     }
 }

@@ -7,23 +7,23 @@ import java.io.Serializable;
  */
 
 public class Header implements Serializable, IHeader {
-    private final String type;
+    private final int type;
     private final String senderAddr;
     private final String senderName;
 
     public Header() {
-        this.type = "";
+        this.type = 0;
         this.senderAddr = "";
         this.senderName = "";
     }
 
-    public Header(String type, String senderAddr, String senderName) {
+    public Header(int type, String senderAddr, String senderName) {
         this.type = type;
         this.senderAddr = senderAddr;
         this.senderName = senderName;
     }
 
-    public String getType() {
+    public int getType() {
         return type;
     }
 
