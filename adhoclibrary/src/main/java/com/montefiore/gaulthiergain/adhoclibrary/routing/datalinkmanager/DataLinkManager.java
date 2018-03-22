@@ -39,8 +39,6 @@ public class DataLinkManager {
         this.mapAddressDevice = new HashMap<>();
 
         String label = config.getLabel();
-        listenerDataLinkAodv.getDeviceAddress(label);
-        listenerDataLinkAodv.getDeviceName(label);
 
         this.wrappers = new AbstractWrapper[2];
         this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,

@@ -71,18 +71,6 @@ public class AodvManager {
                     AodvUnknownDestException, NoConnectionException {
                 processAodvMsgReceived(message);
             }
-
-            @Override
-            public void getDeviceAddress(String address) {
-                ownAddress = address;
-                Log.d(TAG, "--------> Addr " + address);
-            }
-
-            @Override
-            public void getDeviceName(String name) {
-                ownName = name;
-                Log.d(TAG, "--------> Name " + name);
-            }
         };
     }
 
@@ -101,7 +89,9 @@ public class AodvManager {
             throws DeviceException, IOException {
 
         this(verbose, listenerAodv);
-        dataLink = new DataLinkManager(verbose, context, config, listenerAodv, listenerDataLink);
+        this.ownName = config.getName();
+        this.ownAddress = config.getLabel();
+        this.dataLink = new DataLinkManager(verbose, context, config, listenerAodv, listenerDataLink);
     }
 
     /**

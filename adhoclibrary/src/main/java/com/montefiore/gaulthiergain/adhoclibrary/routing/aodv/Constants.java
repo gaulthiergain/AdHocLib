@@ -14,7 +14,6 @@ public interface Constants {
     //Sequence Numbers
     long MIN_VALID_SEQ_NUM = 0;
     long MAX_VALID_SEQ_NUM = Long.MAX_VALUE;
-    long INVALID_SEQUENCE_NUMBER = -1;
     long UNKNOWN_SEQUENCE_NUMBER = -1; //TODO change to 0
     long FIRST_SEQUENCE_NUMBER = 1;
     long SEQUENCE_NUMBER_INTERVAL = (Integer.MAX_VALUE / 2);
@@ -41,10 +40,6 @@ public interface Constants {
     //the time of hello packets
     int HELLO_PACKET_INTERVAL_SND = 30000;
     int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 2;
-
-    //energy constants
-    int FIRST_THRESHOLD = 15;
-    int SECOND_THRESHOLD = 5;
 
     // Constants for displaying the routing table
     int DELAY = 60000;

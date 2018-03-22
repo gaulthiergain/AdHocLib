@@ -54,8 +54,6 @@ public abstract class AbstractWrapper {
         this.listenerDataLinkAodv = listenerDataLinkAodv;
     }
 
-    public abstract void listenServer(short nbThreadsWifi) throws IOException;
-
     public abstract void discovery();
 
     public abstract void disconnect();

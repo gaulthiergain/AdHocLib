@@ -13,8 +13,4 @@ public interface ListenerDataLinkAodv {
 
     void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException,
             AodvUnknownDestException, NoConnectionException;
-
-    void getDeviceAddress(String address);
-
-    void getDeviceName(String name);
 }
