@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -30,30 +31,29 @@ public class AodvManager {
 
     private static final String TAG = "[AdHoc][AodvManager]";
 
-    private DataLinkManager dataLink;
-    private long ownSequenceNum;
-    private MessageAdHoc dataMessage;
+    private final boolean v;
+    private final AodvHelper aodvHelper;
+    private final ListenerApp listenerApp;
+    private final HashMap<String, Long> mapDestSequenceNumber;
 
     private String ownName;
     private String ownAddress;
-    private final boolean v;
-    private final AodvHelper aodvHelper;
-    private final ListenerAodv listenerAodv;
-    private final HashMap<String, Long> mapDestSequenceNumber;
+    private long ownSequenceNum;
+    private DataLinkManager dataLink;
+    private MessageAdHoc dataMessage;
     private ListenerDataLink listenerDataLink;
-
 
     /**
      * Constructor
      *
-     * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param listenerAodv a ListenerAodv object which serves as callback functions.
+     * @param verbose     a boolean value to set the debug/verbose mode.
+     * @param listenerApp a ListenerApp object which serves as callback functions.
      */
-    private AodvManager(boolean verbose, ListenerAodv listenerAodv) {
+    private AodvManager(boolean verbose, ListenerApp listenerApp) {
         this.v = verbose;
         this.aodvHelper = new AodvHelper(v);
         this.ownSequenceNum = Constants.FIRST_SEQUENCE_NUMBER;
-        this.listenerAodv = listenerAodv;
+        this.listenerApp = listenerApp;
         this.mapDestSequenceNumber = new HashMap<>();
         if (v) {
             // Print routing table
@@ -77,21 +77,21 @@ public class AodvManager {
     /**
      * Constructor wifi
      *
-     * @param verbose      a boolean value to set the debug/verbose mode.
-     * @param context      a Context object which gives global information about an application
-     *                     environment.
-     * @param config       a Config object which contains specific configurations.
-     * @param listenerAodv a ListenerAodv object which serves as callback functions.
+     * @param verbose     a boolean value to set the debug/verbose mode.
+     * @param context     a Context object which gives global information about an application
+     *                    environment.
+     * @param config      a Config object which contains specific configurations.
+     * @param listenerApp a ListenerApp object which serves as callback functions.
      * @throws DeviceException Signals that a DeviceException has occurred.
      * @throws IOException     Signals that an I/O exception of some sort has occurred.
      */
-    public AodvManager(boolean verbose, Context context, Config config, ListenerAodv listenerAodv)
+    public AodvManager(boolean verbose, Context context, Config config, ListenerApp listenerApp)
             throws DeviceException, IOException {
 
-        this(verbose, listenerAodv);
+        this(verbose, listenerApp);
         this.ownName = config.getName();
         this.ownAddress = config.getLabel();
-        this.dataLink = new DataLinkManager(verbose, context, config, listenerAodv, listenerDataLink);
+        this.dataLink = new DataLinkManager(verbose, context, config, listenerApp, listenerDataLink);
     }
 
     /**
@@ -449,7 +449,7 @@ public class AodvManager {
 
         if (data.getDestIpAddress().equals(ownAddress)) {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message");
-            if (listenerAodv != null) listenerAodv.receivedDATA(message);
+            if (listenerApp != null) listenerApp.receivedDATA(message);
         } else {
             // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(data.getDestIpAddress());
@@ -499,11 +499,9 @@ public class AodvManager {
                     if (retry == 0) {
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
                         dataMessage = null;
-                        listenerAodv.timerExpiredRREQ(destAddr, retry);
                     } else {
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
                                 " Retry: " + retry);
-                        listenerAodv.timerExpiredRREQ(destAddr, retry);
                         try {
                             startTimerRREQ(destAddr, retry - 1, time * 2);
                         } catch (IOException e) {
@@ -676,25 +674,21 @@ public class AodvManager {
 
         switch (message.getHeader().getType()) {
             case Constants.RREQ:
-                if (listenerAodv != null) listenerAodv.receivedRREQ(message);
                 processRREQ(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
             case Constants.RREP:
-                if (listenerAodv != null) listenerAodv.receivedRREP(message);
                 processRREP(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
             case Constants.RREP_GRATUITOUS:
-                if (listenerAodv != null) listenerAodv.receivedRREP_GRAT(message);
                 processRREP_GRATUITOUS(message);
                 // Increment sequence number
                 getNextSequenceNumber();
                 break;
             case Constants.RERR:
-                if (listenerAodv != null) listenerAodv.receivedRERR(message);
                 processRERR(message);
                 // Increment sequence number
                 getNextSequenceNumber();

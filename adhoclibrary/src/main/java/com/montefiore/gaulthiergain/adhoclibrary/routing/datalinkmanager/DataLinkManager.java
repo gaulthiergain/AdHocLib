@@ -4,10 +4,10 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -21,30 +21,29 @@ public class DataLinkManager {
     private static final String TAG = "[AdHoc][DataLink]";
 
     private final boolean v;
+    private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
     private final ActiveConnections activeConnections;
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     private short enabled;
-    private ListenerAodv listenerAodv;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
-                           ListenerAodv listenerAodv, final ListenerDataLink listenerDataLink)
+                           ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException, DeviceException {
 
         this.v = verbose;
         this.enabled = 0;
-        this.listenerAodv = listenerAodv;
+        this.listenerApp = listenerApp;
         this.activeConnections = new ActiveConnections();
         this.mapAddressDevice = new HashMap<>();
 
         String label = config.getLabel();
-
         this.wrappers = new AbstractWrapper[2];
         this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
-                activeConnections, mapAddressDevice, listenerAodv, listenerDataLink);
+                activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
         this.wrappers[1] = new WrapperBluetooth(v, context, config.getSecure(), config.getNbThreadBt(), label,
-                activeConnections, mapAddressDevice, listenerAodv, listenerDataLink);
+                activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
         for (AbstractWrapper wrapper : wrappers) {
@@ -75,7 +74,7 @@ public class DataLinkManager {
                     wrapper.setDiscoveryListener(new ListenerDiscovery() {
                         @Override
                         public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
-                            listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                            listenerApp.onDiscoveryCompleted(mapAddressDevice);
                         }
                     });
                 }
@@ -107,7 +106,7 @@ public class DataLinkManager {
                         }
 
                         if (finished) {
-                            listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                            listenerApp.onDiscoveryCompleted(mapAddressDevice);
                             break;
                         }
                     }

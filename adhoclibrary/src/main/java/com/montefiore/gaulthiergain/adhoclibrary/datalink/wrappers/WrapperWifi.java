@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
@@ -17,7 +18,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -45,10 +45,10 @@ public class WrapperWifi extends AbstractWrapper {
     public WrapperWifi(boolean v, Context context, short nbThreads, int serverPort,
                        String label, ActiveConnections activeConnections,
                        HashMap<String, DiscoveredDevice> mapAddressDevice,
-                       final ListenerAodv listenerAodv, ListenerDataLink listenerDataLink)
+                       final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLink);
+        super(v, context, label, mapAddressDevice, activeConnections, listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -80,7 +80,7 @@ public class WrapperWifi extends AbstractWrapper {
                     try {
                         wifiServiceServer.stopListening();
                     } catch (IOException e) {
-                        listenerAodv.catchException(e);
+                        listenerApp.catchException(e);
                     }
 
                     _connect();
@@ -117,7 +117,7 @@ public class WrapperWifi extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerAodv.catchException(e);
+                    listenerApp.catchException(e);
                 }
             }
 
@@ -133,7 +133,7 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerAodv.catchException(e);
+                listenerApp.catchException(e);
             }
 
             @Override
@@ -150,10 +150,10 @@ public class WrapperWifi extends AbstractWrapper {
                     activeConnections.getActivesConnections().remove(remoteLabel);
                     listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
-                    listenerAodv.catchException(e);
+                    listenerApp.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(remoteDevice);
+                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
             }
 
             @Override
@@ -183,10 +183,10 @@ public class WrapperWifi extends AbstractWrapper {
                     activeConnections.getActivesConnections().remove(remoteLabel);
                     listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
-                    listenerAodv.catchException(e);
+                    listenerApp.catchException(e);
                 }
 
-                listenerAodv.onConnectionClosed(remoteDevice);
+                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
             }
 
             @Override
@@ -200,7 +200,7 @@ public class WrapperWifi extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerAodv.catchException(e);
+                    listenerApp.catchException(e);
                 }
             }
 
@@ -216,7 +216,7 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerAodv.catchException(e);
+                listenerApp.catchException(e);
             }
         });
 
@@ -249,8 +249,7 @@ public class WrapperWifi extends AbstractWrapper {
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
-            case CONNECT_SERVER:
-
+            case CONNECT_SERVER: {
                 final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
                 if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
@@ -279,31 +278,30 @@ public class WrapperWifi extends AbstractWrapper {
                     sendConnectClient(message, networkManager);
                 }
                 break;
-            case CONNECT_CLIENT:
-                NetworkManager networkManagerServer = mapIpNetwork.get(message.getPdu().toString());
-                if (networkManagerServer != null) {
+            }
+            case CONNECT_CLIENT: {
+                NetworkManager networkManager = mapIpNetwork.get(message.getPdu().toString());
+                if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerServer);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManager);
 
-                    Log.d(TAG, "Add couple: " + networkManagerServer.getISocket().getRemoteSocketAddress()
+                    Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(networkManagerServer.getISocket().getRemoteSocketAddress(),
+                    mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
-                    RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
+                    // Add mapping label - remoteConnection
+                    mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
 
-                    // Add mapping label - remoteConnection
-                    mapLabelRemoteDeviceName.put(remoteConnection.getDeviceAddress(),
-                            remoteConnection.getDeviceName());
-
                     // Callback connection
-                    listenerAodv.onConnection(remoteConnection);
+                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName());
                 }
-
                 break;
+            }
             default:
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);
@@ -332,18 +330,16 @@ public class WrapperWifi extends AbstractWrapper {
                 networkManager.sendMessage(new MessageAdHoc(
                         new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
 
-                RemoteConnection remoteConnection = new RemoteConnection(message.getHeader().getSenderAddr(),
+                // Add mapping label - remoteConnection
+                mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
                         message.getHeader().getSenderName());
 
-                // Add mapping label - remoteConnection
-                mapLabelRemoteDeviceName.put(remoteConnection.getDeviceAddress(),
-                        remoteConnection.getDeviceName());
-
                 // Callback connection
-                listenerAodv.onConnection(remoteConnection);
+                listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                        message.getHeader().getSenderName());
 
             } catch (IOException e) {
-                listenerAodv.catchException(e);
+                listenerApp.catchException(e);
             }
         }
     }
@@ -375,7 +371,7 @@ public class WrapperWifi extends AbstractWrapper {
                 }
 
                 if (discoveryListener != null) {
-                    listenerAodv.onDiscoveryCompleted(mapAddressDevice);
+                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
                 }
 
                 discoveryCompleted = true;
