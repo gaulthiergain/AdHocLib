@@ -60,10 +60,6 @@ public abstract class AbstractWrapper {
 
     public abstract void connect(DiscoveredDevice device);
 
-    public abstract void processMsgReceived(MessageAdHoc message)
-            throws IOException, NoConnectionException, AodvUnknownTypeException,
-            AodvUnknownDestException;
-
     public abstract void stopListening() throws IOException;
 
     public abstract void getPaired();

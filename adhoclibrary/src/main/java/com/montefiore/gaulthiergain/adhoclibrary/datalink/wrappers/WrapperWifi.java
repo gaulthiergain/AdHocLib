@@ -396,7 +396,7 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     @Override
-    public void enable() {
+    public void enable(int duration) {
         wifiAdHocManager.enable();
     }
 }
