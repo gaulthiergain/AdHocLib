@@ -14,10 +14,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -45,10 +45,10 @@ public class WrapperWifi extends AbstractWrapper {
     public WrapperWifi(boolean v, Context context, short nbThreads, int serverPort,
                        String label, ActiveConnections activeConnections,
                        HashMap<String, DiscoveredDevice> mapAddressDevice,
-                       final ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv)
+                       final ListenerAodv listenerAodv, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLinkAodv);
+        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -148,7 +148,7 @@ public class WrapperWifi extends AbstractWrapper {
                     remoteDevice.setDeviceAddress(remoteLabel);
                     remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
                     activeConnections.getActivesConnections().remove(remoteLabel);
-                    listenerDataLinkAodv.brokenLink(remoteLabel);
+                    listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
@@ -181,7 +181,7 @@ public class WrapperWifi extends AbstractWrapper {
                     remoteDevice.setDeviceAddress(remoteLabel);
                     remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
                     activeConnections.getActivesConnections().remove(remoteLabel);
-                    listenerDataLinkAodv.brokenLink(remoteLabel);
+                    listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
                     listenerAodv.catchException(e);
                 }
@@ -306,7 +306,7 @@ public class WrapperWifi extends AbstractWrapper {
                 break;
             default:
                 // Handle messages in protocol scope
-                listenerDataLinkAodv.processMsgReceived(message);
+                listenerDataLink.processMsgReceived(message);
         }
     }
 

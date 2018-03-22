@@ -3,11 +3,11 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -27,7 +27,7 @@ public abstract class AbstractWrapper {
     final ListenerAodv listenerAodv;
     final ActiveConnections activeConnections;
     final HashMap<String, String> mapLabelAddr;
-    final ListenerDataLinkAodv listenerDataLinkAodv;
+    final ListenerDataLink listenerDataLink;
     final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     String label;
@@ -40,7 +40,7 @@ public abstract class AbstractWrapper {
     AbstractWrapper(boolean v, Context context, String label,
                     HashMap<String, DiscoveredDevice> mapAddressDevice,
                     ActiveConnections activeConnections,
-                    ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) {
+                    ListenerAodv listenerAodv, ListenerDataLink listenerDataLink) {
 
         this.v = v;
         this.enabled = true;
@@ -51,7 +51,7 @@ public abstract class AbstractWrapper {
         this.mapLabelAddr = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
         this.activeConnections = activeConnections;
-        this.listenerDataLinkAodv = listenerDataLinkAodv;
+        this.listenerDataLink = listenerDataLink;
     }
 
     public abstract void discovery();

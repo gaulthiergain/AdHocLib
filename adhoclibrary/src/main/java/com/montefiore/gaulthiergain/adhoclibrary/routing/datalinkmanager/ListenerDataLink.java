@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
+package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
@@ -7,7 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 
-public interface ListenerDataLinkAodv {
+public interface ListenerDataLink {
 
     void brokenLink(String remoteNode) throws IOException, NoConnectionException;
 

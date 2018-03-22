@@ -15,10 +15,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -46,9 +46,9 @@ public class WrapperBluetooth extends AbstractWrapper {
     public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads,
                             String label, ActiveConnections activeConnections,
                             HashMap<String, DiscoveredDevice> mapAddressDevice,
-                            ListenerAodv listenerAodv, ListenerDataLinkAodv listenerDataLinkAodv) throws IOException {
+                            ListenerAodv listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLinkAodv);
+        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
@@ -131,7 +131,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 if (v) Log.d(TAG, "Link broken with " + remoteLabel);
 
                 try {
-                    listenerDataLinkAodv.brokenLink(remoteLabel);
+                    listenerDataLink.brokenLink(remoteLabel);
                     activeConnections.getActivesConnections().remove(remoteLabel);
                 } catch (IOException e) {
                     listenerAodv.catchException(e);
@@ -191,7 +191,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                         if (v) Log.d(TAG, "Link broken with " + remoteLabel);
 
                         try {
-                            listenerDataLinkAodv.brokenLink(remoteLabel);
+                            listenerDataLink.brokenLink(remoteLabel);
                             activeConnections.getActivesConnections().remove(remoteLabel);
                         } catch (IOException e) {
                             listenerAodv.catchException(e);
@@ -275,7 +275,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 break;
             default:
                 // Handle messages in protocol scope
-                listenerDataLinkAodv.processMsgReceived(message);
+                listenerDataLink.processMsgReceived(message);
         }
     }
 

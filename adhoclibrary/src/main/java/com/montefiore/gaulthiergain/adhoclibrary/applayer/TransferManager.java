@@ -6,7 +6,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnecti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;

@@ -7,7 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerDataLinkAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -29,7 +29,7 @@ public class DataLinkManager {
     private ListenerAodv listenerAodv;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
-                           ListenerAodv listenerAodv, final ListenerDataLinkAodv listenerDataLinkAodv)
+                           ListenerAodv listenerAodv, final ListenerDataLink listenerDataLink)
             throws IOException, DeviceException {
 
         this.v = verbose;
@@ -42,9 +42,9 @@ public class DataLinkManager {
 
         this.wrappers = new AbstractWrapper[2];
         this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
-                activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+                activeConnections, mapAddressDevice, listenerAodv, listenerDataLink);
         this.wrappers[1] = new WrapperBluetooth(v, context, config.getSecure(), config.getNbThreadBt(), label,
-                activeConnections, mapAddressDevice, listenerAodv, listenerDataLinkAodv);
+                activeConnections, mapAddressDevice, listenerAodv, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
         for (AbstractWrapper wrapper : wrappers) {

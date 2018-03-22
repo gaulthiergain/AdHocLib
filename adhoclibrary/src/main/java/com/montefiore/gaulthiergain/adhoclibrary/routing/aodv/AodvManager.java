@@ -6,9 +6,9 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerAodv;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -40,7 +40,7 @@ public class AodvManager {
     private final AodvHelper aodvHelper;
     private final ListenerAodv listenerAodv;
     private final HashMap<String, Long> mapDestSequenceNumber;
-    private ListenerDataLinkAodv listenerDataLink;
+    private ListenerDataLink listenerDataLink;
 
 
     /**
@@ -59,7 +59,7 @@ public class AodvManager {
             // Print routing table
             this.initTimerDebugRIB();
         }
-        this.listenerDataLink = new ListenerDataLinkAodv() {
+        this.listenerDataLink = new ListenerDataLink() {
 
             @Override
             public void brokenLink(String remoteNode) throws IOException {
