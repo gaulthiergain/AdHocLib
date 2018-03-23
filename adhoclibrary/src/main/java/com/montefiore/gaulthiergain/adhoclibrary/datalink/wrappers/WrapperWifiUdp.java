@@ -10,6 +10,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpMsg;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
@@ -164,7 +165,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 listenerApp.catchException(e);
             }
         });
-        // Run timers for HELLO messages
+        //Run timers for HELLO messages
         timerHello(Constants.HELLO_PACKET_INTERVAL);
         timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
     }
@@ -311,9 +312,31 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public void sendMessage(MessageAdHoc msg, String label) {
 
         NetworkObject networkObject = activeConnections.getActivesConnections().get(label);
-        if (networkObject != null) {
+        if (networkObject != null && networkObject.getType() == type) {
             WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
             _sendMessage(msg, wifiAdHocDevice.getIpAddress());
+        }
+    }
+
+    @Override
+    public void broadcast(MessageAdHoc message) {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            if (entry.getValue().getType() == type) {
+                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
+                _sendMessage(message, wifiAdHocDevice.getIpAddress());
+            }
+        }
+    }
+
+    @Override
+    public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            if (entry.getValue().getType() == type) {
+                if (!entry.getKey().equals(excludedAddress)) {
+                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
+                    _sendMessage(message, wifiAdHocDevice.getIpAddress());
+                }
+            }
         }
     }
 
@@ -353,11 +376,15 @@ public class WrapperWifiUdp extends AbstractWrapper {
             @Override
             public void run() {
                 for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
-                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
-                    MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
-                            , System.currentTimeMillis());
-                    _sendMessage(msg, wifiAdHocDevice.getIpAddress());
-                    if (v) Log.d(TAG, "Send HELLO message to " + entry.getKey());
+
+                    NetworkObject networkObject = entry.getValue();
+                    if (networkObject.getType() == type) {
+                        WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
+                        MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
+                                , System.currentTimeMillis());
+                        _sendMessage(msg, wifiAdHocDevice.getIpAddress());
+                        if (v) Log.d(TAG, "Send HELLO message to " + entry.getKey());
+                    }
                 }
 
                 timerHello(time);
@@ -395,7 +422,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                             // Callback via handler
                             NetworkObject networkObject = activeConnections.getActivesConnections().get(entry.getKey());
-                            if (networkObject != null) {
+                            if (networkObject != null && networkObject.getType() == type) {
                                 WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
                                 mHandler.obtainMessage(1,
                                         new String[]{entry.getKey(), wifiAdHocDevice.getName()})

@@ -166,7 +166,6 @@ public class DataLinkManager {
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
-
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.sendMessage(message, address);
@@ -178,22 +177,20 @@ public class DataLinkManager {
         return activeConnections.getActivesConnections().containsKey(address);
     }
 
-    public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
-        /*for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
-            if (!entry.getKey().equals(originateAddr)) {
-                entry.getValue().sendMessage(message);
-                if (v)
-                    Log.d(TAG, "Broadcast Message to " + entry.getKey());
+    public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.broadcastExcept(message, excludedAddress);
             }
-        }*/
+        }
     }
 
     public void broadcast(MessageAdHoc message) throws IOException {
-        /*for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
-            entry.getValue().sendMessage(message);
-            if (v)
-                Log.d(TAG, "Broadcast Message to " + entry.getKey());
-        }*/
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.broadcast(message);
+            }
+        }
     }
 
     public void getPaired() {

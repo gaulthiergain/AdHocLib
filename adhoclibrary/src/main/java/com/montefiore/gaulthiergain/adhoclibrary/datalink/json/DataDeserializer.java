@@ -24,7 +24,6 @@ public class DataDeserializer extends StdDeserializer<Data> {
 
         JsonNode treeNode = jsonParser.readValueAsTree();
 
-        System.out.println(">>>" + treeNode);
         if (treeNode == null) {
             return null;
         }

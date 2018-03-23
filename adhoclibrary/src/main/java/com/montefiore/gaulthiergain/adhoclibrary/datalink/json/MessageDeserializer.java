@@ -28,7 +28,6 @@ public class MessageDeserializer extends StdDeserializer<MessageAdHoc> {
     public MessageAdHoc deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode treeNode = jsonParser.readValueAsTree();
 
-        System.out.println(">>>" + treeNode);
         if (treeNode == null) {
             return null;
         }

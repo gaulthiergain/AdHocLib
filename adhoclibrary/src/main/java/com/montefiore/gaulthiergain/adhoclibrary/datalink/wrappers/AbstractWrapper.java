@@ -17,13 +17,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractWrapper {
 
     final static short ATTEMPTS = 3;
 
-    final static byte CONNECT_SERVER = 0;
-    final static byte CONNECT_CLIENT = 1;
+    final static byte CONNECT_SERVER = 10;
+    final static byte CONNECT_CLIENT = 11;
 
     final boolean v;
     final Context context;
@@ -74,17 +75,6 @@ public abstract class AbstractWrapper {
 
     public abstract void enable(int duration);
 
-
-    public void sendMessage(MessageAdHoc message, String address) throws IOException {
-
-        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
-        if (networkObject != null && networkObject.getType() == type) {
-            NetworkManager networkManager = (NetworkManager) networkObject.getNetworkManager();
-            networkManager.sendMessage(message);
-        }
-    }
-
-
     public boolean isDiscoveryCompleted() {
         return discoveryCompleted;
     }
@@ -95,5 +85,34 @@ public abstract class AbstractWrapper {
 
     public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
         this.discoveryListener = discoveryListener;
+    }
+
+    public void sendMessage(MessageAdHoc message, String address) throws IOException {
+
+        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
+        if (networkObject != null && networkObject.getType() == type) {
+            NetworkManager networkManager = (NetworkManager) networkObject.getNetworkManager();
+            networkManager.sendMessage(message);
+        }
+    }
+
+    public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            if (entry.getValue().getType() == type) {
+                if (!entry.getKey().equals(excludedAddress)) {
+                    NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
+                    networkManager.sendMessage(message);
+                }
+            }
+        }
+    }
+
+    public void broadcast(MessageAdHoc message) throws IOException {
+        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+            if (entry.getValue().getType() == type) {
+                NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
+                networkManager.sendMessage(message);
+            }
+        }
     }
 }

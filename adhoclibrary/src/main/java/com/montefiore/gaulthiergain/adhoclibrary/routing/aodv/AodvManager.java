@@ -271,7 +271,7 @@ public class AodvManager {
                 message.setHeader(new Header(TypeAodv.RREQ.getType(), ownAddress, ownName));
 
                 // Broadcast message to all directly connected devices
-                dataLink.broadcastExcept(originateAddr, message);
+                dataLink.broadcastExcept(message, originateAddr);
 
                 // Update routing table
                 aodvHelper.addEntryRoutingTable(rreq.getOriginIpAddress(), originateAddr, hop,
