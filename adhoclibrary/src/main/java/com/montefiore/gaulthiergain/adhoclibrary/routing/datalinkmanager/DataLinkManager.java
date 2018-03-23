@@ -20,6 +20,7 @@ import java.util.Map;
 public class DataLinkManager {
 
     private static final String TAG = "[AdHoc][DataLink]";
+    private static final int POOLING_DISCOVERY = 1000;
 
     private final boolean v;
     private final ListenerApp listenerApp;
@@ -28,6 +29,10 @@ public class DataLinkManager {
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     private short enabled;
+
+
+    //todo update
+    private boolean udp;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
@@ -43,9 +48,13 @@ public class DataLinkManager {
         this.wrappers = new AbstractWrapper[2];
 
         if (config.isReliableTransportWifi()) {
+            // TCP connection
+            udp = false;
             this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
                     activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
-        }else{
+        } else {
+            // UDP stream
+            udp = true;
             this.wrappers[0] = new WrapperWifiUdp(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
                     activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
         }
@@ -104,7 +113,7 @@ public class DataLinkManager {
                 try {
                     // Use pooling to check if the discovery is completed
                     while (true) {
-                        Thread.sleep(1000);
+                        Thread.sleep(POOLING_DISCOVERY);
 
                         boolean finished = true;
                         for (AbstractWrapper wrapper : wrappers) {
@@ -165,13 +174,25 @@ public class DataLinkManager {
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
-        NetworkManager networkManager = activeConnections.getActivesConnections().get(address);
-        networkManager.sendMessage(message);
-        if (v) Log.d(TAG, "Send directly to " + address);
+
+        if (!udp) {
+            NetworkManager networkManager = activeConnections.getActivesConnections().get(address);
+            networkManager.sendMessage(message);
+            if (v) Log.d(TAG, "Send directly to " + address);
+        } else {
+            WrapperWifiUdp wrapperWifiUdp = (WrapperWifiUdp) wrappers[0];
+            wrapperWifiUdp.sendMessage(message, address);
+        }
+
     }
 
     public boolean isDirectNeighbors(String address) {
-        return activeConnections.getActivesConnections().containsKey(address);
+        if (!udp) {
+            return activeConnections.getActivesConnections().containsKey(address);
+        } else {
+            WrapperWifiUdp wrapperWifiUdp = (WrapperWifiUdp) wrappers[0];
+            return wrapperWifiUdp.isDirectNeighbors(address);
+        }
     }
 
     public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {

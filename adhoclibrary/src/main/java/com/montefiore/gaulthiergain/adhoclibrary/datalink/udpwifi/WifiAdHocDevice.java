@@ -7,12 +7,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 public class WifiAdHocDevice {
     private final String name;
     private final String ipAddress;
-    private final String macAddress;
 
-    public WifiAdHocDevice(String name, String ipAddress, String macAddress) {
+    public WifiAdHocDevice(String name, String ipAddress) {
         this.name = name;
         this.ipAddress = ipAddress;
-        this.macAddress = macAddress;
     }
 
     public String getName() {
@@ -23,16 +21,12 @@ public class WifiAdHocDevice {
         return ipAddress;
     }
 
-    public String getMacAddress() {
-        return macAddress;
-    }
 
     @Override
     public String toString() {
         return "WifiAdHocDevice{" +
                 "name='" + name + '\'' +
                 ", ipAddress='" + ipAddress + '\'' +
-                ", macAddress='" + macAddress + '\'' +
                 '}';
     }
 }

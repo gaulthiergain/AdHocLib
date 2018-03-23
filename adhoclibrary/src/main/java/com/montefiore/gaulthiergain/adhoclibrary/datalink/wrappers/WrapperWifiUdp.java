@@ -8,7 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UDPmsg;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpMsg;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
@@ -28,6 +28,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by gaulthiergain on 22/03/18.
@@ -39,16 +41,12 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     private int serverPort;
     private String ownIpAddress;
-    private String groupOwnerAddr;
 
-    private HashMap<String, WifiP2pDevice> peers;
     private HashMap<String, Long> helloMessages;
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, WifiAdHocDevice> neighbors;
 
     private UdpPeers udpPeers;
-    private MessageAdHoc connectMessage;
-    private long seqNum;
     private HashSet<String> ackSet;
 
 
@@ -83,20 +81,12 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
                 Log.d(TAG, "OWN IP address: " + ownIpAddress);
 
-                /*send(new MessageAdHoc(
-                        new Header(CONNECT_SERVER, label, ownName), ownIpAddress));*/
-                /*timerClientMessage(new MessageAdHoc(header, new UDPmsg(ownMacAddress, seqNum++, groupOwnerAddress.getHostAddress())),
-                        groupOwnerAddress.getHostAddress(), 1000);*/
-
                 Header header = new Header(CONNECT_SERVER, label, ownName);
-                ackSet.add(groupOwnerAddress.getHostAddress() + "#" + seqNum);
-                Log.d(TAG, "Client add " + (groupOwnerAddress.getHostAddress() + "#" + seqNum) + " into set");
+                ackSet.add(groupOwnerAddress.getHostAddress());
+                Log.d(TAG, "Client add " + (groupOwnerAddress.getHostAddress()) + " into set");
 
-                //for (int i = 0 ; i < 500 ; i++) {
-                sendConnectMessage(new MessageAdHoc(header, new UDPmsg(ownMac, seqNum++, ownIpAddress,
-                        groupOwnerAddress.getHostAddress())), groupOwnerAddress.getHostAddress());
-                //}
-
+                timerClientMessage(new MessageAdHoc(header, new UdpMsg(ownMac, ownIpAddress, groupOwnerAddress.getHostAddress())),
+                        groupOwnerAddress.getHostAddress(), 2000);
             }
         };
 
@@ -125,9 +115,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                 this.init();
                 //
-                this.seqNum = 1;
                 this.ackSet = new HashSet<>();
-                this.peers = new HashMap<>();
                 this.neighbors = new HashMap<>();
             } else {
                 enabled = false;
@@ -135,6 +123,25 @@ public class WrapperWifiUdp extends AbstractWrapper {
         } catch (DeviceException e) {
             enabled = false;
         }
+    }
+
+    private void timerClientMessage(final MessageAdHoc message,
+                                    final String dest, final int time) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                Log.d(TAG, "Timer client: " + (dest) + " into set");
+
+                if (ackSet.contains(dest)) {
+                    // send Connect Reply Message
+                    _sendMessage(message, dest);
+                    Log.d(TAG, "Timer client contains " + (dest) + " into set");
+                    timerClientMessage(message, dest, time);
+                }
+            }
+        }, time);
     }
 
     /**
@@ -223,52 +230,47 @@ public class WrapperWifiUdp extends AbstractWrapper {
         wifiAdHocManager.connect(device.getAddress());
     }
 
-    private int counter = 0;//todo remove
-
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                String label = message.getHeader().getSenderAddr();
-                UDPmsg udpmsg = (UDPmsg) message.getPdu();
+                UdpMsg udpmsg = (UdpMsg) message.getPdu();
 
-                neighbors.put(label, new WifiAdHocDevice(message.getHeader().getSenderName(),
-                        udpmsg.getSourceAddress(), udpmsg.getOwnMac()));
-                Log.d(TAG, "CATCH " + neighbors.get(label));
+                neighbors.put(message.getHeader().getSenderAddr(),
+                        new WifiAdHocDevice(message.getHeader().getSenderName(), udpmsg.getSourceAddress()));
+                Log.d(TAG, "CATCH " + neighbors.get(message.getHeader().getSenderAddr()));
 
                 if (ownIpAddress == null) {
                     ownIpAddress = udpmsg.getDestinationAddress();
                 }
 
-                counter++;
-                Log.e(TAG, "CT" + counter);
-
-                Header header = new Header(CONNECT_CLIENT, label, ownName);
-                //ackSet.add(sourceAddr + "#" + seqNum);
-                sendConnectMessage(new MessageAdHoc(header, new UDPmsg(ownMac, udpmsg.getSeqNumber(),
-                                ownIpAddress, udpmsg.getSourceAddress())),
+                _sendMessage(new MessageAdHoc(new Header(CONNECT_CLIENT, label, ownName),
+                                new UdpMsg(ownMac, ownIpAddress, udpmsg.getSourceAddress())),
                         udpmsg.getSourceAddress());
+
+                // Callback connection
+                listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                        message.getHeader().getSenderName());
 
                 break;
             }
             case CONNECT_CLIENT: {
 
-                String label = message.getHeader().getSenderAddr();
-                UDPmsg udpmsg = (UDPmsg) message.getPdu();
+                UdpMsg udpmsg = (UdpMsg) message.getPdu();
 
-                /*Log.d(TAG, "Client check " + (sourceAddr2 + "#" + udPmsg2.getSeqNumber()) + " in set");
-                if (ackSet.contains(sourceAddr2 + "#" + udPmsg2.getSeqNumber())) {
-                    ackSet.remove(sourceAddr2 + "#" + udPmsg2.getSeqNumber());
-                    Log.d(TAG, "Client remove " + (sourceAddr2 + "#" + udPmsg2.getSeqNumber()) + " in set");
-                }*/
+                Log.d(TAG, "Client check " + (udpmsg.getSourceAddress()) + " in set");
+                if (ackSet.contains(udpmsg.getSourceAddress())) {
+                    ackSet.remove(udpmsg.getSourceAddress());
+                    Log.d(TAG, "Client remove " + (udpmsg.getSourceAddress()) + " in set");
+                }
 
-                counter++;
-                Log.e(TAG, "TC" + counter);
+                neighbors.put(message.getHeader().getSenderAddr(), new WifiAdHocDevice(message.getHeader().getSenderName(),
+                        udpmsg.getSourceAddress()));
+                Log.d(TAG, "CATCH " + neighbors.get(message.getHeader().getSenderAddr()));
 
-                neighbors.put(label, new WifiAdHocDevice(message.getHeader().getSenderName(),
-                        udpmsg.getSourceAddress(), udpmsg.getOwnMac()));
-                Log.d(TAG, "CATCH " + neighbors.get(label));
+                // Callback connection
+                listenerApp.onConnection(message.getHeader().getSenderAddr(), message.getHeader().getSenderName());
 
                 break;
             /*case HELLO:
@@ -301,12 +303,24 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     }
 
+    public boolean isDirectNeighbors(String address) {
+        return neighbors.containsKey(address);
+    }
+
     @Override
     public void enable(int duration) {
         wifiAdHocManager.enable();
     }
 
-    private void sendConnectMessage(final MessageAdHoc msg, final String address) {
+    public void sendMessage(MessageAdHoc msg, String label){
+        WifiAdHocDevice wifiAdHocDevice = neighbors.get(label);
+        if(wifiAdHocDevice != null){
+            Log.d(TAG, "Neigbors " + wifiAdHocDevice.toString());
+            _sendMessage(msg, wifiAdHocDevice.getIpAddress());
+        }
+    }
+
+    private void _sendMessage(final MessageAdHoc msg, final String address) {
 
         new Thread(new Runnable() {
             @Override
