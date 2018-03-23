@@ -6,10 +6,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 public class DiscoveredDevice {
 
-    public static final byte BLUETOOTH = 1;
-    public static final byte WIFI = 2;
-
-
     private final String address;
     private final String name;
     private final byte type;
@@ -49,7 +45,7 @@ public class DiscoveredDevice {
     }
 
     private String display(byte type) {
-        if (type == BLUETOOTH) {
+        if (type == DataLinkManager.BLUETOOTH) {
             return "Bt";
         }
 

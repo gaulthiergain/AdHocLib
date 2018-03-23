@@ -19,9 +19,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -53,7 +55,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
     private HashSet<String> ackSet;
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, Long> helloMessages;
-    private HashMap<String, WifiAdHocDevice> neighbors;
 
 
     public WrapperWifiUdp(final boolean v, Context context, final int serverPort,
@@ -95,6 +96,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
 
+                this.type = DataLinkManager.WIFI;
                 this.helloMessages = new HashMap<>();
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = serverPort;
@@ -110,7 +112,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                 this.initUdpPeers();
                 this.ackSet = new HashSet<>();
-                this.neighbors = new HashMap<>();
             } else {
                 enabled = false;
             }
@@ -191,7 +192,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,
                                 new DiscoveredDevice(entry.getValue().deviceAddress,
-                                        entry.getValue().deviceName, DiscoveredDevice.WIFI));
+                                        entry.getValue().deviceName, type));
                     }
                 }
 
@@ -235,15 +236,17 @@ public class WrapperWifiUdp extends AbstractWrapper {
                                 new UdpMsg(ownMac, ownIpAddress, udpmsg.getSourceAddress())),
                         udpmsg.getSourceAddress());
 
-                if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
+                if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
                 }
 
                 // Add remote host to neighbors
-                neighbors.put(message.getHeader().getSenderAddr(),
-                        new WifiAdHocDevice(message.getHeader().getSenderName(), udpmsg.getSourceAddress()));
+                activeConnections.getActivesConnections().put(message.getHeader().getSenderAddr(),
+                        new NetworkObject(DataLinkManager.WIFI,
+                                new WifiAdHocDevice(message.getHeader().getSenderName(),
+                                        udpmsg.getSourceAddress())));
                 break;
             }
             case CONNECT_CLIENT: {
@@ -256,15 +259,17 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     ackSet.remove(udpmsg.getSourceAddress());
                 }
 
-                if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
+                if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
                 }
 
                 // Add remote host to neighbors
-                neighbors.put(message.getHeader().getSenderAddr(), new WifiAdHocDevice(message.getHeader().getSenderName(),
-                        udpmsg.getSourceAddress()));
+                activeConnections.getActivesConnections().put(message.getHeader().getSenderAddr(),
+                        new NetworkObject(DataLinkManager.WIFI,
+                                new WifiAdHocDevice(message.getHeader().getSenderName(),
+                                        udpmsg.getSourceAddress())));
                 break;
             }
             case Constants.HELLO: {
@@ -298,18 +303,16 @@ public class WrapperWifiUdp extends AbstractWrapper {
         wifiAdHocManager.unregisterConnection();
     }
 
-    public boolean isDirectNeighbors(String address) {
-        return neighbors.containsKey(address);
-    }
-
     @Override
     public void enable(int duration) {
         wifiAdHocManager.enable();
     }
 
     public void sendMessage(MessageAdHoc msg, String label) {
-        WifiAdHocDevice wifiAdHocDevice = neighbors.get(label);
-        if (wifiAdHocDevice != null) {
+
+        NetworkObject networkObject = activeConnections.getActivesConnections().get(label);
+        if (networkObject != null) {
+            WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
             _sendMessage(msg, wifiAdHocDevice.getIpAddress());
         }
     }
@@ -349,10 +352,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (Map.Entry<String, WifiAdHocDevice> entry : neighbors.entrySet()) {
+                for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
                     MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
                             , System.currentTimeMillis());
-                    _sendMessage(msg, entry.getValue().getIpAddress());
+                    _sendMessage(msg, wifiAdHocDevice.getIpAddress());
                     if (v) Log.d(TAG, "Send HELLO message to " + entry.getKey());
                 }
 
@@ -390,15 +394,16 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             listenerDataLink.brokenLink(entry.getKey());
 
                             // Callback via handler
-                            WifiAdHocDevice wifiAdHocDevice = neighbors.get(entry.getKey());
-                            if (wifiAdHocDevice != null) {
+                            NetworkObject networkObject = activeConnections.getActivesConnections().get(entry.getKey());
+                            if (networkObject != null) {
+                                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
                                 mHandler.obtainMessage(1,
                                         new String[]{entry.getKey(), wifiAdHocDevice.getName()})
                                         .sendToTarget();
                             }
 
                             // Remove the remote device from a neighbors
-                            neighbors.remove(entry.getKey());
+                            activeConnections.getActivesConnections().remove(entry.getKey());
                         } catch (IOException | NoConnectionException e) {
                             listenerApp.catchException(e);
                         }

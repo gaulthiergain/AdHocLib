@@ -1,12 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
@@ -19,10 +17,11 @@ import java.util.Map;
 
 public class DataLinkManager {
 
-    private static final String TAG = "[AdHoc][DataLink]";
     private static final int POOLING_DISCOVERY = 1000;
 
-    private final boolean v;
+    public static final byte BLUETOOTH = 1;
+    public static final byte WIFI = 2;
+
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
     private final ActiveConnections activeConnections;
@@ -30,15 +29,10 @@ public class DataLinkManager {
 
     private short enabled;
 
-
-    //todo update
-    private boolean udp;
-
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException, DeviceException {
 
-        this.v = verbose;
         this.enabled = 0;
         this.listenerApp = listenerApp;
         this.activeConnections = new ActiveConnections();
@@ -49,18 +43,16 @@ public class DataLinkManager {
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
-            udp = false;
-            this.wrappers[0] = new WrapperWifi(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
+            this.wrappers[0] = new WrapperWifi(verbose, context, config.getNbThreadWifi(), config.getServerPort(), label,
                     activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
         } else {
             // UDP stream
-            udp = true;
-            this.wrappers[0] = new WrapperWifiUdp(v, context, config.getServerPort(), label,
+            this.wrappers[0] = new WrapperWifiUdp(verbose, context, config.getServerPort(), label,
                     activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
         }
 
 
-        this.wrappers[1] = new WrapperBluetooth(v, context, config.getSecure(), config.getNbThreadBt(), label,
+        this.wrappers[1] = new WrapperBluetooth(verbose, context, config.getSecure(), config.getNbThreadBt(), label,
                 activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
@@ -149,10 +141,10 @@ public class DataLinkManager {
 
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
             switch (entry.getValue().getType()) {
-                case DiscoveredDevice.WIFI:
+                case DataLinkManager.WIFI:
                     wrappers[0].connect(entry.getValue());
                     break;
-                case DiscoveredDevice.BLUETOOTH:
+                case DataLinkManager.BLUETOOTH:
                     wrappers[1].connect(entry.getValue());
                     break;
             }
@@ -175,42 +167,33 @@ public class DataLinkManager {
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
 
-        if (!udp) {
-            NetworkManager networkManager = activeConnections.getActivesConnections().get(address);
-            networkManager.sendMessage(message);
-            if (v) Log.d(TAG, "Send directly to " + address);
-        } else {
-            WrapperWifiUdp wrapperWifiUdp = (WrapperWifiUdp) wrappers[0];
-            wrapperWifiUdp.sendMessage(message, address);
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.sendMessage(message, address);
+            }
         }
-
     }
 
     public boolean isDirectNeighbors(String address) {
-        if (!udp) {
-            return activeConnections.getActivesConnections().containsKey(address);
-        } else {
-            WrapperWifiUdp wrapperWifiUdp = (WrapperWifiUdp) wrappers[0];
-            return wrapperWifiUdp.isDirectNeighbors(address);
-        }
+        return activeConnections.getActivesConnections().containsKey(address);
     }
 
     public void broadcastExcept(String originateAddr, MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
+        /*for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
             if (!entry.getKey().equals(originateAddr)) {
                 entry.getValue().sendMessage(message);
                 if (v)
                     Log.d(TAG, "Broadcast Message to " + entry.getKey());
             }
-        }
+        }*/
     }
 
     public void broadcast(MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
+        /*for (Map.Entry<String, NetworkManager> entry : activeConnections.getActivesConnections().entrySet()) {
             entry.getValue().sendMessage(message);
             if (v)
                 Log.d(TAG, "Broadcast Message to " + entry.getKey());
-        }
+        }*/
     }
 
     public void getPaired() {

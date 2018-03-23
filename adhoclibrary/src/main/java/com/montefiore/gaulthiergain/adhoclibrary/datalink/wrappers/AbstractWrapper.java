@@ -1,13 +1,16 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -30,6 +33,7 @@ public abstract class AbstractWrapper {
     final ListenerDataLink listenerDataLink;
     final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
+    byte type;
     String label;
     String ownMac;
     String ownName;
@@ -66,6 +70,21 @@ public abstract class AbstractWrapper {
 
     public abstract boolean isEnabled();
 
+    public abstract void unregisterConnection();
+
+    public abstract void enable(int duration);
+
+
+    public void sendMessage(MessageAdHoc message, String address) throws IOException {
+
+        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
+        if (networkObject != null && networkObject.getType() == type) {
+            NetworkManager networkManager = (NetworkManager) networkObject.getNetworkManager();
+            networkManager.sendMessage(message);
+        }
+    }
+
+
     public boolean isDiscoveryCompleted() {
         return discoveryCompleted;
     }
@@ -77,8 +96,4 @@ public abstract class AbstractWrapper {
     public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
         this.discoveryListener = discoveryListener;
     }
-
-    public abstract void unregisterConnection();
-
-    public abstract void enable(int duration);
 }

@@ -17,9 +17,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -56,6 +58,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             if (bluetoothManager.isEnabled()) {
 
                 this.secure = secure;
+                this.type = DataLinkManager.BLUETOOTH;
                 this.ownMac = BluetoothUtil.getCurrentMac(context);
                 this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
                 this.ownName = BluetoothUtil.getCurrentName();
@@ -239,17 +242,18 @@ public class WrapperBluetooth extends AbstractWrapper {
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
-            case CONNECT_SERVER:
-                NetworkManager networkManagerBt = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
+            case CONNECT_SERVER: {
+                NetworkManager networkManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
 
-                if (networkManagerBt != null) {
+                if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerBt);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
 
-                    networkManagerBt.sendMessage(new MessageAdHoc(
+                    networkManager.sendMessage(new MessageAdHoc(
                             new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
 
-                    Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                    if (v) Log.d(TAG, "Add couple: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
@@ -261,13 +265,15 @@ public class WrapperBluetooth extends AbstractWrapper {
                             message.getHeader().getSenderName());
                 }
                 break;
-            case CONNECT_CLIENT:
-                NetworkManager networkManagerServer = mapUuidNetwork.get(message.getPdu().toString());
-                if (networkManagerServer != null) {
+            }
+            case CONNECT_CLIENT: {
+                NetworkManager networkManager = mapUuidNetwork.get(message.getPdu().toString());
+                if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManagerServer);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
 
-                    Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                    if (v) Log.d(TAG, "Add couple: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
@@ -279,6 +285,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                             message.getHeader().getSenderName());
                 }
                 break;
+            }
             default:
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);
@@ -316,7 +323,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                                 + " into mapUuidDevices");
                         mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
                                 new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
-                                        entry.getValue().getDevice().getName(), DiscoveredDevice.BLUETOOTH));
+                                        entry.getValue().getDevice().getName(), type));
                     }
                 }
 

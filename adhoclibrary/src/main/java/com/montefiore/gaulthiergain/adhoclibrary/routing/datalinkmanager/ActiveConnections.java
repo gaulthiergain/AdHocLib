@@ -1,7 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -13,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ActiveConnections {
 
-    private ConcurrentHashMap<String, NetworkManager> activesConnections;
+    private ConcurrentHashMap<String, NetworkObject> activesConnections;
 
     /**
      * Constructor
@@ -26,13 +24,13 @@ public class ActiveConnections {
      * Method allowing to add a connection into the activesConnections hashmap.
      *
      * @param key           a String value which represents the address of a remote device.
-     * @param networkManager a NetworkManager object which represents the state of the connection.
+     * @param networkObject a NetworkObject object which represents the state of the connection.
      * @return a boolean value which is true if the pair (key, network) has been successfully added
      * to the hashmap.
      */
-    public boolean addConnection(String key, NetworkManager networkManager) {
+    public boolean addConnection(String key, NetworkObject networkObject) {
         if (!activesConnections.containsKey(key)) {
-            activesConnections.put(key, networkManager);
+            activesConnections.put(key, networkObject);
             return true;
         }
 
@@ -45,7 +43,7 @@ public class ActiveConnections {
      * @return a ConcurrentHashMap(String, NetworkManager) object which maps the remote node name to
      * a NetworkManager object.
      */
-    public ConcurrentHashMap<String, NetworkManager> getActivesConnections() {
+    public ConcurrentHashMap<String, NetworkObject> getActivesConnections() {
         return activesConnections;
     }
 

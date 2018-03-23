@@ -15,9 +15,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -88,6 +90,7 @@ public class WrapperWifi extends AbstractWrapper {
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
+                this.type = DataLinkManager.WIFI;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = serverPort;
                 this.mapIpNetwork = new HashMap<>();
@@ -253,7 +256,8 @@ public class WrapperWifi extends AbstractWrapper {
                 final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
                 if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManager);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
 
                     Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
                             + " " + message.getHeader().getSenderAddr());
@@ -283,7 +287,8 @@ public class WrapperWifi extends AbstractWrapper {
                 NetworkManager networkManager = mapIpNetwork.get(message.getPdu().toString());
                 if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(), networkManager);
+                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
 
                     Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
                             + " " + message.getHeader().getSenderAddr());
@@ -366,7 +371,7 @@ public class WrapperWifi extends AbstractWrapper {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,
                                 new DiscoveredDevice(entry.getValue().deviceAddress,
-                                        entry.getValue().deviceName, DiscoveredDevice.WIFI));
+                                        entry.getValue().deviceName, type));
                     }
                 }
 
