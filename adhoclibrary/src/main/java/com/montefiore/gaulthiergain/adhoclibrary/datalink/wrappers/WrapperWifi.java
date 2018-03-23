@@ -245,7 +245,7 @@ public class WrapperWifi extends AbstractWrapper {
         wifiAdHocManager.connect(device.getAddress());
     }
 
-    public void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
+    private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {

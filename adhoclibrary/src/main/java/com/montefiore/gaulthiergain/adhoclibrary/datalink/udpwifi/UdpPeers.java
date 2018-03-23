@@ -37,8 +37,9 @@ public class UdpPeers extends Thread {
                         messageListener.onMessageSent((MessageAdHoc) msg.obj);
                         break;
                     case CATH_EXCEPTION:
-                        if (v) Log.d(TAG, "MESSAGE_WRITE");
+                        if (v) Log.d(TAG, "CATH_EXCEPTION");
                         messageListener.catchException((Exception) msg.obj);
+
                         break;
                 }
             }
