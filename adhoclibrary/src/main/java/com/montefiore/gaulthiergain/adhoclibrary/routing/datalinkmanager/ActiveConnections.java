@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 public class ActiveConnections {
-    private static final String TAG = "[AdHoc][AutoConActives]";
 
     private ConcurrentHashMap<String, NetworkManager> activesConnections;
 

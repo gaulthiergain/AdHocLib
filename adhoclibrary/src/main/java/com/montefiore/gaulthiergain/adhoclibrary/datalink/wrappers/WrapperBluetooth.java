@@ -235,7 +235,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         new Thread(bluetoothServiceClient).start();
     }
 
-    public void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
+    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {

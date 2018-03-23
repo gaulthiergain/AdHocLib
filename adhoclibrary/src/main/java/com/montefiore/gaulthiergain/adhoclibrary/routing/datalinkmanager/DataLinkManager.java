@@ -55,7 +55,7 @@ public class DataLinkManager {
         } else {
             // UDP stream
             udp = true;
-            this.wrappers[0] = new WrapperWifiUdp(v, context, config.getNbThreadWifi(), config.getServerPort(), label,
+            this.wrappers[0] = new WrapperWifiUdp(v, context, config.getServerPort(), label,
                     activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
         }
 
