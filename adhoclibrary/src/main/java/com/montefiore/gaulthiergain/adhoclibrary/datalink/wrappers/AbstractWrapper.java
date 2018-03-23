@@ -1,18 +1,14 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
