@@ -63,7 +63,9 @@ public class AodvManager {
 
             @Override
             public void brokenLink(String remoteNode) throws IOException {
-                brokenLinkDetected(remoteNode);
+                if (remoteNode != null) {
+                    brokenLinkDetected(remoteNode);
+                }
             }
 
             @Override

@@ -72,6 +72,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
             @Override
             public void onConnectionFailed(int reasonCode) {
                 if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
+                wifiAdHocManager.cancelConnection();
             }
 
             @Override
@@ -359,6 +360,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     private Handler mHandler = new Handler() {
         // Used to avoid updating views in other threads than the main thread
         public void handleMessage(Message msg) {
+            // Used handler to avoid updating views in other threads than the main thread
             String[] couple = (String[]) msg.obj;
             listenerApp.onConnectionClosed(couple[0], couple[1]);
         }
@@ -423,6 +425,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             NetworkObject networkObject = activeConnections.getActivesConnections().get(entry.getKey());
                             if (networkObject != null && networkObject.getType() == type) {
                                 WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
+                                // Used handler to avoid using runOnUiThread in main app
                                 mHandler.obtainMessage(1,
                                         new String[]{entry.getKey(), wifiAdHocDevice.getName()})
                                         .sendToTarget();

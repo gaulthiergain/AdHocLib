@@ -62,6 +62,7 @@ public class WrapperWifi extends AbstractWrapper {
                 @Override
                 public void onConnectionFailed(int reasonCode) {
                     Log.d(TAG, "Connection Failed: " + reasonCode);
+                    wifiAdHocManager.cancelConnection();
                 }
 
                 @Override

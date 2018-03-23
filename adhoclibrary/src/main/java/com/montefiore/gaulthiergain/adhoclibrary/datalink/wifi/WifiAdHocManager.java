@@ -194,6 +194,22 @@ public class WifiAdHocManager {
         });
     }
 
+    public void cancelConnection() {
+        if (wifiP2pManager != null) {
+            wifiP2pManager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    if(v) Log.d(TAG, "onSuccess cancelConnect");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    if(v) Log.d(TAG, "onFailure cancelConnect: " + reason);
+                }
+            });
+        }
+    }
+
     /**
      * Method allowing to enable the wifi Direct adapter.
      *

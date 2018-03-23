@@ -1,6 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
@@ -92,7 +95,16 @@ public class DataLinkManager {
         }
     }
 
+
     private void bothDiscovery() {
+
+        @SuppressLint("HandlerLeak")
+        final Handler mHandler = new Handler() {
+            // Used handler to avoid updating views in other threads than the main thread
+            public void handleMessage(Message msg) {
+                listenerApp.onDiscoveryCompleted(mapAddressDevice);
+            }
+        };
 
         for (AbstractWrapper wrapper : wrappers) {
             wrapper.discovery();
@@ -116,7 +128,8 @@ public class DataLinkManager {
                         }
 
                         if (finished) {
-                            listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                            // Used handler to avoid using runOnUiThread in main app
+                            mHandler.obtainMessage(1).sendToTarget();
                             break;
                         }
                     }
