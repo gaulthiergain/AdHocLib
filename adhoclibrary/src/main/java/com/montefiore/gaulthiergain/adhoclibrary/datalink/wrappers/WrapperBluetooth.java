@@ -17,10 +17,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;

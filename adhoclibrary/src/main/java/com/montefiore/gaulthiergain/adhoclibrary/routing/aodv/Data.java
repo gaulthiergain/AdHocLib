@@ -7,7 +7,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
  * @version 1.0
  */
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.DataDeserializer;

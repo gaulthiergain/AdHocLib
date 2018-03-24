@@ -1,10 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.util;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.MessageDeserializer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
 
 /**
  * Created by gaulthiergain on 17/11/17.

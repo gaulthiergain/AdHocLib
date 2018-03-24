@@ -4,10 +4,10 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 

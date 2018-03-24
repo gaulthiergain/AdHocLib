@@ -3,10 +3,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 

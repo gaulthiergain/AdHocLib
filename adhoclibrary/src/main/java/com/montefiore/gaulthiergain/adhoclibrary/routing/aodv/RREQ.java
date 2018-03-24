@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * <p>This class represents a RREQ message and all theses fields for the AODV protocol. </p>

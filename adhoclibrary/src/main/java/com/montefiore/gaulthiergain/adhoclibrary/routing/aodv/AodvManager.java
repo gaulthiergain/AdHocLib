@@ -5,10 +5,10 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
@@ -16,8 +16,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * <p>This class represents the core of the AODV protocols. It manages all the messages and the

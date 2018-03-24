@@ -2,7 +2,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
 
 import android.util.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>This class allows to help the AodvManager by managing broadcast requests and routing table. </p>

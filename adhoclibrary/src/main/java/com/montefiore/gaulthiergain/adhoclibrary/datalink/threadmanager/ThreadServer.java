@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
@@ -14,6 +13,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWif
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 import java.io.IOException;
