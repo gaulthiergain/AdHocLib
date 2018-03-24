@@ -172,9 +172,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         //todo array list of bluetooth client and iterate over to disconnect
     }
 
-    /**
-     * Method allowing to update the name of the device.
-     */
+    @Override
     public void updateName(String name) {
         bluetoothManager.updateDeviceName(name);
     }

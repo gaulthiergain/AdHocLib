@@ -55,19 +55,21 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void discovery();
-
-    public abstract void disconnect();
-
     public abstract void connect(DiscoveredDevice device);
 
     public abstract void stopListening() throws IOException;
 
+    public abstract void discovery();
+
     public abstract void getPaired();
+
+    public abstract void enable(int duration);
 
     public abstract void unregisterConnection();
 
-    public abstract void enable(int duration);
+    public abstract void disconnect();
+
+    public abstract void updateName(String name);
 
     public boolean isEnabled() {
         return enabled;

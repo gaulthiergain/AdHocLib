@@ -183,9 +183,9 @@ public class WrapperWifi extends AbstractWrapper {
         //todo add client into list and disconnect it
     }
 
+    @Override
     public void updateName(String name) {
         wifiAdHocManager.updateName(name);
-
     }
 
     /*--------------------------------------Private methods---------------------------------------*/

@@ -22,12 +22,12 @@ public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
 
+    public static final byte WIFI = 0;
     public static final byte BLUETOOTH = 1;
-    public static final byte WIFI = 2;
 
+    private final Neighbors neighbors;
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
-    private final Neighbors neighbors;
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     private short enabled;
@@ -46,16 +46,16 @@ public class DataLinkManager {
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
-            this.wrappers[0] = new WrapperWifi(verbose, context, config.getNbThreadWifi(), config.getServerPort(), label,
+            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config.getNbThreadWifi(), config.getServerPort(), label,
                     neighbors, mapAddressDevice, listenerApp, listenerDataLink);
         } else {
             // UDP stream
-            this.wrappers[0] = new WrapperWifiUdp(verbose, context, config.getServerPort(), label,
+            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config.getServerPort(), label,
                     neighbors, mapAddressDevice, listenerApp, listenerDataLink);
         }
 
 
-        this.wrappers[1] = new WrapperBluetooth(verbose, context, config.getSecure(), config.getNbThreadBt(), label,
+        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config.getSecure(), config.getNbThreadBt(), label,
                 neighbors, mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
@@ -98,8 +98,7 @@ public class DataLinkManager {
 
     private void bothDiscovery() {
 
-        @SuppressLint("HandlerLeak")
-        final Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler() {
             // Used handler to avoid updating views in other threads than the main thread
             public void handleMessage(Message msg) {
                 listenerApp.onDiscoveryCompleted(mapAddressDevice);
@@ -155,10 +154,10 @@ public class DataLinkManager {
         for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
             switch (entry.getValue().getType()) {
                 case DataLinkManager.WIFI:
-                    wrappers[0].connect(entry.getValue());
+                    wrappers[WIFI].connect(entry.getValue());
                     break;
                 case DataLinkManager.BLUETOOTH:
-                    wrappers[1].connect(entry.getValue());
+                    wrappers[BLUETOOTH].connect(entry.getValue());
                     break;
             }
         }
@@ -207,7 +206,11 @@ public class DataLinkManager {
     }
 
     public void getPaired() {
-        wrappers[1].getPaired();
+        wrappers[BLUETOOTH].getPaired();
+    }
+
+    public AbstractWrapper getWrapper(int type) throws IndexOutOfBoundsException {
+        return wrappers[type];
     }
 
     public void disconnect() {

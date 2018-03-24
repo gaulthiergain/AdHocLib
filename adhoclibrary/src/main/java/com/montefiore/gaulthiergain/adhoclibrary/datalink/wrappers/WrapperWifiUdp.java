@@ -187,6 +187,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
+    public void updateName(String name) {
+        wifiAdHocManager.updateName(name);
+    }
+
+    @Override
     public void sendMessage(MessageAdHoc msg, String label) {
 
         NetworkObject networkObject = neighbors.getNeighbors().get(label);
