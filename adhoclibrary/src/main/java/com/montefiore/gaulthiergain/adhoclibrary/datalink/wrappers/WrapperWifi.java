@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
@@ -115,6 +116,8 @@ public class WrapperWifi extends AbstractWrapper {
         }
     }
 
+    /*-------------------------------------Override methods---------------------------------------*/
+
     @Override
     public void connect(DiscoveredDevice device) {
         wifiAdHocManager.connect(device.getAddress());
@@ -186,6 +189,17 @@ public class WrapperWifi extends AbstractWrapper {
     @Override
     public void updateName(String name) {
         wifiAdHocManager.updateName(name);
+    }
+
+    /*--------------------------------------Public methods----------------------------------------*/
+
+    public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
+
+        if(valueGroupOwner < 0 || valueGroupOwner > 15){
+            throw new GroupOwnerBadValue("GroupOwner value must be ");
+        }
+
+        wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
 
     /*--------------------------------------Private methods---------------------------------------*/

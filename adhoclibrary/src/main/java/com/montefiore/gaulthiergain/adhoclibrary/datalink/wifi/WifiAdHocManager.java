@@ -41,6 +41,7 @@ public class WifiAdHocManager {
 
     public static final int DISCOVERY_TIME = 10000;
     public static String TAG = "[AdHoc][WifiManager]";
+    private int valueGroupOwner = -1;
 
     /**
      * Constructor
@@ -178,6 +179,10 @@ public class WifiAdHocManager {
         // Get The device from its address
         final WifiP2pDevice device = hashMapWifiDevices.get(address);
         final WifiP2pConfig config = new WifiP2pConfig();
+        
+        if(config.groupOwnerIntent != -1){
+            config.groupOwnerIntent = valueGroupOwner;
+        }
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
 
@@ -356,6 +361,10 @@ public class WifiAdHocManager {
 
             broadcastWifi.registerGroupOwner(intentFilter, listenerWifiGroupOwner);
         }
+    }
+
+    public void setValueGroupOwner(int valueGroupOwner) {
+        this.valueGroupOwner = valueGroupOwner;
     }
 
     public void leaveWifiP2PGroup() {

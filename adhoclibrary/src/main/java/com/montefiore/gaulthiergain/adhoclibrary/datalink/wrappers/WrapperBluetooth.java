@@ -75,6 +75,8 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
     }
 
+    /*-------------------------------------Override methods---------------------------------------*/
+
     @Override
     public void connect(DiscoveredDevice device) {
 
