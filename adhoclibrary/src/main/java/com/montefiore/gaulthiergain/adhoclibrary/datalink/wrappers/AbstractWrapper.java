@@ -65,11 +65,13 @@ public abstract class AbstractWrapper {
 
     public abstract void getPaired();
 
-    public abstract boolean isEnabled();
-
     public abstract void unregisterConnection();
 
     public abstract void enable(int duration);
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 
     public boolean isDiscoveryCompleted() {
         return discoveryCompleted;

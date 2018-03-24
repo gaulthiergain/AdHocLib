@@ -46,12 +46,12 @@ public class WrapperBluetooth extends AbstractWrapper {
     private HashMap<String, NetworkManager> mapUuidNetwork;
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
-    public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads,
+    public WrapperBluetooth(boolean verbose, Context context, boolean secure, short nbThreads,
                             String label, Neighbors neighbors,
                             HashMap<String, DiscoveredDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(v, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
+        super(verbose, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
@@ -75,8 +75,82 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    @Override
+    public void connect(DiscoveredDevice device) {
+
+        String shortUuid = device.getAddress().replace(":", "").toLowerCase();
+        BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
+        if (btDevice != null) {
+            if (!neighbors.getNeighbors().containsKey(btDevice.getShortUuid())) {
+                _connect(btDevice);
+            } else {
+                listenerApp.catchException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
+                        + " is already connected"));
+            }
+        }
+    }
+
+    @Override
+    public void stopListening() throws IOException {
+        bluetoothServiceServer.stopListening();
+    }
+
+    @Override
+    public void discovery() {
+        bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
+            @Override
+            public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+                // Add no paired devices into the mapUuidDevices
+                for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
+                    if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
+                        mapUuidDevices.put(entry.getValue().getShortUuid(), entry.getValue());
+                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
+                                + " into mapUuidDevices");
+                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
+                                        entry.getValue().getDevice().getName(), type));
+                    }
+                }
+
+                if (discoveryListener != null) {
+                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                }
+
+                discoveryCompleted = true;
+
+                // Stop and unregister to the discovery process
+                bluetoothManager.unregisterDiscovery();
+            }
+
+            @Override
+            public void onDiscoveryStarted() {
+
+            }
+
+            @Override
+            public void onDeviceFound(BluetoothDevice device) {
+
+            }
+
+            @Override
+            public void onScanModeChange(int currentMode, int oldMode) {
+
+            }
+        });
+    }
+
+    @Override
+    public void getPaired() {
+        // Add paired devices into the mapUuidDevices
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+            if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
+                mapUuidDevices.put(entry.getValue().getShortUuid(), entry.getValue());
+                if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
+                        + " into mapUuidDevices");
+            }
+        }
+
+        listenerApp.onPairedCompleted();
     }
 
     @Override
@@ -93,77 +167,19 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
     }
 
-    public void connect(DiscoveredDevice device) {
-
-        String shortUuid = device.getAddress().replace(":", "").toLowerCase();
-        BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
-        if (btDevice != null) {
-            if (!neighbors.getNeighbors().containsKey(btDevice.getShortUuid())) {
-                _connect(btDevice);
-            } else {
-                listenerApp.catchException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
-                        + " is already connected"));
-            }
-        }
+    @Override
+    public void disconnect() {
+        //todo array list of bluetooth client and iterate over to disconnect
     }
 
-    private void listenServer(short nbThreads) throws IOException {
-
-        bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
-            @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
-                }
-            }
-
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.catchException(e);
-            }
-
-            @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
-
-                try {
-                    listenerDataLink.brokenLink(remoteLabel);
-                    neighbors.getNeighbors().remove(remoteLabel);
-                } catch (IOException e) {
-                    listenerApp.catchException(e);
-                } catch (NoConnectionException e) {
-                    listenerApp.catchException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
-            }
-
-            @Override
-            public void onConnection(RemoteConnection remoteDevice) {
-
-            }
-        });
-
-        // Start the bluetoothServiceServer listening process
-        bluetoothServiceServer.listen(nbThreads, secure, "secure",
-                BluetoothAdapter.getDefaultAdapter(), ownUUID);
+    /**
+     * Method allowing to update the name of the device.
+     */
+    public void updateName(String name) {
+        bluetoothManager.updateDeviceName(name);
     }
+
+    /*--------------------------------------Private methods---------------------------------------*/
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
@@ -237,6 +253,64 @@ public class WrapperBluetooth extends AbstractWrapper {
         new Thread(bluetoothServiceClient).start();
     }
 
+    private void listenServer(short nbThreads) throws IOException {
+
+        bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.catchException(e);
+                }
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.catchException(e);
+            }
+
+            @Override
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
+
+                //Get label from ip
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
+
+                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
+
+                try {
+                    listenerDataLink.brokenLink(remoteLabel);
+                    neighbors.getNeighbors().remove(remoteLabel);
+                } catch (IOException e) {
+                    listenerApp.catchException(e);
+                } catch (NoConnectionException e) {
+                    listenerApp.catchException(e);
+                }
+
+                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+            }
+
+            @Override
+            public void onConnection(RemoteConnection remoteDevice) {
+
+            }
+        });
+
+        // Start the bluetoothServiceServer listening process
+        bluetoothServiceServer.listen(nbThreads, secure, "secure",
+                BluetoothAdapter.getDefaultAdapter(), ownUUID);
+    }
+
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
@@ -293,79 +367,5 @@ public class WrapperBluetooth extends AbstractWrapper {
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);
         }
-    }
-
-    @Override
-    public void stopListening() throws IOException {
-        bluetoothServiceServer.stopListening();
-    }
-
-    @Override
-    public void getPaired() {
-        // Add paired devices into the mapUuidDevices
-        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
-            if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
-                mapUuidDevices.put(entry.getValue().getShortUuid(), entry.getValue());
-                if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
-                        + " into mapUuidDevices");
-            }
-        }
-
-        listenerApp.onPairedCompleted();
-    }
-
-    public void discovery() {
-        bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
-            @Override
-            public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
-                // Add no paired devices into the mapUuidDevices
-                for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
-                        mapUuidDevices.put(entry.getValue().getShortUuid(), entry.getValue());
-                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
-                                + " into mapUuidDevices");
-                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
-                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
-                                        entry.getValue().getDevice().getName(), type));
-                    }
-                }
-
-                if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
-                }
-
-                discoveryCompleted = true;
-
-                // Stop and unregister to the discovery process
-                bluetoothManager.unregisterDiscovery();
-            }
-
-            @Override
-            public void onDiscoveryStarted() {
-
-            }
-
-            @Override
-            public void onDeviceFound(BluetoothDevice device) {
-
-            }
-
-            @Override
-            public void onScanModeChange(int currentMode, int oldMode) {
-
-            }
-        });
-    }
-
-    @Override
-    public void disconnect() {
-        //todo array list of bluetooth client and iterate over to disconnect
-    }
-
-    /**
-     * Method allowing to update the name of the device.
-     */
-    public void updateName(String name) {
-        bluetoothManager.updateDeviceName(name);
     }
 }

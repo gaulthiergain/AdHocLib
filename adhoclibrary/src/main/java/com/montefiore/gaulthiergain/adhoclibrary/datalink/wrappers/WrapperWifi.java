@@ -44,31 +44,31 @@ public class WrapperWifi extends AbstractWrapper {
     private HashMap<String, NetworkManager> mapIpNetwork;
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
-    public WrapperWifi(boolean v, Context context, short nbThreads, int serverPort,
+    public WrapperWifi(boolean verbose, Context context, short nbThreads, int serverPort,
                        String label, Neighbors neighbors,
                        HashMap<String, DiscoveredDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(v, context, label, mapAddressDevice, neighbors, listenerApp, listenerDataLink);
+        super(verbose, context, label, mapAddressDevice, neighbors, listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
                 @Override
                 public void onConnectionStarted() {
-                    Log.d(TAG, "Connection Started");
+                    if (v) Log.d(TAG, "Connection Started");
                 }
 
                 @Override
                 public void onConnectionFailed(int reasonCode) {
-                    Log.d(TAG, "Connection Failed: " + reasonCode);
+                    if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
                     wifiAdHocManager.cancelConnection();
                 }
 
                 @Override
                 public void onGroupOwner(InetAddress groupOwnerAddress) {
                     ownIpAddress = groupOwnerAddress.getHostAddress();
-                    Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+                    if (v) Log.d(TAG, "onGroupOwner: " + ownIpAddress);
                 }
 
                 @Override
@@ -77,8 +77,9 @@ public class WrapperWifi extends AbstractWrapper {
                     groupOwnerAddr = groupOwnerAddress.getHostAddress();
                     ownIpAddress = address.getHostAddress();
 
-                    Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
-                    Log.d(TAG, "OWN IP address: " + ownIpAddress);
+                    if (v)
+                        Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
+                    if (v) Log.d(TAG, "OWN IP address: " + ownIpAddress);
 
                     try {
                         wifiServiceServer.stopListening();
@@ -114,61 +115,80 @@ public class WrapperWifi extends AbstractWrapper {
         }
     }
 
-    public void listenServer(short nbThreads) throws IOException {
-        wifiServiceServer = new WifiServiceServer(v, context, new MessageListener() {
+    @Override
+    public void connect(DiscoveredDevice device) {
+        wifiAdHocManager.connect(device.getAddress());
+    }
+
+    @Override
+    public void stopListening() throws IOException {
+        wifiServiceServer.stopListening();
+    }
+
+    @Override
+    public void discovery() {
+        wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
-                }
+            public void onDiscoveryStarted() {
+                if (v) Log.d(TAG, "onDiscoveryStarted");
             }
 
             @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            public void onDiscoveryFailed(int reasonCode) {
+                if (v) Log.d(TAG, "onDiscoveryFailed"); //todo exception here
             }
 
             @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
+            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
+                if (v) Log.d(TAG, "onDiscoveryCompleted");
 
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.catchException(e);
-            }
-
-            @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
-
-                try {
-                    remoteDevice.setDeviceAddress(remoteLabel);
-                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
-                    neighbors.getNeighbors().remove(remoteLabel);
-                    listenerDataLink.brokenLink(remoteLabel);
-                } catch (IOException | NoConnectionException e) {
-                    listenerApp.catchException(e);
+                // Add devices into the peers
+                for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
+                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
+                        if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
+                        mapAddressDevice.put(entry.getValue().deviceAddress,
+                                new DiscoveredDevice(entry.getValue().deviceAddress,
+                                        entry.getValue().deviceName, type));
+                    }
                 }
 
-                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
-            }
+                if (discoveryListener != null) {
+                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                }
 
-            @Override
-            public void onConnection(RemoteConnection remoteDevice) {
+                discoveryCompleted = true;
 
+                wifiAdHocManager.unregisterDiscovery();
             }
         });
-
-        // Start the wifi server listening process
-        wifiServiceServer.listen(nbThreads, serverPort);
     }
+
+    @Override
+    public void getPaired() {
+        // Not used in wifi context
+    }
+
+    @Override
+    public void unregisterConnection() {
+        wifiAdHocManager.unregisterConnection();
+    }
+
+    @Override
+    public void enable(int duration) {
+        wifiAdHocManager.enable();
+    }
+
+    @Override
+    public void disconnect() {
+        //todo add client into list and disconnect it
+    }
+
+    public void updateName(String name) {
+        wifiAdHocManager.updateName(name);
+
+    }
+
+    /*--------------------------------------Private methods---------------------------------------*/
 
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true,
@@ -244,8 +264,60 @@ public class WrapperWifi extends AbstractWrapper {
 
     }
 
-    public void connect(DiscoveredDevice device) {
-        wifiAdHocManager.connect(device.getAddress());
+    private void listenServer(short nbThreads) throws IOException {
+        wifiServiceServer = new WifiServiceServer(v, context, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.catchException(e);
+                }
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.catchException(e);
+            }
+
+            @Override
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
+
+                //Get label from ip
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
+
+                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
+
+                try {
+                    remoteDevice.setDeviceAddress(remoteLabel);
+                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
+                    neighbors.getNeighbors().remove(remoteLabel);
+                    listenerDataLink.brokenLink(remoteLabel);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.catchException(e);
+                }
+
+                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+            }
+
+            @Override
+            public void onConnection(RemoteConnection remoteDevice) {
+
+            }
+        });
+
+        // Start the wifi server listening process
+        wifiServiceServer.listen(nbThreads, serverPort);
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
@@ -317,21 +389,6 @@ public class WrapperWifi extends AbstractWrapper {
         }
     }
 
-    @Override
-    public void stopListening() throws IOException {
-        wifiServiceServer.stopListening();
-    }
-
-    @Override
-    public void getPaired() {
-        // Not used in wifi context
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
     private void sendConnectClient(MessageAdHoc message, NetworkManager networkManager) {
         if (networkManager != null) {
             // Send CONNECT message to establish the pairing
@@ -353,61 +410,5 @@ public class WrapperWifi extends AbstractWrapper {
                 listenerApp.catchException(e);
             }
         }
-    }
-
-    public void discovery() {
-        wifiAdHocManager.discovery(new DiscoveryListener() {
-            @Override
-            public void onDiscoveryStarted() {
-                if (v) Log.d(TAG, "onDiscoveryStarted");
-            }
-
-            @Override
-            public void onDiscoveryFailed(int reasonCode) {
-                Log.d(TAG, "onDiscoveryFailed"); //todo exception here
-            }
-
-            @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
-                if (v) Log.d(TAG, "onDiscoveryCompleted");
-
-                // Add devices into the peers
-                for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
-                        if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
-                        mapAddressDevice.put(entry.getValue().deviceAddress,
-                                new DiscoveredDevice(entry.getValue().deviceAddress,
-                                        entry.getValue().deviceName, type));
-                    }
-                }
-
-                if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
-                }
-
-                discoveryCompleted = true;
-
-                wifiAdHocManager.unregisterDiscovery();
-            }
-        });
-    }
-
-    @Override
-    public void disconnect() {
-        //todo add client into list and disconnect it
-    }
-
-    public void updateName(String name) {
-        wifiAdHocManager.updateName(name);
-
-    }
-
-    public void unregisterConnection() {
-        wifiAdHocManager.unregisterConnection();
-    }
-
-    @Override
-    public void enable(int duration) {
-        wifiAdHocManager.enable();
     }
 }
