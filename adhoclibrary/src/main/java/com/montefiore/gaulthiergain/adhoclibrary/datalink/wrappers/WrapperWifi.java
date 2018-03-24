@@ -245,13 +245,12 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     public void connect(DiscoveredDevice device) {
-        Log.d(TAG, "Remote Address" + device.getAddress());
         wifiAdHocManager.connect(device.getAddress());
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
-        Log.d(TAG, "Message rcvd " + message.toString());
+        if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
                 final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
@@ -260,8 +259,9 @@ public class WrapperWifi extends AbstractWrapper {
                     activeConnections.addConnection(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
 
-                    Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
-                            + " " + message.getHeader().getSenderAddr());
+                    if (v)
+                        Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
+                                + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
                     mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
@@ -269,11 +269,11 @@ public class WrapperWifi extends AbstractWrapper {
 
                 }
 
+                // If ownIP address is not known, request it by event
                 if (ownIpAddress == null) {
                     wifiAdHocManager.requestGO(new WifiAdHocManager.ListenerWifiGroupOwner() {
                         @Override
                         public void getGroupOwner(String address) {
-                            Log.d(TAG, ">>>> GO: " + address);
                             ownIpAddress = address;
                             wifiAdHocManager.unregisterGroupOwner();
                             sendConnectClient(message, networkManager);
@@ -291,8 +291,9 @@ public class WrapperWifi extends AbstractWrapper {
                     activeConnections.addConnection(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
 
-                    Log.d(TAG, "Add couple: " + networkManager.getISocket().getRemoteSocketAddress()
-                            + " " + message.getHeader().getSenderAddr());
+                    if (v)
+                        Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
+                                + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
                     mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
@@ -302,9 +303,11 @@ public class WrapperWifi extends AbstractWrapper {
                     mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
 
-                    // Callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                    if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                        // Callback connection
+                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                                message.getHeader().getSenderName());
+                    }
                 }
                 break;
             }
@@ -340,9 +343,11 @@ public class WrapperWifi extends AbstractWrapper {
                 mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
                         message.getHeader().getSenderName());
 
-                // Callback connection
-                listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                        message.getHeader().getSenderName());
+                if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                    // Callback connection
+                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                            message.getHeader().getSenderName());
+                }
 
             } catch (IOException e) {
                 listenerApp.catchException(e);

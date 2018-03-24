@@ -215,12 +215,13 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void connect(DiscoveredDevice device) {
-        if (v) Log.d(TAG, "Connect to remote Address" + device.getAddress());
         wifiAdHocManager.connect(device.getAddress());
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
+
+        if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 

@@ -98,7 +98,6 @@ public class WrapperBluetooth extends AbstractWrapper {
         String shortUuid = device.getAddress().replace(":", "").toLowerCase();
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
         if (btDevice != null) {
-            //todo remove statement below and add checking hybrid list via name
             if (!activeConnections.getActivesConnections().containsKey(btDevice.getShortUuid())) {
                 _connect(btDevice);
             } else {
@@ -108,7 +107,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         }
     }
 
-    public void listenServer(short nbThreads) throws IOException {
+    private void listenServer(short nbThreads) throws IOException {
 
         bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
             @Override
@@ -240,7 +239,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
-        Log.d(TAG, "Message rcvd " + message.toString());
+        if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
                 NetworkManager networkManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
@@ -253,16 +252,18 @@ public class WrapperBluetooth extends AbstractWrapper {
                     networkManager.sendMessage(new MessageAdHoc(
                             new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
 
-                    if (v) Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                    if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
                     mapLabelAddr.put(message.getPdu().toString(),
                             message.getHeader().getSenderAddr());
 
-                    // callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                    if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                        // Callback connection
+                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                                message.getHeader().getSenderName());
+                    }
                 }
                 break;
             }
@@ -273,16 +274,18 @@ public class WrapperBluetooth extends AbstractWrapper {
                     activeConnections.addConnection(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
 
-                    if (v) Log.d(TAG, "Add couple: " + message.getPdu().toString()
+                    if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
                     mapLabelAddr.put(message.getPdu().toString(),
                             message.getHeader().getSenderAddr());
 
-                    // callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                    if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                        // Callback connection
+                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
+                                message.getHeader().getSenderName());
+                    }
                 }
                 break;
             }
