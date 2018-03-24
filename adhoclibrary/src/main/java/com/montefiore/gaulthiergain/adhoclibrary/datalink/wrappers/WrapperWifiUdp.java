@@ -19,7 +19,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
@@ -58,10 +58,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
 
     public WrapperWifiUdp(final boolean v, Context context, final int serverPort,
-                          final String label, ActiveConnections activeConnections,
+                          final String label, Neighbors neighbors,
                           HashMap<String, DiscoveredDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLink);
+        super(v, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override
@@ -238,14 +238,14 @@ public class WrapperWifiUdp extends AbstractWrapper {
                                 new UdpMsg(ownMac, ownIpAddress, udpmsg.getSourceAddress())),
                         udpmsg.getSourceAddress());
 
-                if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
                 }
 
                 // Add remote host to neighbors
-                activeConnections.getActivesConnections().put(message.getHeader().getSenderAddr(),
+                neighbors.getNeighbors().put(message.getHeader().getSenderAddr(),
                         new NetworkObject(DataLinkManager.WIFI,
                                 new WifiAdHocDevice(message.getHeader().getSenderName(),
                                         udpmsg.getSourceAddress())));
@@ -261,14 +261,14 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     ackSet.remove(udpmsg.getSourceAddress());
                 }
 
-                if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
                 }
 
                 // Add remote host to neighbors
-                activeConnections.getActivesConnections().put(message.getHeader().getSenderAddr(),
+                neighbors.getNeighbors().put(message.getHeader().getSenderAddr(),
                         new NetworkObject(DataLinkManager.WIFI,
                                 new WifiAdHocDevice(message.getHeader().getSenderName(),
                                         udpmsg.getSourceAddress())));
@@ -312,7 +312,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     public void sendMessage(MessageAdHoc msg, String label) {
 
-        NetworkObject networkObject = activeConnections.getActivesConnections().get(label);
+        NetworkObject networkObject = neighbors.getNeighbors().get(label);
         if (networkObject != null && networkObject.getType() == type) {
             WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
             _sendMessage(msg, wifiAdHocDevice.getIpAddress());
@@ -321,7 +321,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcast(MessageAdHoc message) {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
                 _sendMessage(message, wifiAdHocDevice.getIpAddress());
@@ -331,7 +331,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 if (!entry.getKey().equals(excludedAddress)) {
                     WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
@@ -377,7 +377,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+                for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
 
                     NetworkObject networkObject = entry.getValue();
                     if (networkObject.getType() == type) {
@@ -423,7 +423,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             listenerDataLink.brokenLink(entry.getKey());
 
                             // Callback via handler
-                            NetworkObject networkObject = activeConnections.getActivesConnections().get(entry.getKey());
+                            NetworkObject networkObject = neighbors.getNeighbors().get(entry.getKey());
                             if (networkObject != null && networkObject.getType() == type) {
                                 WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
                                 // Used handler to avoid using runOnUiThread in main app
@@ -433,7 +433,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             }
 
                             // Remove the remote device from a neighbors
-                            activeConnections.getActivesConnections().remove(entry.getKey());
+                            neighbors.getNeighbors().remove(entry.getKey());
                         } catch (IOException | NoConnectionException e) {
                             listenerApp.catchException(e);
                         }

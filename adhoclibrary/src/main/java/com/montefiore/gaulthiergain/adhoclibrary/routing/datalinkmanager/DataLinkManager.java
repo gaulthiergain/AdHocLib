@@ -27,7 +27,7 @@ public class DataLinkManager {
 
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
-    private final ActiveConnections activeConnections;
+    private final Neighbors neighbors;
     private final HashMap<String, DiscoveredDevice> mapAddressDevice;
 
     private short enabled;
@@ -38,7 +38,7 @@ public class DataLinkManager {
 
         this.enabled = 0;
         this.listenerApp = listenerApp;
-        this.activeConnections = new ActiveConnections();
+        this.neighbors = new Neighbors();
         this.mapAddressDevice = new HashMap<>();
 
         String label = config.getLabel();
@@ -47,16 +47,16 @@ public class DataLinkManager {
         if (config.isReliableTransportWifi()) {
             // TCP connection
             this.wrappers[0] = new WrapperWifi(verbose, context, config.getNbThreadWifi(), config.getServerPort(), label,
-                    activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+                    neighbors, mapAddressDevice, listenerApp, listenerDataLink);
         } else {
             // UDP stream
             this.wrappers[0] = new WrapperWifiUdp(verbose, context, config.getServerPort(), label,
-                    activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+                    neighbors, mapAddressDevice, listenerApp, listenerDataLink);
         }
 
 
         this.wrappers[1] = new WrapperBluetooth(verbose, context, config.getSecure(), config.getNbThreadBt(), label,
-                activeConnections, mapAddressDevice, listenerApp, listenerDataLink);
+                neighbors, mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
         for (AbstractWrapper wrapper : wrappers) {
@@ -187,7 +187,7 @@ public class DataLinkManager {
     }
 
     public boolean isDirectNeighbors(String address) {
-        return activeConnections.getActivesConnections().containsKey(address);
+        return neighbors.getNeighbors().containsKey(address);
     }
 
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {

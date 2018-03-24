@@ -17,7 +17,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
@@ -47,11 +47,11 @@ public class WrapperBluetooth extends AbstractWrapper {
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
     public WrapperBluetooth(boolean v, Context context, boolean secure, short nbThreads,
-                            String label, ActiveConnections activeConnections,
+                            String label, Neighbors neighbors,
                             HashMap<String, DiscoveredDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(v, context, label, mapAddressDevice, activeConnections, listenerAodv, listenerDataLink);
+        super(v, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
@@ -98,7 +98,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         String shortUuid = device.getAddress().replace(":", "").toLowerCase();
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
         if (btDevice != null) {
-            if (!activeConnections.getActivesConnections().containsKey(btDevice.getShortUuid())) {
+            if (!neighbors.getNeighbors().containsKey(btDevice.getShortUuid())) {
                 _connect(btDevice);
             } else {
                 listenerApp.catchException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
@@ -144,7 +144,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                 try {
                     listenerDataLink.brokenLink(remoteLabel);
-                    activeConnections.getActivesConnections().remove(remoteLabel);
+                    neighbors.getNeighbors().remove(remoteLabel);
                 } catch (IOException e) {
                     listenerApp.catchException(e);
                 } catch (NoConnectionException e) {
@@ -202,7 +202,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                         try {
                             listenerDataLink.brokenLink(remoteLabel);
-                            activeConnections.getActivesConnections().remove(remoteLabel);
+                            neighbors.getNeighbors().remove(remoteLabel);
                         } catch (IOException e) {
                             listenerApp.catchException(e);
                         } catch (NoConnectionException e) {
@@ -246,7 +246,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                 if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
 
                     networkManager.sendMessage(new MessageAdHoc(
@@ -259,7 +259,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     mapLabelAddr.put(message.getPdu().toString(),
                             message.getHeader().getSenderAddr());
 
-                    if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                    if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
                         // Callback connection
                         listenerApp.onConnection(message.getHeader().getSenderAddr(),
                                 message.getHeader().getSenderName());
@@ -271,7 +271,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 NetworkManager networkManager = mapUuidNetwork.get(message.getPdu().toString());
                 if (networkManager != null) {
                     // Add the active connection into the autoConnectionActives object
-                    activeConnections.addConnection(message.getHeader().getSenderAddr(),
+                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
 
                     if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
@@ -281,7 +281,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     mapLabelAddr.put(message.getPdu().toString(),
                             message.getHeader().getSenderAddr());
 
-                    if (!activeConnections.getActivesConnections().containsKey(message.getHeader().getSenderAddr())) {
+                    if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
                         // Callback connection
                         listenerApp.onConnection(message.getHeader().getSenderAddr(),
                                 message.getHeader().getSenderName());

@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ActiveConnections;
+import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
@@ -25,7 +25,7 @@ public abstract class AbstractWrapper {
     final boolean v;
     final Context context;
     final ListenerApp listenerApp;
-    final ActiveConnections activeConnections;
+    final Neighbors neighbors;
     final HashMap<String, String> mapLabelAddr;
     final ListenerDataLink listenerDataLink;
     final HashMap<String, DiscoveredDevice> mapAddressDevice;
@@ -40,7 +40,7 @@ public abstract class AbstractWrapper {
 
     AbstractWrapper(boolean v, Context context, String label,
                     HashMap<String, DiscoveredDevice> mapAddressDevice,
-                    ActiveConnections activeConnections,
+                    Neighbors neighbors,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -51,7 +51,7 @@ public abstract class AbstractWrapper {
         this.listenerApp = listenerApp;
         this.mapLabelAddr = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
-        this.activeConnections = activeConnections;
+        this.neighbors = neighbors;
         this.listenerDataLink = listenerDataLink;
     }
 
@@ -85,7 +85,7 @@ public abstract class AbstractWrapper {
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
 
-        NetworkObject networkObject = activeConnections.getActivesConnections().get(address);
+        NetworkObject networkObject = neighbors.getNeighbors().get(address);
         if (networkObject != null && networkObject.getType() == type) {
             NetworkManager networkManager = (NetworkManager) networkObject.getNetworkManager();
             networkManager.sendMessage(message);
@@ -93,7 +93,7 @@ public abstract class AbstractWrapper {
     }
 
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 if (!entry.getKey().equals(excludedAddress)) {
                     NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
@@ -104,7 +104,7 @@ public abstract class AbstractWrapper {
     }
 
     public void broadcast(MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : activeConnections.getActivesConnections().entrySet()) {
+        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
                 networkManager.sendMessage(message);
