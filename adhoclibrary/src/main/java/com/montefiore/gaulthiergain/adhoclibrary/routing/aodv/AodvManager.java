@@ -454,7 +454,7 @@ public class AodvManager {
 
         if (data.getDestIpAddress().equals(ownAddress)) {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message");
-            if (listenerApp != null) listenerApp.receivedDATA(message);
+            if (listenerApp != null) listenerApp.receivedData(message);
         } else {
             // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(data.getDestIpAddress());

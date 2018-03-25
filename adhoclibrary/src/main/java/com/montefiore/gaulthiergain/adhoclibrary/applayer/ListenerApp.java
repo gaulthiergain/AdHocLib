@@ -26,7 +26,7 @@ public interface ListenerApp {
      *
      * @param message an object which represents a message exchanged between nodes.
      */
-    void receivedDATA(Object message);
+    void receivedData(Object message);
 
     /**
      * Callback when exception occurs.
