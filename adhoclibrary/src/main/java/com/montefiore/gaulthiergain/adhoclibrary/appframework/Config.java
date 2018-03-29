@@ -1,7 +1,7 @@
-package com.montefiore.gaulthiergain.adhoclibrary.applayer;
+package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.BadServerPortException;
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions.MaxThreadReachedException;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.BadServerPortException;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 
 import java.util.UUID;

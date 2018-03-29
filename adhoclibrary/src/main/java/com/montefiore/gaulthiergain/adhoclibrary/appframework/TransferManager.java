@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.applayer;
+package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
 

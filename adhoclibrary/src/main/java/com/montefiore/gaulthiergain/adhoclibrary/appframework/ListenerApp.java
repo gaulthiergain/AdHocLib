@@ -1,6 +1,7 @@
-package com.montefiore.gaulthiergain.adhoclibrary.applayer;
+package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 
 import java.util.HashMap;
 
@@ -19,9 +20,11 @@ public interface ListenerApp {
     /**
      * Callback when a RREQ message is received.
      *
-     * @param message an object which represents a message exchanged between nodes.
+     * @param senderName
+     * @param senderAddress
+     * @param pdu
      */
-    void receivedData(Object message);
+    void receivedData(String senderName, String senderAddress, Object pdu);
 
     /**
      * Callback when exception occurs.

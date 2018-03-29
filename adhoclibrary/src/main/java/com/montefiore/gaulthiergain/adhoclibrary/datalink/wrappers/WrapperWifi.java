@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;

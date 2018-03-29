@@ -5,8 +5,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;

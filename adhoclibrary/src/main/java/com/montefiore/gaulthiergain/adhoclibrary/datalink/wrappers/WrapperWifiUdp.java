@@ -7,7 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;

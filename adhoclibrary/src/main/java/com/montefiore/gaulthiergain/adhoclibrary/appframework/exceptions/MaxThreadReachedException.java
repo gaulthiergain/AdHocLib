@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.applayer.exceptions;
+package com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions;
 
 public class MaxThreadReachedException extends Exception {
 

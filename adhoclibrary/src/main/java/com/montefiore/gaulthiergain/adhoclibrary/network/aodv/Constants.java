@@ -34,9 +34,6 @@ public interface Constants {
     //alive time for a route
     int LIFE_TIME = EXPIRED_TIME;
 
-    //the time to wait between each hello message sent
-    int BROADCAST_INTERVAL = 1;
-
     //the time of hello packets
     int HELLO_PACKET_INTERVAL_SND = 30000;
     int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 2;

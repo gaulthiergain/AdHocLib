@@ -3,8 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
-import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -454,7 +454,8 @@ public class AodvManager {
 
         if (data.getDestIpAddress().equals(ownAddress)) {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message");
-            if (listenerApp != null) listenerApp.receivedData(message);
+            if (listenerApp != null) listenerApp.receivedData(message.getHeader().getSenderName(),
+                    message.getHeader().getSenderAddr(), data.getPayload());
         } else {
             // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(data.getDestIpAddress());
