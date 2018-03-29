@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -28,7 +28,7 @@ public class DataLinkManager {
     private final Neighbors neighbors;
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
-    private final HashMap<String, DiscoveredDevice> mapAddressDevice;
+    private final HashMap<String, AdHocDevice> mapAddressDevice;
 
     private short enabled;
 
@@ -86,7 +86,7 @@ public class DataLinkManager {
                     wrapper.discovery();
                     wrapper.setDiscoveryListener(new ListenerDiscovery() {
                         @Override
-                        public void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice) {
+                        public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
                             listenerApp.onDiscoveryCompleted(mapAddressDevice);
                         }
                     });
@@ -145,13 +145,13 @@ public class DataLinkManager {
     }
 
 
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
 
         if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        for (Map.Entry<String, DiscoveredDevice> entry : hashMap.entrySet()) {
+        for (Map.Entry<String, AdHocDevice> entry : hashMap.entrySet()) {
             switch (entry.getValue().getType()) {
                 case DataLinkManager.WIFI:
                     wrappers[WIFI].connect(entry.getValue());
@@ -227,6 +227,6 @@ public class DataLinkManager {
     }
 
     public interface ListenerDiscovery {
-        void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
+        void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
 }

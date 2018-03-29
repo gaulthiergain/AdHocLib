@@ -1,21 +1,25 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 /**
  * Created by gaulthiergain on 9/03/18.
  */
 
-public class DiscoveredDevice {
+public class AdHocDevice {
 
     private final String address;
     private final String name;
     private final byte type;
-    private boolean selected;
 
-    public DiscoveredDevice(String address, String name, byte type) {
+    public AdHocDevice(String address, String name, byte type) {
         this.address = address;
         this.name = name;
         this.type = type;
-        this.selected = false;
+    }
+
+    public AdHocDevice(String address, String name) {
+        this.address = address;
+        this.name = name;
+        this.type = DataLinkManager.BLUETOOTH;
     }
 
     public String getName() {
@@ -29,14 +33,6 @@ public class DiscoveredDevice {
     public String getAddress() {
 
         return address;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
     }
 
     @Override

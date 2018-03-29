@@ -16,14 +16,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -47,7 +47,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     public WrapperWifi(boolean verbose, Context context, short nbThreads, int serverPort,
                        String label, Neighbors neighbors,
-                       HashMap<String, DiscoveredDevice> mapAddressDevice,
+                       HashMap<String, AdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
@@ -119,7 +119,7 @@ public class WrapperWifi extends AbstractWrapper {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(DiscoveredDevice device) {
+    public void connect(AdHocDevice device) {
         wifiAdHocManager.connect(device.getAddress());
     }
 
@@ -150,7 +150,7 @@ public class WrapperWifi extends AbstractWrapper {
                     if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,
-                                new DiscoveredDevice(entry.getValue().deviceAddress,
+                                new AdHocDevice(entry.getValue().deviceAddress,
                                         entry.getValue().deviceName, type));
                     }
                 }

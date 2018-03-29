@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
+package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
 import android.content.Context;
 import android.util.Log;
@@ -7,11 +7,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.applayer.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -120,7 +120,7 @@ public class AodvManager {
      *
      * @param hashMap
      */
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
         dataLink.connect(hashMap);
     }
 

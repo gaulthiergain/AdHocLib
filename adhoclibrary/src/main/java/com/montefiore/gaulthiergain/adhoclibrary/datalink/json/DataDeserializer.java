@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Data;
+import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Data;
 
 import java.io.IOException;
 

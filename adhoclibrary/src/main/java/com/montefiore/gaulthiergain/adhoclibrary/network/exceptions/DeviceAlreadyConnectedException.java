@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions;
+package com.montefiore.gaulthiergain.adhoclibrary.network.exceptions;
 
 public class DeviceAlreadyConnectedException extends Exception {
     /**

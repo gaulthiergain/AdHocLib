@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 /**
  * Created by gaulthiergain on 23/03/18.

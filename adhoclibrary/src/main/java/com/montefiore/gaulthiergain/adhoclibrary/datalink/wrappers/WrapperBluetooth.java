@@ -17,15 +17,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.DeviceAlreadyConnectedException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -48,7 +48,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
     public WrapperBluetooth(boolean verbose, Context context, boolean secure, short nbThreads,
                             String label, Neighbors neighbors,
-                            HashMap<String, DiscoveredDevice> mapAddressDevice,
+                            HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
         super(verbose, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
@@ -78,7 +78,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(DiscoveredDevice device) {
+    public void connect(AdHocDevice device) {
 
         String shortUuid = device.getAddress().replace(":", "").toLowerCase();
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
@@ -109,7 +109,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getShortUuid()
                                 + " into mapUuidDevices");
                         mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
-                                new DiscoveredDevice(entry.getValue().getDevice().getAddress(),
+                                new AdHocDevice(entry.getValue().getDevice().getAddress(),
                                         entry.getValue().getDevice().getName(), type));
                     }
                 }
@@ -151,8 +151,6 @@ public class WrapperBluetooth extends AbstractWrapper {
                         + " into mapUuidDevices");
             }
         }
-
-        listenerApp.onPairedCompleted();
     }
 
     @Override

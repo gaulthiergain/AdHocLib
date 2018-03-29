@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
+package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
 /**
  * <p>This class defines some constants for AODV protocol. </p>

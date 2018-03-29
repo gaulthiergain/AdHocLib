@@ -3,8 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.AodvManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class TransferManager {
         aodvManager.stopListening();
     }
 
-    public void connect(HashMap<String, DiscoveredDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
         aodvManager.connect(hashMap);
     }
 

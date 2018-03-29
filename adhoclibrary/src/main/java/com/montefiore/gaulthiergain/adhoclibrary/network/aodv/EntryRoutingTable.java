@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
+package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;

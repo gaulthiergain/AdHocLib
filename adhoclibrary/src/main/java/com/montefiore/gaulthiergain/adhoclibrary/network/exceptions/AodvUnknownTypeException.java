@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions;
+package com.montefiore.gaulthiergain.adhoclibrary.network.exceptions;
 
 /**
  * <p>This class signals that a AODV unknown type exception has occurred.</p>

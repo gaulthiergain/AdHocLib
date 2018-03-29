@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions;
+package com.montefiore.gaulthiergain.adhoclibrary.network.exceptions;
 
 /**
  * Created by gaulthiergain on 6/03/18.

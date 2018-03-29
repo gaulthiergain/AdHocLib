@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.routing.aodv;
+package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
 /**
  * <p>This class represents a DATA message and all theses fields for the AODV protocol. </p>

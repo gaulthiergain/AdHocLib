@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.applayer;
 
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 
 import java.util.HashMap;
 
@@ -14,12 +14,7 @@ public interface ListenerApp {
      *
      * @param mapAddressDevice
      */
-    void onDiscoveryCompleted(HashMap<String, DiscoveredDevice> mapAddressDevice);
-
-    /**
-     * Callback when the getPairedDevices is completed.
-     */
-    void onPairedCompleted();
+    void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
 
     /**
      * Callback when a RREQ message is received.

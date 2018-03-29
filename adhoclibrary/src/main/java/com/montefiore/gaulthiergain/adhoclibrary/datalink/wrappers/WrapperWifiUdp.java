@@ -18,16 +18,16 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.WifiAdHocDevic
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.Constants;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
+import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -57,7 +57,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     public WrapperWifiUdp(boolean verbose, Context context, final int serverPort,
                           final String label, Neighbors neighbors,
-                          HashMap<String, DiscoveredDevice> mapAddressDevice,
+                          HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
         super(verbose, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
@@ -122,7 +122,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(DiscoveredDevice device) {
+    public void connect(AdHocDevice device) {
         wifiAdHocManager.connect(device.getAddress());
     }
 
@@ -153,7 +153,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
                         mapAddressDevice.put(entry.getValue().deviceAddress,
-                                new DiscoveredDevice(entry.getValue().deviceAddress,
+                                new AdHocDevice(entry.getValue().deviceAddress,
                                         entry.getValue().deviceName, type));
                     }
                 }

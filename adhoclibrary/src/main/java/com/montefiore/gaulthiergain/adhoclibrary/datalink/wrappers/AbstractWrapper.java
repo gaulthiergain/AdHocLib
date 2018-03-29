@@ -4,11 +4,11 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.applayer.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.DiscoveredDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.routing.datalinkmanager.NetworkObject;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public abstract class AbstractWrapper {
     final Neighbors neighbors;
     final HashMap<String, String> mapLabelAddr;
     final ListenerDataLink listenerDataLink;
-    final HashMap<String, DiscoveredDevice> mapAddressDevice;
+    final HashMap<String, AdHocDevice> mapAddressDevice;
 
     byte type;
     String label;
@@ -39,7 +39,7 @@ public abstract class AbstractWrapper {
     DataLinkManager.ListenerDiscovery discoveryListener;
 
     AbstractWrapper(boolean v, Context context, String label,
-                    HashMap<String, DiscoveredDevice> mapAddressDevice,
+                    HashMap<String, AdHocDevice> mapAddressDevice,
                     Neighbors neighbors,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
@@ -55,7 +55,7 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void connect(DiscoveredDevice device);
+    public abstract void connect(AdHocDevice device);
 
     public abstract void stopListening() throws IOException;
 
