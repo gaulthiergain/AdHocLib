@@ -235,7 +235,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                             listenerApp.catchException(e);
                         }
 
-                        listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+                        listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
                     }
 
                     @Override
@@ -312,7 +312,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     listenerApp.catchException(e);
                 }
 
-                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
             }
 
             @Override
@@ -356,7 +356,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                                 message.getHeader().getSenderName());
                     }
 
-                    // Add the active connection into the neighbors object
+                    // Add the neighbor into the neighbors object
                     neighbors.addNeighbors(message.getHeader().getSenderAddr(),
                             new NetworkObject(type, networkManager));
                 }

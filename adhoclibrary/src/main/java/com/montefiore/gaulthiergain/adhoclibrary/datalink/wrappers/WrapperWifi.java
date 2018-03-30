@@ -225,7 +225,7 @@ public class WrapperWifi extends AbstractWrapper {
                     listenerApp.catchException(e);
                 }
 
-                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
             }
 
             @Override
@@ -327,7 +327,7 @@ public class WrapperWifi extends AbstractWrapper {
                     listenerApp.catchException(e);
                 }
 
-                listenerApp.onConnectionClosed(remoteDevice.getDeviceName(), remoteLabel);
+                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
             }
 
             @Override

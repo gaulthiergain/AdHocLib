@@ -33,9 +33,9 @@ public interface ListenerApp {
      */
     void catchException(Exception e);
 
-    void onConnectionClosed(String remoteName, String remoteAddress);
+    void onConnectionClosed(String remoteAddress, String remoteName);
 
-    void onConnection(String remoteName, String remoteAddress);
+    void onConnection(String remoteAddress, String remoteName);
 
-    void onConnectionFailed(String deviceName);
+    void onConnectionFailed(String remoteName);
 }
