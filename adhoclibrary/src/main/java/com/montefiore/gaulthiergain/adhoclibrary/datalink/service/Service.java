@@ -32,6 +32,7 @@ public abstract class Service {
     public static final int CONNECTION_ABORTED = 8;         // connection aborted
     public static final int CONNECTION_PERFORMED = 9;       // connection performed
     public static final int CATH_EXCEPTION = 10;            // catch exception
+    public static final int CONNECTION_FAILED = 11;         // connection failed
 
     protected int state;
     protected final boolean v;
@@ -94,6 +95,10 @@ public abstract class Service {
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
                     messageListener.onConnection((RemoteConnection) msg.obj);
+                    break;
+                case CONNECTION_FAILED:
+                    if (v) Log.d(TAG, "CONNECTION_FAILED");
+                    messageListener.onConnectionFailed((RemoteConnection) msg.obj);
                     break;
                 case FORWARD:
                     if (v) Log.d(TAG, "FORWARD");

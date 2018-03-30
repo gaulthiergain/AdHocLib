@@ -37,7 +37,6 @@ public class ThreadServer extends Thread {
 
     private final short nbThreads;
     private final boolean v;
-    private UUID uuid;
     private final Handler handler;
     private final ListSocketDevice listSocketDevice;
     private final IServerSocket serverSocket;
@@ -68,7 +67,6 @@ public class ThreadServer extends Thread {
         this.handler = handler;
         this.nbThreads = nbThreads;
         this.v = verbose;
-        this.uuid = uuid;
         this.listSocketDevice = listSocketDevice;
         this.arrayThreadClients = new ArrayList<>();
 

@@ -65,8 +65,8 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
 
                 if (v) Log.e(TAG, "Attempts: " + i + " failed");
                 if (attempts == i) {
-                    handler.obtainMessage(Service.CATH_EXCEPTION,
-                            new NoConnectionException(e.getMessage())).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_FAILED, new RemoteConnection(
+                            remoteAddress, "")).sendToTarget();
                     break;
                 }
 

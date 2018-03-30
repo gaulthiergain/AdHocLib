@@ -124,6 +124,10 @@ public class AodvManager {
         dataLink.connect(hashMap);
     }
 
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+        dataLink.connect(adHocDevice);
+    }
+
     /**
      * Method allowing to stop the server listening threads.
      *
@@ -790,8 +794,8 @@ public class AodvManager {
         return Constants.UNKNOWN_SEQUENCE_NUMBER;
     }
 
-    public void getPaired() {
-        dataLink.getPaired();
+    public HashMap<String, AdHocDevice> getPaired() {
+        return dataLink.getPaired();
     }
 
     public void discovery() throws DeviceException {

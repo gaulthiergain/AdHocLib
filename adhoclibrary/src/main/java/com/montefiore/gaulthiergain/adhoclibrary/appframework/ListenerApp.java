@@ -36,4 +36,6 @@ public interface ListenerApp {
     void onConnectionClosed(String remoteName, String remoteAddress);
 
     void onConnection(String remoteName, String remoteAddress);
+
+    void onConnectionFailed(String deviceName);
 }

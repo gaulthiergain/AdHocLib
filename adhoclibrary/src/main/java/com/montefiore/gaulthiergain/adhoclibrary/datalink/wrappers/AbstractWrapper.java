@@ -61,7 +61,7 @@ public abstract class AbstractWrapper {
 
     public abstract void discovery();
 
-    public abstract void getPaired();
+    public abstract HashMap<String, AdHocDevice> getPaired();
 
     public abstract void enable(int duration);
 

@@ -102,6 +102,9 @@ public class WrapperBluetooth extends AbstractWrapper {
         bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+
+                mapAddressDevice.clear();
+
                 // Add no paired devices into the mapUuidDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
@@ -142,15 +145,24 @@ public class WrapperBluetooth extends AbstractWrapper {
     }
 
     @Override
-    public void getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
+
+        mapAddressDevice.clear();
+
         // Add paired devices into the mapUuidDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
             if (!mapUuidDevices.containsKey(entry.getValue().getShortUuid())) {
                 mapUuidDevices.put(entry.getValue().getShortUuid(), entry.getValue());
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getShortUuid()
                         + " into mapUuidDevices");
+
+                mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                        new AdHocDevice(entry.getValue().getDevice().getAddress(),
+                                entry.getValue().getDevice().getName(), type));
             }
         }
+
+        return mapAddressDevice;
     }
 
     @Override
@@ -231,6 +243,11 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                     }
 
+                    @Override
+                    public void onConnectionFailed(RemoteConnection remoteDevice) {
+                        listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+                    }
+
                 }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
 
         bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
@@ -301,6 +318,11 @@ public class WrapperBluetooth extends AbstractWrapper {
             @Override
             public void onConnection(RemoteConnection remoteDevice) {
 
+            }
+
+            @Override
+            public void onConnectionFailed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
             }
         });
 

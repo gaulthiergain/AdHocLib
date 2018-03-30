@@ -167,8 +167,9 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     @Override
-    public void getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
+        return null;
     }
 
     @Override
@@ -195,7 +196,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
-        if(valueGroupOwner < 0 || valueGroupOwner > 15){
+        if (valueGroupOwner < 0 || valueGroupOwner > 15) {
             throw new GroupOwnerBadValue("GroupOwner value must be ");
         }
 
@@ -231,6 +232,11 @@ public class WrapperWifi extends AbstractWrapper {
             public void onConnection(RemoteConnection remoteDevice) {
 
 
+            }
+
+            @Override
+            public void onConnectionFailed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
             }
 
             @Override
@@ -327,6 +333,11 @@ public class WrapperWifi extends AbstractWrapper {
             @Override
             public void onConnection(RemoteConnection remoteDevice) {
 
+            }
+
+            @Override
+            public void onConnectionFailed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
             }
         });
 

@@ -43,16 +43,24 @@ public class TransferManager {
         aodvManager.stopListening();
     }
 
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+        aodvManager.connect(adHocDevice);
+    }
+
     public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
         aodvManager.connect(hashMap);
     }
 
-    public void sendMessageTo(String msg, String remoteDest) throws IOException {
+    public void sendMessageTo(Object msg, String remoteDest) throws IOException {
         aodvManager.sendMessageTo(msg, remoteDest);
     }
 
     public void discovery() throws DeviceException {
         aodvManager.discovery();
+    }
+
+    public HashMap<String, AdHocDevice> getPairedDevices(){
+        return aodvManager.getPaired();
     }
 
     public void enable(int duration) {

@@ -144,6 +144,21 @@ public class DataLinkManager {
         }).start();
     }
 
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+
+        if (enabled == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
+        switch (adHocDevice.getType()) {
+            case DataLinkManager.WIFI:
+                wrappers[WIFI].connect(adHocDevice);
+                break;
+            case DataLinkManager.BLUETOOTH:
+                wrappers[BLUETOOTH].connect(adHocDevice);
+                break;
+        }
+    }
 
     public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
 
@@ -205,8 +220,11 @@ public class DataLinkManager {
         }
     }
 
-    public void getPaired() {
-        wrappers[BLUETOOTH].getPaired();
+    public HashMap<String, AdHocDevice> getPaired() {
+        if (wrappers[BLUETOOTH].isEnabled()) {
+            return wrappers[BLUETOOTH].getPaired();
+        }
+        return null;
     }
 
     public AbstractWrapper getWrapper(int type) throws IndexOutOfBoundsException {

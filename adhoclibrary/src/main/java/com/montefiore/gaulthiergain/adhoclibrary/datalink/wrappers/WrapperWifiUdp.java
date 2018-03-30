@@ -170,8 +170,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
+        return null;
     }
 
     @Override
@@ -299,7 +300,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     if (v)
                         Log.d(TAG, msg.toString() + " is sent on " + inetAddress + " on " + serverPort);
                 } catch (UnknownHostException e) {
-                    e.printStackTrace();
+                    listenerApp.catchException(e);
                 }
             }
         }).start();

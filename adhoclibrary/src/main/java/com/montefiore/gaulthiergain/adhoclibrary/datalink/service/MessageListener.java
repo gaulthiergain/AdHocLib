@@ -11,4 +11,6 @@ public interface MessageListener extends MessageMainListener {
     void onConnectionClosed(RemoteConnection remoteDevice);
 
     void onConnection(RemoteConnection remoteDevice);
+
+    void onConnectionFailed(RemoteConnection remoteDevice);
 }
