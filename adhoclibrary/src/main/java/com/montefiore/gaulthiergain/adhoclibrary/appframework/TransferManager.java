@@ -70,4 +70,8 @@ public class TransferManager {
     public String getOwnAddress() {
         return config.getLabel();
     }
+
+    public Config getConfig() {
+        return config;
+    }
 }

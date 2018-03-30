@@ -3,6 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
+import java.io.Serializable;
+
 /**
  * <p>This class represents a RREP message and all theses fields for the AODV protocol. </p>
  *
@@ -11,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  */
 
 @JsonTypeName("RREP")
-public class RREP {
+public class RREP implements Serializable {
     @JsonProperty("type")
     private int type;
     @JsonProperty("hopCount")

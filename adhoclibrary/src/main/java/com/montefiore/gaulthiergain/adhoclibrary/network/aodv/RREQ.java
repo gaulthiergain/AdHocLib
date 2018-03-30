@@ -3,6 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
+import java.io.Serializable;
+
 /**
  * <p>This class represents a RREQ message and all theses fields for the AODV protocol. </p>
  *
@@ -11,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  */
 
 @JsonTypeName("RREQ")
-public class RREQ {
+public class RREQ implements Serializable {
     @JsonProperty("type")
     private final int type;
     @JsonProperty("hopCount")

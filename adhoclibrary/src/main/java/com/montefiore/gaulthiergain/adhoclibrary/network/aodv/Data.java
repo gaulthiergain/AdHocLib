@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.DataDeserializer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
 
+import java.io.Serializable;
+
 /**
  * <p>This class represents a DATA message and all theses fields for the AODV protocol. </p>
  *
@@ -22,7 +24,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
  */
 @JsonTypeName("Data")
 @JsonDeserialize(using = DataDeserializer.class)
-public class Data {
+public class Data implements Serializable {
 
     @JsonProperty("destIpAddress")
     private String destIpAddress;

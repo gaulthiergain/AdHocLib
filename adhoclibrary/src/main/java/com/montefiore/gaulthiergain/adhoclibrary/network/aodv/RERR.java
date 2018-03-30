@@ -3,6 +3,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
+import java.io.Serializable;
+
 /**
  * <p>This class represents a RERR message and all theses fields for the AODV protocol. </p>
  *
@@ -10,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  * @version 1.0
  */
 @JsonTypeName("RERR")
-public class RERR {
+public class RERR implements Serializable {
 
     @JsonProperty("type")
     private final int type;

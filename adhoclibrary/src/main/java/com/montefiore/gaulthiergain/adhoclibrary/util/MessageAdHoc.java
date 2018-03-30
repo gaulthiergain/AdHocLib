@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.MessageDeserializer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.json.Serializer;
 
+import java.io.Serializable;
+
 /**
  * Created by gaulthiergain on 17/11/17.
  */
 
 @JsonDeserialize(using = MessageDeserializer.class)
-public class MessageAdHoc {
+public class MessageAdHoc implements Serializable {
     @JsonProperty("header")
     private IHeader header;
 
