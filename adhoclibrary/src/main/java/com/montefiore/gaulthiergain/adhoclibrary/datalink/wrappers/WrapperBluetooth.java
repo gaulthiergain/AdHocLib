@@ -339,9 +339,6 @@ public class WrapperBluetooth extends AbstractWrapper {
                 NetworkManager networkManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
 
                 if (networkManager != null) {
-                    // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
 
                     networkManager.sendMessage(new MessageAdHoc(
                             new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
@@ -358,15 +355,16 @@ public class WrapperBluetooth extends AbstractWrapper {
                         listenerApp.onConnection(message.getHeader().getSenderAddr(),
                                 message.getHeader().getSenderName());
                     }
+
+                    // Add the active connection into the neighbors object
+                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
                 }
                 break;
             }
             case CONNECT_CLIENT: {
                 NetworkManager networkManager = mapUuidNetwork.get(message.getPdu().toString());
                 if (networkManager != null) {
-                    // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
 
                     if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
@@ -380,6 +378,10 @@ public class WrapperBluetooth extends AbstractWrapper {
                         listenerApp.onConnection(message.getHeader().getSenderAddr(),
                                 message.getHeader().getSenderName());
                     }
+
+                    // Add the active connection into the neighbors object
+                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
                 }
                 break;
             }

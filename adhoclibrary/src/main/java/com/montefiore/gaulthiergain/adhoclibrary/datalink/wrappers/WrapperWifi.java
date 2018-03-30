@@ -352,9 +352,6 @@ public class WrapperWifi extends AbstractWrapper {
             case CONNECT_SERVER: {
                 final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
                 if (networkManager != null) {
-                    // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
 
                     if (v)
                         Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
@@ -384,9 +381,6 @@ public class WrapperWifi extends AbstractWrapper {
             case CONNECT_CLIENT: {
                 NetworkManager networkManager = mapIpNetwork.get(message.getPdu().toString());
                 if (networkManager != null) {
-                    // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
 
                     if (v)
                         Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
@@ -405,6 +399,10 @@ public class WrapperWifi extends AbstractWrapper {
                         listenerApp.onConnection(message.getHeader().getSenderAddr(),
                                 message.getHeader().getSenderName());
                     }
+
+                    // Add the active connection into the autoConnectionActives object
+                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
+                            new NetworkObject(type, networkManager));
                 }
                 break;
             }
@@ -430,6 +428,10 @@ public class WrapperWifi extends AbstractWrapper {
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
                             message.getHeader().getSenderName());
                 }
+
+                // Add the active connection into the autoConnectionActives object
+                neighbors.addNeighbors(message.getHeader().getSenderAddr(),
+                        new NetworkObject(type, networkManager));
 
             } catch (IOException e) {
                 listenerApp.catchException(e);
