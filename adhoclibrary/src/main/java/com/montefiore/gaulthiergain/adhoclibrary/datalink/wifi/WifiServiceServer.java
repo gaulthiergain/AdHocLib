@@ -26,10 +26,12 @@ public class WifiServiceServer extends ServiceServer {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
+     * @param json            a boolean value to use json or bytes in network transfer.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public WifiServiceServer(boolean verbose, Context context, MessageListener messageListener) {
-        super(verbose, context, messageListener);
+    public WifiServiceServer(boolean verbose, Context context, boolean json,
+                             MessageListener messageListener) {
+        super(verbose, context, json, messageListener);
     }
 
     /**
@@ -50,7 +52,7 @@ public class WifiServiceServer extends ServiceServer {
         }
 
         // Start thread Listening
-        threadListen = new ThreadServer(handler, nbThreads, true, port, new ListSocketDevice());
+        threadListen = new ThreadServer(handler, nbThreads, true, port, new ListSocketDevice(json));
         threadListen.start();
 
         // Update state

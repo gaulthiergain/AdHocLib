@@ -28,10 +28,12 @@ public class BluetoothServiceServer extends ServiceServer {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
+     * @param json            a boolean value to use json or bytes in network transfer.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public BluetoothServiceServer(boolean verbose, Context context, MessageListener messageListener) {
-        super(verbose, context, messageListener);
+    public BluetoothServiceServer(boolean verbose, Context context, boolean json,
+                                  MessageListener messageListener) {
+        super(verbose, context, json, messageListener);
     }
 
     /**
@@ -44,7 +46,7 @@ public class BluetoothServiceServer extends ServiceServer {
      * @param bluetoothAdapter a BluetoothAdapter object which represents the local device Bluetooth
      *                         adapter.
      * @param uuid             an UUID object which identify the physical device.
-     * @throws IOException               Signals that an I/O exception of some sort has occurred.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
     public void listen(short nbThreads, boolean secure, String name, BluetoothAdapter bluetoothAdapter,
                        UUID uuid) throws IOException {
@@ -58,7 +60,7 @@ public class BluetoothServiceServer extends ServiceServer {
 
         // Start thread Listening
         threadListen = new ThreadServer(handler, nbThreads, true, secure, name, bluetoothAdapter, uuid,
-                new ListSocketDevice());
+                new ListSocketDevice(json));
         threadListen.start();
 
         // Update state

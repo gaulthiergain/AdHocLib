@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
@@ -46,18 +47,18 @@ public class WrapperBluetooth extends AbstractWrapper {
     private HashMap<String, NetworkManager> mapUuidNetwork;
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
-    public WrapperBluetooth(boolean verbose, Context context, boolean secure, short nbThreads,
-                            String label, Neighbors neighbors,
+    public WrapperBluetooth(boolean verbose, Context context, Config config, Neighbors neighbors,
                             HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(verbose, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
+        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
+                mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
             if (bluetoothManager.isEnabled()) {
 
-                this.secure = secure;
+                this.secure = config.isSecure();
                 this.type = DataLinkManager.BLUETOOTH;
                 this.ownMac = BluetoothUtil.getCurrentMac(context);
                 this.ownUUID = UUID.fromString(BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase());
@@ -66,7 +67,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 this.mapUuidDevices = new HashMap<>();
                 this.mapUuidNetwork = new HashMap<>();
 
-                this.listenServer(nbThreads);
+                this.listenServer(config.getNbThreadBt());
             } else {
                 enabled = false;
             }
@@ -190,65 +191,64 @@ public class WrapperBluetooth extends AbstractWrapper {
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
-
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
-                new MessageListener() {
-                    @Override
-                    public void onMessageReceived(MessageAdHoc message) {
-                        try {
-                            processMsgReceived(message);
-                        } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                            listenerApp.catchException(e);
-                        }
-                    }
+                json, background, secure, ATTEMPTS, bluetoothAdHocDevice, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.catchException(e);
+                }
+            }
 
-                    @Override
-                    public void onMessageSent(MessageAdHoc message) {
-                        if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-                    }
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            }
 
-                    @Override
-                    public void onForward(MessageAdHoc message) {
-                        if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-                    }
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
 
-                    @Override
-                    public void catchException(Exception e) {
-                        listenerApp.catchException(e);
-                    }
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.catchException(e);
+            }
 
-                    @Override
-                    public void onConnectionClosed(RemoteConnection remoteDevice) {
+            @Override
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
 
-                        //Get label from ip
-                        String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
+                //Get label from ip
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
 
-                        if (v) Log.d(TAG, "Link broken with " + remoteLabel);
+                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
 
-                        try {
-                            listenerDataLink.brokenLink(remoteLabel);
-                            neighbors.getNeighbors().remove(remoteLabel);
-                        } catch (IOException e) {
-                            listenerApp.catchException(e);
-                        } catch (NoConnectionException e) {
-                            listenerApp.catchException(e);
-                        }
+                try {
+                    listenerDataLink.brokenLink(remoteLabel);
+                    neighbors.getNeighbors().remove(remoteLabel);
+                } catch (IOException e) {
+                    listenerApp.catchException(e);
+                } catch (NoConnectionException e) {
+                    listenerApp.catchException(e);
+                }
 
-                        listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
-                    }
+                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+            }
 
-                    @Override
-                    public void onConnection(RemoteConnection remoteDevice) {
+            @Override
+            public void onConnection(RemoteConnection remoteDevice) {
 
-                    }
+            }
 
-                    @Override
-                    public void onConnectionFailed(RemoteConnection remoteDevice) {
-                        listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
-                    }
+            @Override
+            public void onConnectionFailed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            }
 
-                }, true, secure, ATTEMPTS, bluetoothAdHocDevice);
+        });
 
         bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
             @Override
@@ -270,7 +270,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
     private void listenServer(short nbThreads) throws IOException {
 
-        bluetoothServiceServer = new BluetoothServiceServer(v, context, new MessageListener() {
+        bluetoothServiceServer = new BluetoothServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {

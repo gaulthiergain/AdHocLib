@@ -41,22 +41,21 @@ public class DataLinkManager {
         this.neighbors = new Neighbors();
         this.mapAddressDevice = new HashMap<>();
 
-        String label = config.getLabel();
         this.wrappers = new AbstractWrapper[2];
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
-            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config.getNbThreadWifi(), config.getServerPort(), label,
-                    neighbors, mapAddressDevice, listenerApp, listenerDataLink);
+            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config, neighbors,
+                    mapAddressDevice, listenerApp, listenerDataLink);
         } else {
             // UDP stream
-            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config.getServerPort(), label,
-                    neighbors, mapAddressDevice, listenerApp, listenerDataLink);
+            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config, neighbors,
+                    mapAddressDevice, listenerApp, listenerDataLink);
         }
 
 
-        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config.getSecure(), config.getNbThreadBt(), label,
-                neighbors, mapAddressDevice, listenerApp, listenerDataLink);
+        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config, neighbors,
+                mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
         for (AbstractWrapper wrapper : wrappers) {

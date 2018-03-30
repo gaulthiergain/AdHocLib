@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
@@ -45,13 +46,13 @@ public class WrapperWifi extends AbstractWrapper {
     private HashMap<String, NetworkManager> mapIpNetwork;
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
-    public WrapperWifi(boolean verbose, Context context, short nbThreads, int serverPort,
-                       String label, Neighbors neighbors,
+    public WrapperWifi(boolean verbose, Context context, Config config, Neighbors neighbors,
                        HashMap<String, AdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(verbose, context, label, mapAddressDevice, neighbors, listenerApp, listenerDataLink);
+        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
+                mapAddressDevice, neighbors, listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -95,7 +96,7 @@ public class WrapperWifi extends AbstractWrapper {
             if (wifiAdHocManager.isEnabled()) {
                 this.type = DataLinkManager.WIFI;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-                this.serverPort = serverPort;
+                this.serverPort = config.getServerPort();
                 this.mapIpNetwork = new HashMap<>();
                 this.mapLabelRemoteDeviceName = new HashMap<>();
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
@@ -107,7 +108,7 @@ public class WrapperWifi extends AbstractWrapper {
                         wifiAdHocManager.unregisterInitName();
                     }
                 });
-                this.listenServer(nbThreads);
+                this.listenServer(config.getNbThreadWifi());
             } else {
                 enabled = false;
             }
@@ -206,7 +207,7 @@ public class WrapperWifi extends AbstractWrapper {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void _connect() {
-        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, true,
+        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, json, background,
                 groupOwnerAddr, serverPort, 10000, ATTEMPTS, new MessageListener() {
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
@@ -285,7 +286,7 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     private void listenServer(short nbThreads) throws IOException {
-        wifiServiceServer = new WifiServiceServer(v, context, new MessageListener() {
+        wifiServiceServer = new WifiServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {

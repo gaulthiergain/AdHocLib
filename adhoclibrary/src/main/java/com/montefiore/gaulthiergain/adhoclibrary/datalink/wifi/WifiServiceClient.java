@@ -35,6 +35,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param context         a Context object which gives global information about an application
      *                        environment.
+     * @param json            a boolean value to use json or bytes in network transfer.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
      * @param remoteAddress
@@ -43,11 +44,11 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * @param attempts        a short value which represents the number of attempts.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public WifiServiceClient(boolean verbose, Context context, boolean background,
+    public WifiServiceClient(boolean verbose, Context context, boolean json, boolean background,
                              String remoteAddress, int port, int timeOut, short attempts,
                              MessageListener messageListener) {
 
-        super(verbose, context, attempts, messageListener, background);
+        super(verbose, context, attempts, json, background, messageListener);
         this.remoteAddress = remoteAddress;
         this.port = port;
         this.timeOut = timeOut;
@@ -97,7 +98,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 socket.bind(null);
                 socket.connect((new InetSocketAddress(remoteAddress, port)), timeOut);
 
-                network = new NetworkManager(new AdHocSocketWifi(socket));
+                network = new NetworkManager(new AdHocSocketWifi(socket), json);
                 if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(remoteAddress, network);
                 }

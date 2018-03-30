@@ -17,16 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ListSocketDevice {
 
-    private ArrayList<ISocket> listISockets;
+    private final boolean json;
+    private final ArrayList<ISocket> listISockets;
     // Mapping between the remote address and a networkObject (a socket).
-    private ConcurrentHashMap<String, NetworkManager> hashMapNetwork;
+    private final ConcurrentHashMap<String, NetworkManager> hashMapNetwork;
 
     /**
      * Constructor
      */
-    public ListSocketDevice() {
-        listISockets = new ArrayList<>();
-        hashMapNetwork = new ConcurrentHashMap<>();
+    public ListSocketDevice(boolean json) {
+        this.json = json;
+        this.listISockets = new ArrayList<>();
+        this.hashMapNetwork = new ConcurrentHashMap<>();
     }
 
     /**
@@ -55,7 +57,7 @@ public class ListSocketDevice {
         and a networkObject (respectively a socket). */
         String key = isocket.getRemoteSocketAddress();
         if (!hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.put(key, new NetworkManager(isocket));
+            hashMapNetwork.put(key, new NetworkManager(isocket, json));
         }
 
         listISockets.add(isocket);

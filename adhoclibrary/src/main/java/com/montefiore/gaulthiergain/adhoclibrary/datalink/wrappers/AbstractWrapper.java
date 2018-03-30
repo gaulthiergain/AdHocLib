@@ -23,6 +23,8 @@ public abstract class AbstractWrapper {
     final static byte CONNECT_CLIENT = 11;
 
     final boolean v;
+    final boolean json;
+    final boolean background;
     final Context context;
     final ListenerApp listenerApp;
     final Neighbors neighbors;
@@ -38,12 +40,14 @@ public abstract class AbstractWrapper {
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
-    AbstractWrapper(boolean v, Context context, String label,
+    AbstractWrapper(boolean v, Context context, boolean json, boolean background, String label,
                     HashMap<String, AdHocDevice> mapAddressDevice,
                     Neighbors neighbors,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
+        this.json = json;
+        this.background = background;
         this.enabled = true;
         this.context = context;
         this.label = label;

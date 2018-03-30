@@ -34,18 +34,19 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * @param verbose              a boolean value to set the debug/verbose mode.
      * @param context              a Context object which gives global information about an application
      *                             environment.
-     * @param messageListener      a messageListener object which serves as callback functions.
+     * @param json                 a boolean value to use json or bytes in network transfer.
      * @param background           a boolean value which defines if the service must listen messages
      *                             to background.
      * @param secure               a boolean value which represents the state of the connection.
      * @param attempts             a short value which represents the number of attempts.
      * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
      *                             device.
+     * @param messageListener      a messageListener object which serves as callback functions.
      */
-    public BluetoothServiceClient(boolean verbose, Context context, MessageListener messageListener,
-                                  boolean background, boolean secure, short attempts,
-                                  BluetoothAdHocDevice bluetoothAdHocDevice) {
-        super(verbose, context, attempts, messageListener, background);
+    public BluetoothServiceClient(boolean verbose, Context context, boolean json, boolean background,
+                                  boolean secure, short attempts,
+                                  BluetoothAdHocDevice bluetoothAdHocDevice, MessageListener messageListener) {
+        super(verbose, context, attempts, json, background, messageListener);
         this.secure = secure;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }
@@ -77,7 +78,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
                 // Connect to the remote host
                 bluetoothSocket.connect();
-                network = new NetworkManager(new AdHocSocketBluetooth(bluetoothSocket));
+                network = new NetworkManager(new AdHocSocketBluetooth(bluetoothSocket), json);
                 if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(uuid, network);
                 }

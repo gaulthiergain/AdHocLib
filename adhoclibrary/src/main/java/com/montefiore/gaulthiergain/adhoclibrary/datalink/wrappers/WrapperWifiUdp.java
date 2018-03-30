@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
@@ -55,11 +56,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
     private HashMap<String, Long> helloMessages;
 
 
-    public WrapperWifiUdp(boolean verbose, Context context, final int serverPort,
-                          final String label, Neighbors neighbors,
+    public WrapperWifiUdp(boolean verbose, Context context, Config config, Neighbors neighbors,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, label, mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
+        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
+                mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override
@@ -98,7 +99,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 this.type = DataLinkManager.WIFI;
                 this.helloMessages = new HashMap<>();
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-                this.serverPort = serverPort;
+                this.serverPort = config.getServerPort();
 
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
@@ -127,7 +128,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void stopListening() throws IOException {
+    public void stopListening() {
         udpPeers.setBackgroundRunning(false);
     }
 
@@ -216,7 +217,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
+    public void broadcastExcept(MessageAdHoc message, String excludedAddress) {
         for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 if (!entry.getKey().equals(excludedAddress)) {

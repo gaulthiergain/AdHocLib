@@ -18,31 +18,36 @@ public class Config {
 
     private String name;
     private String label;
+    private boolean json;
     private boolean secure;
     private int serverPort;
     private short nbThreadBt;
     private short nbThreadWifi;
+    private boolean background;
     private boolean reliableTransportWifi;
 
     public Config() {
+        this.json = true;
         this.secure = true;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
         this.serverPort = 52000;
+        this.background = true;
         this.reliableTransportWifi = true;
         this.name = BluetoothUtil.getCurrentName();
         this.label = String.valueOf(UUID.randomUUID());
     }
 
-    public Config(boolean secure, int serverPort, int nbThreadBt, int nbThreadWifi, String label,
-                  String name, boolean reliableTransportWifi)
-            throws BadServerPortException, MaxThreadReachedException {
+    public Config(String name, String label, boolean json, boolean secure, int serverPort,
+                  short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi) {
         this.name = name;
         this.label = label;
+        this.json = json;
         this.secure = secure;
-        this.setServerPort(serverPort);
-        this.setNbThreadBt(nbThreadBt);
-        this.nbThreadWifi = (short) nbThreadWifi;
+        this.serverPort = serverPort;
+        this.nbThreadBt = nbThreadBt;
+        this.nbThreadWifi = nbThreadWifi;
+        this.background = background;
         this.reliableTransportWifi = reliableTransportWifi;
     }
 
@@ -64,10 +69,6 @@ public class Config {
         this.setServerPort(serverPort);
         this.nbThreadWifi = (short) nbThreadWifi;
         this.reliableTransportWifi = reliableTransportWifi;
-    }
-
-    public boolean getSecure() {
-        return secure;
     }
 
     public int getServerPort() {
@@ -92,6 +93,18 @@ public class Config {
 
     public boolean isReliableTransportWifi() {
         return reliableTransportWifi;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public boolean isJson() {
+        return json;
+    }
+
+    public boolean isBackground() {
+        return background;
     }
 
     public void setSecure(boolean secure) {
@@ -132,16 +145,11 @@ public class Config {
         this.reliableTransportWifi = reliableTransportWifi;
     }
 
-    @Override
-    public String toString() {
-        return "Config{" +
-                "name='" + name + '\'' +
-                ", label='" + label + '\'' +
-                ", secure=" + secure +
-                ", serverPort=" + serverPort +
-                ", nbThreadBt=" + nbThreadBt +
-                ", nbThreadWifi=" + nbThreadWifi +
-                ", reliableTransportWifi=" + reliableTransportWifi +
-                '}';
+    public void setJson(boolean json) {
+        this.json = json;
+    }
+
+    public void setBackground(boolean background) {
+        this.background = background;
     }
 }
