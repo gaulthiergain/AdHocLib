@@ -5,6 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public class TransferManager {
     private Config config;
     private AodvManager aodvManager;
     private ListenerApp listenerApp;
+    private DataLinkManager dataLinkManager;
 
     private TransferManager(boolean verbose, Context context, final ListenerApp listenerApp,
                             Config config) {
@@ -36,11 +38,8 @@ public class TransferManager {
     }
 
     public void start() throws DeviceException, IOException {
-        this.aodvManager = new AodvManager(v, context, config, listenerApp);
-    }
-
-    public void stopListening() throws IOException, DeviceException {
-        aodvManager.stopListening();
+        aodvManager = new AodvManager(v, context, config, listenerApp);
+        dataLinkManager = aodvManager.getDataLink();
     }
 
     public void connect(AdHocDevice adHocDevice) throws DeviceException {
@@ -55,16 +54,24 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, remoteDest);
     }
 
+    public void stopListening() throws IOException, DeviceException {
+        dataLinkManager.stopListening();
+    }
+
     public void discovery() throws DeviceException {
-        aodvManager.discovery();
+        dataLinkManager.discovery();
     }
 
-    public HashMap<String, AdHocDevice> getPairedDevices(){
-        return aodvManager.getPaired();
+    public HashMap<String, AdHocDevice> getPairedDevices() {
+        return dataLinkManager.getPaired();
     }
 
-    public void enable(int duration) {
-        aodvManager.enable(duration);
+    public void enableWifi() {
+        dataLinkManager.enableWifi();
+    }
+
+    public void enableBluetooth(int duration) {
+        dataLinkManager.enableBluetooth(duration);
     }
 
     public String getOwnAddress() {

@@ -128,15 +128,6 @@ public class AodvManager {
         dataLink.connect(adHocDevice);
     }
 
-    /**
-     * Method allowing to stop the server listening threads.
-     *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
-     */
-    public void stopListening() throws IOException, DeviceException {
-        dataLink.stopListening();
-    }
-
     /*---------------------------------------Private methods---------------------------------------/
 
     /**
@@ -729,22 +720,29 @@ public class AodvManager {
      */
     private void updateRoutingTable() {
 
+        boolean display = false;
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("--------Routing Table:--------\n");
+        if (aodvHelper.getEntrySet().size() > 0) {
+            display = true;
+            stringBuilder.append("--------Routing Table:--------\n");
 
-        for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getEntrySet()) {
-            stringBuilder.append(entry.getValue().toString()).append("\n");
+            for (Map.Entry<String, EntryRoutingTable> entry : aodvHelper.getEntrySet()) {
+                stringBuilder.append(entry.getValue().toString()).append("\n");
+            }
         }
 
         if (mapDestSequenceNumber.size() > 0) {
+            display = true;
             stringBuilder.append("--------SequenceNumber:--------\n");
             for (Map.Entry<String, Long> entry : mapDestSequenceNumber.entrySet()) {
                 stringBuilder.append(entry.getKey()).append(" -> ").append(entry.getValue().toString()).append("\n");
             }
         }
 
-        Log.d(TAG, stringBuilder.toString());
+        if (display) {
+            Log.d(TAG, stringBuilder.toString());
+        }
     }
 
     /**
@@ -794,23 +792,7 @@ public class AodvManager {
         return Constants.UNKNOWN_SEQUENCE_NUMBER;
     }
 
-    public HashMap<String, AdHocDevice> getPaired() {
-        return dataLink.getPaired();
-    }
-
-    public void discovery() throws DeviceException {
-        dataLink.discovery();
-    }
-
-    public void disconnect() {
-        dataLink.disconnect();
-    }
-
-    public void enableBluetooth(int duration) {
-        dataLink.enableBluetooth(duration);
-    }
-
-    public void enableWifi() {
-        dataLink.enableWifi();
+    public DataLinkManager getDataLink() {
+        return dataLink;
     }
 }
