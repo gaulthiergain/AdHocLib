@@ -1,11 +1,13 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
@@ -16,7 +18,11 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -395,34 +401,38 @@ public class WifiAdHocManager {
 
     public void onEnableWifi(final ListenerAdapter listenerAdapter) {
 
-        unregisterEnableAdapter();
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler() {
+            // Used handler to avoid updating views in other threads than the main thread
+            public void handleMessage(Message msg) {
+                listenerAdapter.onEnableWifi((boolean) msg.obj);
+            }
+        };
 
-        mReceiverAdapter = new BroadcastReceiver() {
+        Thread t = new Thread() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                if (connMgr != null) {
-                    NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            public void run() {
 
-                    if (wifi != null && wifi.isConnectedOrConnecting()) {
-                        try {
-                            listenerAdapter.onEnableWifi();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                try {
+                    //check if connected!
+                    while (!isConnected(context)) {
+                        //Wait to connect
+                        Thread.sleep(1000);
                     }
+
+                    // Used handler to avoid using runOnUiThread in main app
+                    mHandler.obtainMessage(1, true).sendToTarget();
+                } catch (InterruptedException e) {
+                    mHandler.obtainMessage(1, false).sendToTarget();
                 }
             }
         };
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        context.registerReceiver(mReceiverAdapter, filter);
+        t.start();
     }
 
-    public void unregisterEnableAdapter() {
-        if (mReceiverAdapter != null) {
-            context.unregisterReceiver(mReceiverAdapter);
-            mReceiverAdapter = null;
-        }
+    private static boolean isConnected(Context context) {
+
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return wifi != null && wifi.isWifiEnabled();
     }
 
     public interface ListenerWifiDeviceName {

@@ -95,7 +95,6 @@ public class DataLinkManager {
         }
     }
 
-
     private void bothDiscovery() {
 
         @SuppressLint("HandlerLeak") final Handler mHandler = new Handler() {
@@ -232,17 +231,13 @@ public class DataLinkManager {
             if (!wrapper.isEnabled()) {
                 wrapper.enable(0, new ListenerAdapter() {
                     @Override
-                    public void onEnableBluetooth() throws IOException {
-                        wrappers[BLUETOOTH].listenServer();
-                        wrappers[BLUETOOTH].unregisterAdapter();
-                        listenerAdapter.onEnableBluetooth();
+                    public void onEnableBluetooth(boolean success) {
+                        processListenerAdapter(BLUETOOTH, success, listenerAdapter);
                     }
 
                     @Override
-                    public void onEnableWifi() throws IOException {
-                        wrappers[WIFI].listenServer();
-                        wrappers[WIFI].unregisterAdapter();
-                        listenerAdapter.onEnableWifi();
+                    public void onEnableWifi(boolean success) {
+                        processListenerAdapter(WIFI, success, listenerAdapter);
                     }
                 });
             }
@@ -253,15 +248,14 @@ public class DataLinkManager {
         if (!wrappers[WIFI].isEnabled()) {
             wrappers[WIFI].enable(0, new ListenerAdapter() {
                 @Override
-                public void onEnableBluetooth() throws IOException {
+                public void onEnableBluetooth(boolean success) {
                     //do nothing in this case
+                    listenerAdapter.onEnableBluetooth(success);
                 }
 
                 @Override
-                public void onEnableWifi() throws IOException {
-                    wrappers[WIFI].listenServer();
-                    wrappers[WIFI].unregisterAdapter();
-                    listenerAdapter.onEnableWifi();
+                public void onEnableWifi(boolean success) {
+                    processListenerAdapter(WIFI, success, listenerAdapter);
                 }
             });
         }
@@ -271,15 +265,14 @@ public class DataLinkManager {
         if (!wrappers[BLUETOOTH].isEnabled()) {
             wrappers[BLUETOOTH].enable(duration, new ListenerAdapter() {
                 @Override
-                public void onEnableBluetooth() throws IOException {
-                    wrappers[BLUETOOTH].listenServer();
-                    wrappers[BLUETOOTH].unregisterAdapter();
-                    listenerAdapter.onEnableBluetooth();
+                public void onEnableBluetooth(boolean success) {
+                    processListenerAdapter(BLUETOOTH, success, listenerAdapter);
                 }
 
                 @Override
-                public void onEnableWifi() {
+                public void onEnableWifi(boolean success) {
                     //do nothing in this case
+                    listenerAdapter.onEnableWifi(success);
                 }
             });
 
@@ -320,4 +313,31 @@ public class DataLinkManager {
     public interface ListenerDiscovery {
         void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
+
+    private void processListenerAdapter(int type, boolean success, final ListenerAdapter listenerAdapter) {
+        if (success) {
+            try {
+                wrappers[type].listenServer();
+                wrappers[type].unregisterAdapter();
+                if (type == BLUETOOTH) {
+                    listenerAdapter.onEnableBluetooth(true);
+                } else {
+                    listenerAdapter.onEnableWifi(true);
+                }
+            } catch (IOException e) {
+                if (type == BLUETOOTH) {
+                    listenerAdapter.onEnableBluetooth(false);
+                } else {
+                    listenerAdapter.onEnableWifi(false);
+                }
+            }
+        } else {
+            if (type == BLUETOOTH) {
+                listenerAdapter.onEnableBluetooth(false);
+            } else {
+                listenerAdapter.onEnableWifi(false);
+            }
+        }
+    }
+
 }

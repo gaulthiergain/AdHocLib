@@ -235,7 +235,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void unregisterAdapter() {
-        wifiAdHocManager.unregisterEnableAdapter();
+        // Not used in wifi context
     }
 
     @Override

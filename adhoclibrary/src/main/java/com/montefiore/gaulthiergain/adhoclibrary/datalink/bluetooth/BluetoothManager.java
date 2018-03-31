@@ -279,11 +279,10 @@ public class BluetoothManager {
                             BluetoothAdapter.ERROR);
                     switch (bluetoothState) {
                         case BluetoothAdapter.STATE_ON:
-                            try {
-                                listenerAdapter.onEnableBluetooth();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            listenerAdapter.onEnableBluetooth(true);
+                            break;
+                        case BluetoothAdapter.ERROR:
+                            listenerAdapter.onEnableBluetooth(false);
                             break;
                     }
                 }

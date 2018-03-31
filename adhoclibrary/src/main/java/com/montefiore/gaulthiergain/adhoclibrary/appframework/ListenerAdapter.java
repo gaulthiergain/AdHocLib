@@ -1,11 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import java.io.IOException;
-
 public interface ListenerAdapter {
 
-    void onEnableBluetooth() throws IOException;
+    void onEnableBluetooth(boolean success);
 
-    void onEnableWifi() throws IOException;
+    void onEnableWifi(boolean success);
 
 }
