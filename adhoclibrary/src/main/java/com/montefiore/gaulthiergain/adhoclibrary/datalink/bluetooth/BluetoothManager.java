@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
@@ -29,6 +30,7 @@ public class BluetoothManager {
 
     private String initName;
     private boolean registered = false;
+    private BroadcastReceiver mReceiverAdapter;
     private DiscoveryListener discoveryListener;
 
     /**
@@ -66,20 +68,16 @@ public class BluetoothManager {
 
     /**
      * Method allowing to enable the Bluetooth adapter.
-     *
-     * @return a boolean value which represents the status of the operation.
      */
-    public boolean enable() {
-        return bluetoothAdapter.enable();
+    public void enable() {
+        bluetoothAdapter.enable();
     }
 
     /**
      * Method allowing to disable the Bluetooth adapter.
-     *
-     * @return a boolean value which represents the status of the operation.
      */
-    public boolean disable() {
-        return bluetoothAdapter.disable();
+    public void disable() {
+        bluetoothAdapter.disable();
     }
 
     /**
@@ -219,22 +217,11 @@ public class BluetoothManager {
     }
 
     /**
-     * Method allowing to get the all the BluetoothAdHoc devices.
-     *
-     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
-     * BluetoothAdHocDevice object.
-     */
-    public HashMap<String, BluetoothAdHocDevice> getHashMapBluetoothDevice() {
-        return hashMapBluetoothDevice;
-    }
-
-    /**
      * Base class for code that receives and handles broadcast intents sent by
      * {@link android.content.Context#sendBroadcast(Intent)}.
      */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-
 
             String action = intent.getAction();
 
@@ -274,17 +261,6 @@ public class BluetoothManager {
     };
 
     /**
-     * Method allowing to set the Bluetooth adapter name.
-     *
-     * @param name a String value which represents the name of the Bluetooth adapter.
-     */
-    public void setAdapterName(String name) {
-        if (bluetoothAdapter != null) {
-            bluetoothAdapter.setName(name);
-        }
-    }
-
-    /**
      * Method allowing to get the Bluetooth adapter name.
      *
      * @return a String value which represents the name of the Bluetooth adapter.
@@ -296,7 +272,33 @@ public class BluetoothManager {
         return null;
     }
 
-    public BluetoothAdapter getBluetoothAdapter() {
-        return bluetoothAdapter;
+    public void onEnableBluetooth(final ListenerAdapter listenerAdapter) {
+
+        unregisterEnableAdapter();
+
+        mReceiverAdapter = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if (action != null && action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int bluetoothState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                            BluetoothAdapter.ERROR);
+                    switch (bluetoothState) {
+                        case BluetoothAdapter.STATE_ON:
+                            listenerAdapter.onEnableBluetooth();
+                            break;
+                    }
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        context.registerReceiver(mReceiverAdapter, filter);
+    }
+
+    public void unregisterEnableAdapter() {
+        if (mReceiverAdapter != null) {
+            context.unregisterReceiver(mReceiverAdapter);
+            mReceiverAdapter = null;
+        }
     }
 }

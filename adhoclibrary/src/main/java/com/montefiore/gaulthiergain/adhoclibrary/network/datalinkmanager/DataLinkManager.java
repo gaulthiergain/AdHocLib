@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
@@ -34,7 +35,7 @@ public class DataLinkManager {
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
-            throws IOException, DeviceException {
+            throws IOException {
 
         this.enabled = 0;
         this.listenerApp = listenerApp;
@@ -62,10 +63,6 @@ public class DataLinkManager {
             if (wrapper.isEnabled()) {
                 enabled++;
             }
-        }
-
-        if (enabled == 0) {
-            throw new DeviceException("No wifi and bluetooth connectivity");
         }
     }
 
@@ -177,11 +174,7 @@ public class DataLinkManager {
         }
     }
 
-    public void stopListening() throws IOException, DeviceException {
-
-        if (enabled == 0) {
-            throw new DeviceException("No wifi and bluetooth connectivity");
-        }
+    public void stopListening() throws IOException {
 
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -226,33 +219,64 @@ public class DataLinkManager {
         return null;
     }
 
-    public AbstractWrapper getWrapper(int type) throws IndexOutOfBoundsException {
-        return wrappers[type];
-    }
-
     public void disconnect() {
         //TODO implement
     }
 
-    public void enableAll() {
-
+    public void enableAll(ListenerAdapter listenerAdapter) {
         for (AbstractWrapper wrapper : wrappers) {
             if (!wrapper.isEnabled()) {
-                wrapper.enable(0);
+                wrapper.enable(0, listenerAdapter);
             }
         }
     }
 
-    public void enableWifi() {
-        if(wrappers[WIFI].isEnabled()){
-            wrappers[WIFI].enable(0);
+    public void enableWifi(ListenerAdapter listenerAdapter) {
+        if (!wrappers[WIFI].isEnabled()) {
+            wrappers[WIFI].enable(0, listenerAdapter);
         }
     }
 
-    public void enableBluetooth(int duration) {
-        if(wrappers[BLUETOOTH].isEnabled()){
-            wrappers[BLUETOOTH].enable(duration);
+    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
+        if (!wrappers[BLUETOOTH].isEnabled()) {
+            wrappers[BLUETOOTH].enable(duration, listenerAdapter);
         }
+    }
+
+    public void disableAll() {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.disable();
+            }
+        }
+    }
+
+    public void disableWifi() {
+        if (wrappers[WIFI].isEnabled()) {
+            wrappers[WIFI].disable();
+        }
+    }
+
+    public void disableBluetooth() {
+        if (wrappers[BLUETOOTH].isEnabled()) {
+            wrappers[BLUETOOTH].disable();
+        }
+    }
+
+    public void unregisterAdapter() {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.unregisterAdapter();
+            }
+        }
+    }
+
+    public boolean isWifiEnable() {
+        return wrappers[WIFI].isEnabled();
+    }
+
+    public boolean isBluetoothEnable() {
+        return wrappers[BLUETOOTH].isEnabled();
     }
 
     public interface ListenerDiscovery {

@@ -1,7 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -13,8 +18,10 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -36,6 +43,7 @@ public class WifiAdHocManager {
     private Channel channel;
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
+    private BroadcastReceiver mReceiverAdapter;
     private ConnectionListener connectionListener;
     private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
 
@@ -92,8 +100,8 @@ public class WifiAdHocManager {
                     try {
                         connectionListener.onClient(info.groupOwnerAddress,
                                 InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
+                    } catch (UnknownHostException | SocketException e) {
+                        connectionListener.onClient(null, null);
                     }
                 }
             }
@@ -179,8 +187,8 @@ public class WifiAdHocManager {
         // Get The device from its address
         final WifiP2pDevice device = hashMapWifiDevices.get(address);
         final WifiP2pConfig config = new WifiP2pConfig();
-        
-        if(config.groupOwnerIntent != -1){
+
+        if (config.groupOwnerIntent != -1) {
             config.groupOwnerIntent = valueGroupOwner;
         }
         config.deviceAddress = device.deviceAddress;
@@ -204,12 +212,12 @@ public class WifiAdHocManager {
             wifiP2pManager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
-                    if(v) Log.d(TAG, "onSuccess cancelConnect");
+                    if (v) Log.d(TAG, "onSuccess cancelConnect");
                 }
 
                 @Override
                 public void onFailure(int reason) {
-                    if(v) Log.d(TAG, "onFailure cancelConnect: " + reason);
+                    if (v) Log.d(TAG, "onFailure cancelConnect: " + reason);
                 }
             });
         }
@@ -299,21 +307,17 @@ public class WifiAdHocManager {
         return null;
     }
 
-    private byte[] getLocalIPAddress() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
-                        if (inetAddress instanceof Inet4Address) {
-                            return inetAddress.getAddress();
-                        }
+    private byte[] getLocalIPAddress() throws SocketException {
+        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+            NetworkInterface intf = en.nextElement();
+            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                InetAddress inetAddress = enumIpAddr.nextElement();
+                if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
+                    if (inetAddress instanceof Inet4Address) {
+                        return inetAddress.getAddress();
                     }
                 }
             }
-        } catch (SocketException | NullPointerException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -330,26 +334,22 @@ public class WifiAdHocManager {
         return ipAddrStr.toString();
     }
 
-    public void updateName(String name) {
-        try {
-            Method m = wifiP2pManager.getClass().getMethod(
-                    "setDeviceName",
-                    new Class[]{WifiP2pManager.Channel.class, String.class,
-                            WifiP2pManager.ActionListener.class});
+    public void updateName(String name) throws InvocationTargetException, IllegalAccessException,
+            NoSuchMethodException {
+        Method m = wifiP2pManager.getClass().getMethod(
+                "setDeviceName",
+                Channel.class, String.class,
+                WifiP2pManager.ActionListener.class);
 
-            m.invoke(wifiP2pManager, channel, name, new WifiP2pManager.ActionListener() {
-                public void onSuccess() {
-                    //Code for Success in changing name
-                }
+        m.invoke(wifiP2pManager, channel, name, new WifiP2pManager.ActionListener() {
+            public void onSuccess() {
+                //Code for Success in changing name
+            }
 
-                public void onFailure(int reason) {
-                    //Code to be done while name change Fails
-                }
-            });
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+            public void onFailure(int reason) {
+                //Code to be done while name change Fails
+            }
+        });
     }
 
     public void requestGO(final ListenerWifiGroupOwner listenerWifiGroupOwner) {
@@ -389,6 +389,34 @@ public class WifiAdHocManager {
                     }
                 }
             });
+        }
+    }
+
+    public void onEnableWifi(final ListenerAdapter listenerAdapter) {
+
+        unregisterEnableAdapter();
+
+        mReceiverAdapter = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connMgr != null) {
+                    NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+                    if (wifi != null && wifi.isConnectedOrConnecting()) {
+                        listenerAdapter.onEnableWifi();
+                    }
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        context.registerReceiver(mReceiverAdapter, filter);
+    }
+
+    public void unregisterEnableAdapter() {
+        if (mReceiverAdapter != null) {
+            context.unregisterReceiver(mReceiverAdapter);
+            mReceiverAdapter = null;
         }
     }
 

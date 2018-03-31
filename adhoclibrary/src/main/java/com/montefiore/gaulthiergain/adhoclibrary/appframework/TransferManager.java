@@ -1,6 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
@@ -37,10 +43,12 @@ public class TransferManager {
         this(verbose, context, listenerApp, config);
     }
 
-    public void start() throws DeviceException, IOException {
+    public void start() throws IOException {
         aodvManager = new AodvManager(v, context, config, listenerApp);
         dataLinkManager = aodvManager.getDataLink();
     }
+
+    /*--------------------------------------Network methods---------------------------------------*/
 
     public void connect(AdHocDevice adHocDevice) throws DeviceException {
         aodvManager.connect(adHocDevice);
@@ -54,7 +62,9 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, remoteDest);
     }
 
-    public void stopListening() throws IOException, DeviceException {
+    /*-------------------------------------DataLink methods---------------------------------------*/
+
+    public void stopListening() throws IOException {
         dataLinkManager.stopListening();
     }
 
@@ -66,13 +76,43 @@ public class TransferManager {
         return dataLinkManager.getPaired();
     }
 
-    public void enableWifi() {
-        dataLinkManager.enableWifi();
+    public void enableAll(ListenerAdapter listenerAdapter) {
+        dataLinkManager.enableAll(listenerAdapter);
     }
 
-    public void enableBluetooth(int duration) {
-        dataLinkManager.enableBluetooth(duration);
+    public void enableWifi(ListenerAdapter listenerAdapter) {
+        dataLinkManager.enableWifi(listenerAdapter);
     }
+
+    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
+        dataLinkManager.enableBluetooth(duration, listenerAdapter);
+    }
+
+    public void disableAll() {
+        dataLinkManager.disableAll();
+    }
+
+    public void disableWifi() {
+        dataLinkManager.disableWifi();
+    }
+
+    public void disableBluetooth() {
+        dataLinkManager.disableBluetooth();
+    }
+
+    public boolean isWifiEnable() {
+        return dataLinkManager.isWifiEnable();
+    }
+
+    public boolean isBluetoothEnable() {
+        return dataLinkManager.isBluetoothEnable();
+    }
+
+    public void unregisterAdapter() {
+        dataLinkManager.unregisterAdapter();
+    }
+
+    /*-----------------------------------------Getters--------------------------------------------*/
 
     public String getOwnAddress() {
         return config.getLabel();

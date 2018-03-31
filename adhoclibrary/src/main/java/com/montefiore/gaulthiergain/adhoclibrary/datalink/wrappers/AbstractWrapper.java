@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -67,7 +68,9 @@ public abstract class AbstractWrapper {
 
     public abstract HashMap<String, AdHocDevice> getPaired();
 
-    public abstract void enable(int duration);
+    public abstract void enable(int duration, ListenerAdapter listenerAdapter);
+
+    public abstract void disable();
 
     public abstract void unregisterConnection();
 
@@ -119,4 +122,6 @@ public abstract class AbstractWrapper {
             }
         }
     }
+
+    public abstract void unregisterAdapter();
 }

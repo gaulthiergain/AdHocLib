@@ -6,6 +6,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
@@ -172,17 +173,29 @@ public class WrapperBluetooth extends AbstractWrapper {
     }
 
     @Override
-    public void enable(int duration) {
+    public void enable(int duration, ListenerAdapter listenerAdapter) {
         try {
+            bluetoothManager.enable();
             bluetoothManager.enableDiscovery(duration);
+            bluetoothManager.onEnableBluetooth(listenerAdapter);
         } catch (BluetoothBadDuration e) {
             listenerApp.catchException(e);
         }
     }
 
     @Override
+    public void disable() {
+        bluetoothManager.disable();
+    }
+
+    @Override
     public void disconnect() {
         //todo array list of bluetooth client and iterate over to disconnect
+    }
+
+    @Override
+    public void unregisterAdapter() {
+        bluetoothManager.unregisterEnableAdapter();
     }
 
     @Override

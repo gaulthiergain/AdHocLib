@@ -5,6 +5,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
@@ -29,6 +30,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,8 +181,14 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     @Override
-    public void enable(int duration) {
+    public void enable(int duration, ListenerAdapter listenerAdapter) {
         wifiAdHocManager.enable();
+        wifiAdHocManager.onEnableWifi(listenerAdapter);
+    }
+
+    @Override
+    public void disable(){
+        wifiAdHocManager.disable();
     }
 
     @Override
@@ -189,8 +197,21 @@ public class WrapperWifi extends AbstractWrapper {
     }
 
     @Override
+    public void unregisterAdapter(){
+        wifiAdHocManager.unregisterEnableAdapter();
+    }
+
+    @Override
     public void updateName(String name) {
-        wifiAdHocManager.updateName(name);
+        try {
+            wifiAdHocManager.updateName(name);
+        } catch (InvocationTargetException e) {
+            listenerApp.catchException(e);
+        } catch (IllegalAccessException e) {
+            listenerApp.catchException(e);
+        } catch (NoSuchMethodException e) {
+            listenerApp.catchException(e);
+        }
     }
 
     /*--------------------------------------Public methods----------------------------------------*/
