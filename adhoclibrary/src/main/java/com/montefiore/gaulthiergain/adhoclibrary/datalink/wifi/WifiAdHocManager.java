@@ -21,6 +21,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
@@ -404,7 +405,11 @@ public class WifiAdHocManager {
                     NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
                     if (wifi != null && wifi.isConnectedOrConnecting()) {
-                        listenerAdapter.onEnableWifi();
+                        try {
+                            listenerAdapter.onEnableWifi();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

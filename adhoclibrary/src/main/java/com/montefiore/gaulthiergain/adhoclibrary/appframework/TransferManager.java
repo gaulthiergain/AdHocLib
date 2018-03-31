@@ -84,15 +84,15 @@ public class TransferManager {
         dataLinkManager.enableWifi(listenerAdapter);
     }
 
-    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
+    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) throws IOException {
         dataLinkManager.enableBluetooth(duration, listenerAdapter);
     }
 
-    public void disableAll() {
+    public void disableAll() throws IOException {
         dataLinkManager.disableAll();
     }
 
-    public void disableWifi() {
+    public void disableWifi() throws IOException {
         dataLinkManager.disableWifi();
     }
 
@@ -106,10 +106,6 @@ public class TransferManager {
 
     public boolean isBluetoothEnable() {
         return dataLinkManager.isBluetoothEnable();
-    }
-
-    public void unregisterAdapter() {
-        dataLinkManager.unregisterAdapter();
     }
 
     /*-----------------------------------------Getters--------------------------------------------*/

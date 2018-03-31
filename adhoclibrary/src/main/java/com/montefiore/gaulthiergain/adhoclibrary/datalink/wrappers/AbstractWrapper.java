@@ -25,8 +25,9 @@ public abstract class AbstractWrapper {
 
     final boolean v;
     final boolean json;
-    final boolean background;
     final Context context;
+    final short nbThreads;
+    final boolean background;
     final ListenerApp listenerApp;
     final Neighbors neighbors;
     final HashMap<String, String> mapLabelAddr;
@@ -41,7 +42,7 @@ public abstract class AbstractWrapper {
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
-    AbstractWrapper(boolean v, Context context, boolean json, boolean background, String label,
+    AbstractWrapper(boolean v, Context context, boolean json, short nbThreads, boolean background, String label,
                     HashMap<String, AdHocDevice> mapAddressDevice,
                     Neighbors neighbors,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
@@ -52,6 +53,7 @@ public abstract class AbstractWrapper {
         this.enabled = true;
         this.context = context;
         this.label = label;
+        this.nbThreads = nbThreads;
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
         this.mapLabelAddr = new HashMap<>();
@@ -77,6 +79,8 @@ public abstract class AbstractWrapper {
     public abstract void disconnect();
 
     public abstract void updateName(String name);
+
+    public abstract void listenServer() throws IOException;
 
     public boolean isEnabled() {
         return enabled;

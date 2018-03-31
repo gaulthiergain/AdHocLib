@@ -53,8 +53,8 @@ public class WrapperWifi extends AbstractWrapper {
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
-                mapAddressDevice, neighbors, listenerApp, listenerDataLink);
+        super(verbose, context, config.isJson(), config.getNbThreadWifi(), config.isBackground(),
+                config.getLabel(), mapAddressDevice, neighbors, listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -110,7 +110,7 @@ public class WrapperWifi extends AbstractWrapper {
                         wifiAdHocManager.unregisterInitName();
                     }
                 });
-                this.listenServer(config.getNbThreadWifi());
+                this.listenServer();
             } else {
                 enabled = false;
             }
@@ -227,6 +227,68 @@ public class WrapperWifi extends AbstractWrapper {
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
 
+    @Override
+    public void listenServer() throws IOException {
+        wifiServiceServer = new WifiServiceServer(v, context, json, new MessageListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.traceException(e);
+                }
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.traceException(e);
+            }
+
+            @Override
+            public void onConnectionClosed(RemoteConnection remoteDevice) {
+
+                //Get label from ip
+                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
+
+                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
+
+                try {
+                    remoteDevice.setDeviceAddress(remoteLabel);
+                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
+                    neighbors.getNeighbors().remove(remoteLabel);
+                    listenerDataLink.brokenLink(remoteLabel);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.traceException(e);
+                }
+
+                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+            }
+
+            @Override
+            public void onConnection(RemoteConnection remoteDevice) {
+
+            }
+
+            @Override
+            public void onConnectionFailed(RemoteConnection remoteDevice) {
+                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            }
+        });
+
+        // Start the wifi server listening process
+        wifiServiceServer.listen(nbThreads, serverPort);
+    }
+
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void _connect() {
@@ -306,67 +368,6 @@ public class WrapperWifi extends AbstractWrapper {
         // Start the wifiServiceClient thread
         new Thread(wifiServiceClient).start();
 
-    }
-
-    private void listenServer(short nbThreads) throws IOException {
-        wifiServiceServer = new WifiServiceServer(v, context, json, new MessageListener() {
-            @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
-                }
-            }
-
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
-            }
-
-            @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
-
-                try {
-                    remoteDevice.setDeviceAddress(remoteLabel);
-                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
-                    neighbors.getNeighbors().remove(remoteLabel);
-                    listenerDataLink.brokenLink(remoteLabel);
-                } catch (IOException | NoConnectionException e) {
-                    listenerApp.traceException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
-            }
-
-            @Override
-            public void onConnection(RemoteConnection remoteDevice) {
-
-            }
-
-            @Override
-            public void onConnectionFailed(RemoteConnection remoteDevice) {
-                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
-            }
-        });
-
-        // Start the wifi server listening process
-        wifiServiceServer.listen(nbThreads, serverPort);
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,

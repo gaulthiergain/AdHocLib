@@ -61,8 +61,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public WrapperWifiUdp(boolean verbose, Context context, Config config, Neighbors neighbors,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
-                mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
+        super(verbose, context, config.isJson(), config.getNbThreadWifi(), config.isBackground(),
+                config.getLabel(), mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override
@@ -112,7 +112,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     }
                 });
 
-                this.initUdpPeers();
+                this.listenServer();
                 this.ackSet = new HashSet<>();
             } else {
                 enabled = false;
@@ -202,6 +202,38 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
+    public void listenServer() {
+        udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.traceException(e);
+                }
+            }
+
+            @Override
+            public void onMessageSent(MessageAdHoc message) {
+                if (v) Log.d(TAG, "onMessageSent");
+            }
+
+            @Override
+            public void onForward(MessageAdHoc message) {
+                if (v) Log.d(TAG, "onForward");
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.traceException(e);
+            }
+        });
+        //Run timers for HELLO messages
+        timerHello(Constants.HELLO_PACKET_INTERVAL);
+        timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
+    }
+
+    @Override
     public void unregisterAdapter() {
         wifiAdHocManager.unregisterEnableAdapter();
     }
@@ -276,40 +308,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 }
             }
         }, time);
-    }
-
-    /**
-     * Method allowing to init the UDP peers.
-     */
-    private void initUdpPeers() {
-        udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
-            @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
-                }
-            }
-
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "onMessageSent");
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "onForward");
-            }
-
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
-            }
-        });
-        //Run timers for HELLO messages
-        timerHello(Constants.HELLO_PACKET_INTERVAL);
-        timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
     }
 
     private void _sendMessage(final MessageAdHoc msg, final String address) {

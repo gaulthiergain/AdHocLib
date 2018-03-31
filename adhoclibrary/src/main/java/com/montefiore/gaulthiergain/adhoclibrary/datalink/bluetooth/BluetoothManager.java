@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -278,7 +279,11 @@ public class BluetoothManager {
                             BluetoothAdapter.ERROR);
                     switch (bluetoothState) {
                         case BluetoothAdapter.STATE_ON:
-                            listenerAdapter.onEnableBluetooth();
+                            try {
+                                listenerAdapter.onEnableBluetooth();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             break;
                     }
                 }

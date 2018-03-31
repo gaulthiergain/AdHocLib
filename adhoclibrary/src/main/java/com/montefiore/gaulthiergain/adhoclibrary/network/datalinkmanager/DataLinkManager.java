@@ -227,36 +227,77 @@ public class DataLinkManager {
         //TODO implement
     }
 
-    public void enableAll(ListenerAdapter listenerAdapter) {
+    public void enableAll(final ListenerAdapter listenerAdapter) {
         for (AbstractWrapper wrapper : wrappers) {
             if (!wrapper.isEnabled()) {
-                wrapper.enable(0, listenerAdapter);
+                wrapper.enable(0, new ListenerAdapter() {
+                    @Override
+                    public void onEnableBluetooth() throws IOException {
+                        wrappers[BLUETOOTH].listenServer();
+                        wrappers[BLUETOOTH].unregisterAdapter();
+                        listenerAdapter.onEnableBluetooth();
+                    }
+
+                    @Override
+                    public void onEnableWifi() throws IOException {
+                        wrappers[WIFI].listenServer();
+                        wrappers[WIFI].unregisterAdapter();
+                        listenerAdapter.onEnableWifi();
+                    }
+                });
             }
         }
     }
 
-    public void enableWifi(ListenerAdapter listenerAdapter) {
+    public void enableWifi(final ListenerAdapter listenerAdapter) {
         if (!wrappers[WIFI].isEnabled()) {
-            wrappers[WIFI].enable(0, listenerAdapter);
+            wrappers[WIFI].enable(0, new ListenerAdapter() {
+                @Override
+                public void onEnableBluetooth() throws IOException {
+                    //do nothing in this case
+                }
+
+                @Override
+                public void onEnableWifi() throws IOException {
+                    wrappers[WIFI].listenServer();
+                    wrappers[WIFI].unregisterAdapter();
+                    listenerAdapter.onEnableWifi();
+                }
+            });
         }
     }
 
-    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
+    public void enableBluetooth(int duration, final ListenerAdapter listenerAdapter) {
         if (!wrappers[BLUETOOTH].isEnabled()) {
-            wrappers[BLUETOOTH].enable(duration, listenerAdapter);
+            wrappers[BLUETOOTH].enable(duration, new ListenerAdapter() {
+                @Override
+                public void onEnableBluetooth() throws IOException {
+                    wrappers[BLUETOOTH].listenServer();
+                    wrappers[BLUETOOTH].unregisterAdapter();
+                    listenerAdapter.onEnableBluetooth();
+                }
+
+                @Override
+                public void onEnableWifi() {
+                    //do nothing in this case
+                }
+            });
+
         }
     }
 
-    public void disableAll() {
+    public void disableAll() throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
+                wrapper.stopListening();
                 wrapper.disable();
             }
         }
     }
 
-    public void disableWifi() {
+    public void disableWifi() throws IOException {
         if (wrappers[WIFI].isEnabled()) {
+            wrappers[BLUETOOTH].stopListening();
             wrappers[WIFI].disable();
         }
     }
@@ -265,14 +306,6 @@ public class DataLinkManager {
         if (wrappers[BLUETOOTH].isEnabled()) {
             wrappers[BLUETOOTH].stopListening();
             wrappers[BLUETOOTH].disable();
-        }
-    }
-
-    public void unregisterAdapter() {
-        for (AbstractWrapper wrapper : wrappers) {
-            if (wrapper.isEnabled()) {
-                wrapper.unregisterAdapter();
-            }
         }
     }
 
