@@ -1,26 +1,24 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.network;
-
-import android.bluetooth.BluetoothServerSocket;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
 /**
- * <p>This class allows to encapsulate a BluetoothServerSocket object as a AdHocServerSocketBluetooth
- * object and add an abstraction by implementing the IServerSocket interface({@link IServerSocket}).
- * </p>
+ * <p>This class allows to encapsulate a ServerSocket object as a AdHocServerSocketWifi object and
+ * add an abstraction by implementing the IServerSocket interface({@link IServerSocket}).</p>
  *
  * @author Gaulthier Gain
  * @version 1.0
  */
+public class AdHocServerSocketWifi implements IServerSocket {
 
-public class AdHocServerSocketBluetooth implements IServerSocket {
-    private BluetoothServerSocket serverSocket;
+    private ServerSocket serverSocket;
 
     /**
      * Constructor
      * @param serverSocket a serverSocket object which is similar to TCP sockets.
      */
-    public AdHocServerSocketBluetooth(BluetoothServerSocket serverSocket) {
+    public AdHocServerSocketWifi(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 

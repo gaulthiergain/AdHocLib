@@ -806,7 +806,11 @@ public class AodvManager {
         dataLink.disconnect();
     }
 
-    public void enable(int duration) {
-        dataLink.enable(duration);
+    public void enableBluetooth(int duration) {
+        dataLink.enableBluetooth(duration);
+    }
+
+    public void enableWifi() {
+        dataLink.enableWifi();
     }
 }

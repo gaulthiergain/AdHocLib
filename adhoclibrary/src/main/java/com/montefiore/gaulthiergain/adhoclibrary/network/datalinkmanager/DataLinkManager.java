@@ -234,12 +234,24 @@ public class DataLinkManager {
         //TODO implement
     }
 
-    public void enable(int duration) {
+    public void enableAll() {
 
         for (AbstractWrapper wrapper : wrappers) {
             if (!wrapper.isEnabled()) {
-                wrapper.enable(duration);
+                wrapper.enable(0);
             }
+        }
+    }
+
+    public void enableWifi() {
+        if(wrappers[WIFI].isEnabled()){
+            wrappers[WIFI].enable(0);
+        }
+    }
+
+    public void enableBluetooth(int duration) {
+        if(wrappers[BLUETOOTH].isEnabled()){
+            wrappers[BLUETOOTH].enable(duration);
         }
     }
 

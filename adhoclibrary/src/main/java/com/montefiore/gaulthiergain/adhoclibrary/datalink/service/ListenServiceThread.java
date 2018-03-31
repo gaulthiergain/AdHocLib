@@ -4,8 +4,8 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.io.IOException;
 class ListenServiceThread extends Thread {
     private static final String TAG = "[AdHoc][ListenService]";
     private final boolean v;
-    private final NetworkManager network;
+    private final SocketManager network;
     private final Handler handler;
 
     /**
@@ -28,7 +28,7 @@ class ListenServiceThread extends Thread {
      * @param handler a Handler object which allows to send and process {@link android.os.Message}
      *                and Runnable objects associated with a thread's.
      */
-    ListenServiceThread(boolean verbose, NetworkManager network, Handler handler) {
+    ListenServiceThread(boolean verbose, SocketManager network, Handler handler) {
         this.v = verbose;
         this.network = network;
         this.handler = handler;

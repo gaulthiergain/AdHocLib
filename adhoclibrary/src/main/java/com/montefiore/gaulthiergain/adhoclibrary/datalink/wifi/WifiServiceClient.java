@@ -4,8 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -98,7 +98,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 socket.bind(null);
                 socket.connect((new InetSocketAddress(remoteAddress, port)), timeOut);
 
-                network = new NetworkManager(new AdHocSocketWifi(socket), json);
+                network = new SocketManager(new AdHocSocketWifi(socket), json);
                 if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(remoteAddress, network);
                 }
@@ -127,6 +127,6 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
     }
 
     public interface ListenerAutoConnect {
-        void connected(String remoteAddress, NetworkManager network) throws IOException, NoConnectionException;
+        void connected(String remoteAddress, SocketManager network) throws IOException, NoConnectionException;
     }
 }

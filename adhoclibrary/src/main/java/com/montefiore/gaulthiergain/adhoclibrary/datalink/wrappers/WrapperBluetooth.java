@@ -15,7 +15,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -44,7 +44,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     private BluetoothManager bluetoothManager;
     private BluetoothServiceServer bluetoothServiceServer;
 
-    private HashMap<String, NetworkManager> mapUuidNetwork;
+    private HashMap<String, SocketManager> mapUuidNetwork;
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
     public WrapperBluetooth(boolean verbose, Context context, Config config, Neighbors neighbors,
@@ -252,7 +252,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
         bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
             @Override
-            public void connected(UUID uuid, NetworkManager network) throws IOException, NoConnectionException {
+            public void connected(UUID uuid, SocketManager network) throws IOException, NoConnectionException {
 
                 // Add network to temporary hashmap
                 mapUuidNetwork.put(uuid.toString(), network);
@@ -336,11 +336,11 @@ public class WrapperBluetooth extends AbstractWrapper {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
-                NetworkManager networkManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
+                SocketManager socketManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
 
-                if (networkManager != null) {
+                if (socketManager != null) {
 
-                    networkManager.sendMessage(new MessageAdHoc(
+                    socketManager.sendMessage(new MessageAdHoc(
                             new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
 
                     if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
@@ -358,13 +358,13 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                     // Add the neighbor into the neighbors object
                     neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
+                            new NetworkObject(type, socketManager));
                 }
                 break;
             }
             case CONNECT_CLIENT: {
-                NetworkManager networkManager = mapUuidNetwork.get(message.getPdu().toString());
-                if (networkManager != null) {
+                SocketManager socketManager = mapUuidNetwork.get(message.getPdu().toString());
+                if (socketManager != null) {
 
                     if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
                             + " " + message.getHeader().getSenderAddr());
@@ -381,7 +381,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                     // Add the active connection into the neighbors object
                     neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
+                            new NetworkObject(type, socketManager));
                 }
                 break;
             }

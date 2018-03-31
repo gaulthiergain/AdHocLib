@@ -5,8 +5,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -78,7 +78,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
                 // Connect to the remote host
                 bluetoothSocket.connect();
-                network = new NetworkManager(new AdHocSocketBluetooth(bluetoothSocket), json);
+                network = new SocketManager(new AdHocSocketBluetooth(bluetoothSocket), json);
                 if (listenerAutoConnect != null) {
                     listenerAutoConnect.connected(uuid, network);
                 }
@@ -129,7 +129,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
         } while (i < this.attempts);
     }
 
-    public NetworkManager getNetwork() {
+    public SocketManager getNetwork() {
         return network;
     }
 
@@ -138,6 +138,6 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
     }
 
     public interface ListenerAutoConnect {
-        void connected(UUID uuid, NetworkManager network) throws IOException, NoConnectionException;
+        void connected(UUID uuid, SocketManager network) throws IOException, NoConnectionException;
     }
 }

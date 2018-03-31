@@ -6,13 +6,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketBluetooth;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocServerSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketBluetooth;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.IServerSocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocServerSocketBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocServerSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.IServerSocket;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
@@ -211,10 +211,10 @@ public class ThreadServer extends Thread {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
-     * NetworkManager (socket).
+     * @return a ConcurrentHashMap<String, SocketManager> which maps a remote device with a
+     * SocketManager (socket).
      */
-    public ConcurrentHashMap<String, NetworkManager> getActiveConnexion() {
+    public ConcurrentHashMap<String, SocketManager> getActiveConnexion() {
         return listSocketDevice.getActiveConnection();
     }
 }

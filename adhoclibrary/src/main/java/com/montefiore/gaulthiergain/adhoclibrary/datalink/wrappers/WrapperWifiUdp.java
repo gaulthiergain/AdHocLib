@@ -201,7 +201,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
         NetworkObject networkObject = neighbors.getNeighbors().get(label);
         if (networkObject != null && networkObject.getType() == type) {
-            WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
+            WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getSocketManager();
             _sendMessage(msg, wifiAdHocDevice.getIpAddress());
         }
     }
@@ -210,7 +210,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public void broadcast(MessageAdHoc message) {
         for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
-                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
+                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getSocketManager();
                 _sendMessage(message, wifiAdHocDevice.getIpAddress());
             }
         }
@@ -221,7 +221,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 if (!entry.getKey().equals(excludedAddress)) {
-                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getNetworkManager();
+                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue().getSocketManager();
                     _sendMessage(message, wifiAdHocDevice.getIpAddress());
                 }
             }
@@ -331,7 +331,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                     NetworkObject networkObject = entry.getValue();
                     if (networkObject.getType() == type) {
-                        WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
+                        WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getSocketManager();
                         MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
                                 , System.currentTimeMillis());
                         _sendMessage(msg, wifiAdHocDevice.getIpAddress());
@@ -375,7 +375,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             // Callback via handler
                             NetworkObject networkObject = neighbors.getNeighbors().get(entry.getKey());
                             if (networkObject != null && networkObject.getType() == type) {
-                                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getNetworkManager();
+                                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) networkObject.getSocketManager();
                                 // Used handler to avoid using runOnUiThread in main app
                                 mHandler.obtainMessage(1,
                                         new String[]{entry.getKey(), wifiAdHocDevice.getName()})

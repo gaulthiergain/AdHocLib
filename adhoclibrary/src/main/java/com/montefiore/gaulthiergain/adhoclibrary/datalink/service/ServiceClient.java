@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public abstract class ServiceClient extends Service {
     protected static final short HIGH = 2500;
     protected static final String TAG = "[AdHoc][ServiceClient]";
 
-    protected NetworkManager network;
+    protected SocketManager network;
     protected final short attempts;
     protected final boolean background;
 

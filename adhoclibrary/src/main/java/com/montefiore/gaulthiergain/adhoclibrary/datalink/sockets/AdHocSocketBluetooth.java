@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.network;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
 import android.bluetooth.BluetoothSocket;
 

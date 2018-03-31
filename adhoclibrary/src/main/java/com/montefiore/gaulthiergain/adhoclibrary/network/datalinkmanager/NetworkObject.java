@@ -6,26 +6,26 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 public class NetworkObject {
     private final byte type;
-    private final Object networkManager;
+    private final Object socketManager;
 
-    public NetworkObject(byte type, Object networkManager) {
+    public NetworkObject(byte type, Object socketManager) {
         this.type = type;
-        this.networkManager = networkManager;
+        this.socketManager = socketManager;
     }
 
     public byte getType() {
         return type;
     }
 
-    public Object getNetworkManager() {
-        return networkManager;
+    public Object getSocketManager() {
+        return socketManager;
     }
 
     @Override
     public String toString() {
         return "NetworkObject{" +
                 "type=" + type +
-                ", networkManager=" + networkManager +
+                ", socketManager=" + socketManager +
                 '}';
     }
 }

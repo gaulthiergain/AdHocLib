@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
@@ -72,10 +72,10 @@ public class BluetoothServiceServer extends ServiceServer {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
-     * NetworkManager (socket).
+     * @return a ConcurrentHashMap<String, SocketManager> which maps a remote device with a
+     * SocketManager (socket).
      */
-    public ConcurrentHashMap<String, NetworkManager> getActiveConnections() {
+    public ConcurrentHashMap<String, SocketManager> getActiveConnections() {
         return threadListen.getActiveConnexion();
     }
 }

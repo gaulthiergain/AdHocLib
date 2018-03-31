@@ -9,7 +9,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
@@ -43,7 +43,7 @@ public class WrapperWifi extends AbstractWrapper {
     private WifiAdHocManager wifiAdHocManager;
     private WifiServiceServer wifiServiceServer;
 
-    private HashMap<String, NetworkManager> mapIpNetwork;
+    private HashMap<String, SocketManager> mapIpNetwork;
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
     public WrapperWifi(boolean verbose, Context context, Config config, Neighbors neighbors,
@@ -267,7 +267,7 @@ public class WrapperWifi extends AbstractWrapper {
 
         wifiServiceClient.setListenerAutoConnect(new WifiServiceClient.ListenerAutoConnect() {
             @Override
-            public void connected(String remoteAddress, NetworkManager network) throws IOException,
+            public void connected(String remoteAddress, SocketManager network) throws IOException,
                     NoConnectionException {
 
                 // Add mapping MAC - network
@@ -351,15 +351,15 @@ public class WrapperWifi extends AbstractWrapper {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
-                final NetworkManager networkManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
-                if (networkManager != null) {
+                final SocketManager socketManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
+                if (socketManager != null) {
 
                     if (v)
-                        Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
+                        Log.d(TAG, "Add mapping: " + socketManager.getISocket().getRemoteSocketAddress()
                                 + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
+                    mapLabelAddr.put(socketManager.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                 }
@@ -371,24 +371,24 @@ public class WrapperWifi extends AbstractWrapper {
                         public void getGroupOwner(String address) {
                             ownIpAddress = address;
                             wifiAdHocManager.unregisterGroupOwner();
-                            sendConnectClient(message, networkManager);
+                            sendConnectClient(message, socketManager);
                         }
                     });
                 } else {
-                    sendConnectClient(message, networkManager);
+                    sendConnectClient(message, socketManager);
                 }
                 break;
             }
             case CONNECT_CLIENT: {
-                NetworkManager networkManager = mapIpNetwork.get(message.getPdu().toString());
-                if (networkManager != null) {
+                SocketManager socketManager = mapIpNetwork.get(message.getPdu().toString());
+                if (socketManager != null) {
 
                     if (v)
-                        Log.d(TAG, "Add mapping: " + networkManager.getISocket().getRemoteSocketAddress()
+                        Log.d(TAG, "Add mapping: " + socketManager.getISocket().getRemoteSocketAddress()
                                 + " " + message.getHeader().getSenderAddr());
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(networkManager.getISocket().getRemoteSocketAddress(),
+                    mapLabelAddr.put(socketManager.getISocket().getRemoteSocketAddress(),
                             message.getHeader().getSenderAddr());
 
                     // Add mapping label - remoteConnection
@@ -403,7 +403,7 @@ public class WrapperWifi extends AbstractWrapper {
 
                     // Add the active connection into the autoConnectionActives object
                     neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, networkManager));
+                            new NetworkObject(type, socketManager));
                 }
                 break;
             }
@@ -413,11 +413,11 @@ public class WrapperWifi extends AbstractWrapper {
         }
     }
 
-    private void sendConnectClient(MessageAdHoc message, NetworkManager networkManager) {
-        if (networkManager != null) {
+    private void sendConnectClient(MessageAdHoc message, SocketManager socketManager) {
+        if (socketManager != null) {
             // Send CONNECT message to establish the pairing
             try {
-                networkManager.sendMessage(new MessageAdHoc(
+                socketManager.sendMessage(new MessageAdHoc(
                         new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
 
                 // Add mapping label - remoteConnection
@@ -432,7 +432,7 @@ public class WrapperWifi extends AbstractWrapper {
 
                 // Add the active connection into the autoConnectionActives object
                 neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                        new NetworkObject(type, networkManager));
+                        new NetworkObject(type, socketManager));
 
             } catch (IOException e) {
                 listenerApp.catchException(e);

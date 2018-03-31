@@ -33,8 +33,8 @@ public class Neighbors {
     /**
      * Method allowing to get the active connections.
      *
-     * @return a ConcurrentHashMap(String, NetworkManager) object which maps the remote node name to
-     * a NetworkManager object.
+     * @return a ConcurrentHashMap(String, SocketManager) object which maps the remote node name to
+     * a SocketManager object.
      */
     public ConcurrentHashMap<String, NetworkObject> getNeighbors() {
         return neighbors;

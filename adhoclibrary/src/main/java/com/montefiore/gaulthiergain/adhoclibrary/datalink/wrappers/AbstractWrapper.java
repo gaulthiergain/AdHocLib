@@ -3,7 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
@@ -95,8 +95,8 @@ public abstract class AbstractWrapper {
 
         NetworkObject networkObject = neighbors.getNeighbors().get(address);
         if (networkObject != null && networkObject.getType() == type) {
-            NetworkManager networkManager = (NetworkManager) networkObject.getNetworkManager();
-            networkManager.sendMessage(message);
+            SocketManager socketManager = (SocketManager) networkObject.getSocketManager();
+            socketManager.sendMessage(message);
         }
     }
 
@@ -104,8 +104,8 @@ public abstract class AbstractWrapper {
         for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
                 if (!entry.getKey().equals(excludedAddress)) {
-                    NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
-                    networkManager.sendMessage(message);
+                    SocketManager socketManager = (SocketManager) entry.getValue().getSocketManager();
+                    socketManager.sendMessage(message);
                 }
             }
         }
@@ -114,8 +114,8 @@ public abstract class AbstractWrapper {
     public void broadcast(MessageAdHoc message) throws IOException {
         for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
             if (entry.getValue().getType() == type) {
-                NetworkManager networkManager = (NetworkManager) entry.getValue().getNetworkManager();
-                networkManager.sendMessage(message);
+                SocketManager socketManager = (SocketManager) entry.getValue().getSocketManager();
+                socketManager.sendMessage(message);
             }
         }
     }

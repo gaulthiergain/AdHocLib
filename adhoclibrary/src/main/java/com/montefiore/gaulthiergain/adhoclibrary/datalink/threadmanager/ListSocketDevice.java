@@ -1,7 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class ListSocketDevice {
     private final boolean json;
     private final ArrayList<ISocket> listISockets;
     // Mapping between the remote address and a networkObject (a socket).
-    private final ConcurrentHashMap<String, NetworkManager> hashMapNetwork;
+    private final ConcurrentHashMap<String, SocketManager> hashMapNetwork;
 
     /**
      * Constructor
@@ -57,7 +57,7 @@ public class ListSocketDevice {
         and a networkObject (respectively a socket). */
         String key = isocket.getRemoteSocketAddress();
         if (!hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.put(key, new NetworkManager(isocket, json));
+            hashMapNetwork.put(key, new SocketManager(isocket, json));
         }
 
         listISockets.add(isocket);
@@ -67,16 +67,16 @@ public class ListSocketDevice {
     /**
      * Method allowing to return the active connections managed by the server.
      *
-     * @return a ConcurrentHashMap<String, NetworkManager> which maps a remote device with a
-     * NetworkManager (socket).
+     * @return a ConcurrentHashMap<String, SocketManager> which maps a remote device with a
+     * SocketManager (socket).
      */
-    synchronized ConcurrentHashMap<String, NetworkManager> getActiveConnection() {
+    synchronized ConcurrentHashMap<String, SocketManager> getActiveConnection() {
         return hashMapNetwork;
     }
 
     /**
      * Method allowing to remove an active connection (a socket) from the
-     * ConcurrentHashMap<String, NetworkManager>.
+     * ConcurrentHashMap<String, SocketManager>.
      *
      * @param isocket a ISocket object which represents a socket between the server and the client.
      */

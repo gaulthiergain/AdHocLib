@@ -3,7 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
@@ -61,7 +61,7 @@ public class WifiServiceServer extends ServiceServer {
         if (v) Log.d(TAG, "Listening on port: " + port);
     }
 
-    public ConcurrentHashMap<String, NetworkManager> getActiveConnections() {
+    public ConcurrentHashMap<String, SocketManager> getActiveConnections() {
         return threadListen.getActiveConnexion();
     }
 }

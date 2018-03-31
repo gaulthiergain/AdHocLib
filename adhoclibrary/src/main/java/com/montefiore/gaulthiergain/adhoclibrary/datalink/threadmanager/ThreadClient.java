@@ -3,9 +3,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.ISocket;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.network.NetworkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -18,7 +18,7 @@ class ThreadClient extends Thread {
     private final ListSocketDevice listSocketDevice;
     private final String name;
     private final Handler handler;
-    private NetworkManager network = null;
+    private SocketManager network = null;
 
     ThreadClient(ListSocketDevice listSocketDevice, String name, Handler handler) {
         this.listSocketDevice = listSocketDevice;

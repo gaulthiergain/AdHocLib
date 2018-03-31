@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.network;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
 import android.util.Log;
 
@@ -18,7 +18,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 
-public class NetworkManager {
+public class SocketManager {
 
     private ISocket isocket;
     private final ObjectMapper mapper;
@@ -34,7 +34,7 @@ public class NetworkManager {
         return isocket;
     }
 
-    public NetworkManager(ISocket isocket, boolean json) throws IOException {
+    public SocketManager(ISocket isocket, boolean json) throws IOException {
         this.isocket = isocket;
         this.oos = new DataOutputStream(isocket.getOutputStream());
         this.ois = new DataInputStream(isocket.getInputStream());

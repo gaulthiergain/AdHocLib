@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.network;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
 import java.io.IOException;
 import java.io.InputStream;
