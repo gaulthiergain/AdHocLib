@@ -297,7 +297,7 @@ public class DataLinkManager {
 
     public void disableWifi() throws IOException {
         if (wrappers[WIFI].isEnabled()) {
-            wrappers[BLUETOOTH].stopListening();
+            wrappers[WIFI].stopListening();
             wrappers[WIFI].disable();
         }
     }

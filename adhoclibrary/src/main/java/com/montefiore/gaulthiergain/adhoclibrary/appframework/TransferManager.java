@@ -1,12 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
@@ -62,6 +56,8 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, remoteDest);
     }
 
+    //TODO BROADCAST and BRODCAST_EXCEPT
+
     /*-------------------------------------DataLink methods---------------------------------------*/
 
     public void stopListening() throws IOException {
@@ -84,7 +80,7 @@ public class TransferManager {
         dataLinkManager.enableWifi(listenerAdapter);
     }
 
-    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) throws IOException {
+    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
         dataLinkManager.enableBluetooth(duration, listenerAdapter);
     }
 
@@ -107,6 +103,8 @@ public class TransferManager {
     public boolean isBluetoothEnable() {
         return dataLinkManager.isBluetoothEnable();
     }
+
+    //TODO DISCONNECT
 
     /*-----------------------------------------Getters--------------------------------------------*/
 
