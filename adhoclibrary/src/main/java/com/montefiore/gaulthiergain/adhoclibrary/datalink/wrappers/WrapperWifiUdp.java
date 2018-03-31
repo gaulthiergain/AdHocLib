@@ -211,11 +211,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
         try {
             wifiAdHocManager.updateName(name);
         } catch (InvocationTargetException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         } catch (IllegalAccessException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         } catch (NoSuchMethodException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         }
     }
 
@@ -288,7 +288,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
 
@@ -304,7 +304,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
         });
         //Run timers for HELLO messages
@@ -323,7 +323,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     if (v)
                         Log.d(TAG, msg.toString() + " is sent on " + inetAddress + " on " + serverPort);
                 } catch (UnknownHostException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
         }).start();
@@ -407,7 +407,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                             // Remove the remote device from a neighbors
                             neighbors.getNeighbors().remove(entry.getKey());
                         } catch (IOException | NoConnectionException e) {
-                            listenerApp.catchException(e);
+                            listenerApp.traceException(e);
                         }
                     }
                 }

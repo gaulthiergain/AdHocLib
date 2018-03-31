@@ -88,7 +88,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             if (!neighbors.getNeighbors().containsKey(btDevice.getShortUuid())) {
                 _connect(btDevice);
             } else {
-                listenerApp.catchException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
+                listenerApp.traceException(new DeviceAlreadyConnectedException(btDevice.getShortUuid()
                         + " is already connected"));
             }
         }
@@ -179,7 +179,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             bluetoothManager.onEnableBluetooth(listenerAdapter);
             enabled = true;
         } catch (BluetoothBadDuration e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         }
     }
 
@@ -213,7 +213,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
 
@@ -229,7 +229,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
 
             @Override
@@ -244,9 +244,9 @@ public class WrapperBluetooth extends AbstractWrapper {
                     listenerDataLink.brokenLink(remoteLabel);
                     neighbors.getNeighbors().remove(remoteLabel);
                 } catch (IOException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 } catch (NoConnectionException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
 
                 listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
@@ -290,7 +290,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
 
@@ -306,7 +306,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
 
             @Override
@@ -321,9 +321,9 @@ public class WrapperBluetooth extends AbstractWrapper {
                     listenerDataLink.brokenLink(remoteLabel);
                     neighbors.getNeighbors().remove(remoteLabel);
                 } catch (IOException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 } catch (NoConnectionException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
 
                 listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());

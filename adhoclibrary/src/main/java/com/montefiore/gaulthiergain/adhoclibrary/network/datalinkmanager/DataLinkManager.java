@@ -261,8 +261,9 @@ public class DataLinkManager {
         }
     }
 
-    public void disableBluetooth() {
+    public void disableBluetooth() throws IOException {
         if (wrappers[BLUETOOTH].isEnabled()) {
+            wrappers[BLUETOOTH].stopListening();
             wrappers[BLUETOOTH].disable();
         }
     }

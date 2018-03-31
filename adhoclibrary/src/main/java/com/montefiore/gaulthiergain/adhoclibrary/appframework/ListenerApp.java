@@ -31,7 +31,7 @@ public interface ListenerApp {
      *
      * @param e an Exception object which represents the exception.
      */
-    void catchException(Exception e);
+    void traceException(Exception e);
 
     void onConnectionClosed(String remoteAddress, String remoteName);
 

@@ -88,7 +88,7 @@ public class WrapperWifi extends AbstractWrapper {
                     try {
                         wifiServiceServer.stopListening();
                     } catch (IOException e) {
-                        listenerApp.catchException(e);
+                        listenerApp.traceException(e);
                     }
 
                     _connect();
@@ -208,11 +208,11 @@ public class WrapperWifi extends AbstractWrapper {
         try {
             wifiAdHocManager.updateName(name);
         } catch (InvocationTargetException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         } catch (IllegalAccessException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         } catch (NoSuchMethodException e) {
-            listenerApp.catchException(e);
+            listenerApp.traceException(e);
         }
     }
 
@@ -246,7 +246,7 @@ public class WrapperWifi extends AbstractWrapper {
                     neighbors.getNeighbors().remove(remoteLabel);
                     listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
 
                 listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
@@ -268,7 +268,7 @@ public class WrapperWifi extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
 
@@ -284,7 +284,7 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
         });
 
@@ -315,7 +315,7 @@ public class WrapperWifi extends AbstractWrapper {
                 try {
                     processMsgReceived(message);
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
             }
 
@@ -331,7 +331,7 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void catchException(Exception e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
 
             @Override
@@ -348,7 +348,7 @@ public class WrapperWifi extends AbstractWrapper {
                     neighbors.getNeighbors().remove(remoteLabel);
                     listenerDataLink.brokenLink(remoteLabel);
                 } catch (IOException | NoConnectionException e) {
-                    listenerApp.catchException(e);
+                    listenerApp.traceException(e);
                 }
 
                 listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
@@ -458,7 +458,7 @@ public class WrapperWifi extends AbstractWrapper {
                         new NetworkObject(type, socketManager));
 
             } catch (IOException e) {
-                listenerApp.catchException(e);
+                listenerApp.traceException(e);
             }
         }
     }

@@ -96,7 +96,7 @@ public class TransferManager {
         dataLinkManager.disableWifi();
     }
 
-    public void disableBluetooth() {
+    public void disableBluetooth() throws IOException {
         dataLinkManager.disableBluetooth();
     }
 
