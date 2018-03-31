@@ -31,13 +31,10 @@ public class DataLinkManager {
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
 
-    private short enabled;
-
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
 
-        this.enabled = 0;
         this.listenerApp = listenerApp;
         this.neighbors = new Neighbors();
         this.mapAddressDevice = new HashMap<>();
@@ -59,15 +56,22 @@ public class DataLinkManager {
                 mapAddressDevice, listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
+        checkState();
+    }
+
+    private int checkState() {
+        int enabled = 0;
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 enabled++;
             }
         }
+        return enabled;
     }
 
     public void discovery() throws DeviceException {
 
+        int enabled = checkState();
         if (enabled == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
@@ -142,7 +146,7 @@ public class DataLinkManager {
 
     public void connect(AdHocDevice adHocDevice) throws DeviceException {
 
-        if (enabled == 0) {
+        if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
@@ -158,7 +162,7 @@ public class DataLinkManager {
 
     public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
 
-        if (enabled == 0) {
+        if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 

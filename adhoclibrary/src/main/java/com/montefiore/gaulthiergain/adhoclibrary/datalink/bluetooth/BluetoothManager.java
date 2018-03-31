@@ -67,13 +67,6 @@ public class BluetoothManager {
     }
 
     /**
-     * Method allowing to enable the Bluetooth adapter.
-     */
-    public void enable() {
-        bluetoothAdapter.enable();
-    }
-
-    /**
      * Method allowing to disable the Bluetooth adapter.
      */
     public void disable() {

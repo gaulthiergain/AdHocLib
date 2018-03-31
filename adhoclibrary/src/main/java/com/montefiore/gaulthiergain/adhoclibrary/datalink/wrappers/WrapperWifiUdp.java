@@ -182,11 +182,13 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public void enable(int duration, ListenerAdapter listenerAdapter) {
         wifiAdHocManager.enable();
         wifiAdHocManager.onEnableWifi(listenerAdapter);
+        enabled = true;
     }
 
     @Override
     public void disable() {
         wifiAdHocManager.disable();
+        enabled = false;
     }
 
     @Override

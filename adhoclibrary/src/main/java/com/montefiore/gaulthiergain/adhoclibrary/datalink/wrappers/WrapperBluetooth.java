@@ -175,9 +175,9 @@ public class WrapperBluetooth extends AbstractWrapper {
     @Override
     public void enable(int duration, ListenerAdapter listenerAdapter) {
         try {
-            bluetoothManager.enable();
             bluetoothManager.enableDiscovery(duration);
             bluetoothManager.onEnableBluetooth(listenerAdapter);
+            enabled = true;
         } catch (BluetoothBadDuration e) {
             listenerApp.catchException(e);
         }
@@ -186,6 +186,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     @Override
     public void disable() {
         bluetoothManager.disable();
+        enabled = false;
     }
 
     @Override
