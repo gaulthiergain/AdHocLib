@@ -82,7 +82,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     @Override
     public void connect(AdHocDevice device) {
 
-        String shortUuid = device.getAddress().replace(":", "").toLowerCase();
+        String shortUuid = device.getMac().replace(":", "").toLowerCase();
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(shortUuid);
         if (btDevice != null) {
             if (!neighbors.getNeighbors().containsKey(btDevice.getShortUuid())) {

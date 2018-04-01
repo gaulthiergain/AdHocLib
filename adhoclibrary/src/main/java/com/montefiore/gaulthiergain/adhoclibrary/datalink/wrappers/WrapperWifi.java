@@ -123,7 +123,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     @Override
     public void connect(AdHocDevice device) {
-        wifiAdHocManager.connect(device.getAddress());
+        wifiAdHocManager.connect(device.getMac());
     }
 
     @Override
