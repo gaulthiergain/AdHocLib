@@ -57,10 +57,11 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
      */
     private void connect() throws NoConnectionException {
-        if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName()
-                + " (" + bluetoothAdHocDevice.getUuid() + ")");
 
         if (state == STATE_NONE || state == STATE_CONNECTING) {
+
+            if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName()
+                    + " (" + bluetoothAdHocDevice.getUuid() + ")");
 
             // Get the UUID
             UUID uuid = UUID.fromString(bluetoothAdHocDevice.getUuid());

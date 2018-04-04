@@ -9,6 +9,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
@@ -306,7 +307,7 @@ public class DataLinkManager {
         return wrappers[BLUETOOTH].isEnabled();
     }
 
-    public void disconnectAll() {
+    public void disconnectAll() throws IOException, NoConnectionException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.disconnectAll();
@@ -315,7 +316,7 @@ public class DataLinkManager {
     }
 
 
-    public void disconnect(String remoteDest) {
+    public void disconnect(String remoteDest) throws IOException, NoConnectionException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.disconnect(remoteDest);

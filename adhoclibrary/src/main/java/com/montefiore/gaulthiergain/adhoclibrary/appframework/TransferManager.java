@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -104,11 +105,11 @@ public class TransferManager {
         return dataLinkManager.isBluetoothEnable();
     }
 
-    public void disconnectAll() {
+    public void disconnectAll() throws IOException, NoConnectionException {
         dataLinkManager.disconnectAll();
     }
 
-    public void disconnect(String remoteDest) {
+    public void disconnect(String remoteDest) throws IOException, NoConnectionException {
         dataLinkManager.disconnect(remoteDest);
     }
 

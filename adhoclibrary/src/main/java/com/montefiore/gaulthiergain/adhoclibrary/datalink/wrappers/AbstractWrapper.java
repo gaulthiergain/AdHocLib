@@ -102,26 +102,33 @@ public abstract class AbstractWrapper {
         this.discoveryListener = discoveryListener;
     }
 
-    public boolean disconnect(String remoteDest) {
+    private String getAddrFromLabel(String remoteLabel) throws NoConnectionException {
 
-        try {
-            ServiceClient serviceClient = mapAddrClients.get(remoteDest);
-            if (remoteDest != null) {
-                serviceClient.disconnect();
-                return true;
+        for (Map.Entry<String, String> entry : mapAddrLabel.entrySet()) {
+            if (entry.getValue().equals(remoteLabel)) {
+                return entry.getKey();
             }
-        } catch (NoConnectionException e) {
-            listenerApp.traceException(e);
-        } catch (IOException e) {
-            listenerApp.traceException(e);
         }
-        return false;
+
+        throw new NoConnectionException("No connection to " + remoteLabel);
     }
 
-    public void disconnectAll() {
+    public void disconnect(String remoteLabel) throws IOException, NoConnectionException {
 
-        for (String remoteDest : mapAddrClients.keySet()) {
-            disconnect(remoteDest);
+        String remoteAddr = getAddrFromLabel(remoteLabel);
+        ServiceClient serviceClient = mapAddrClients.get(remoteAddr);
+        if (serviceClient != null) {
+            serviceClient.disconnect();
+            mapAddrClients.remove(remoteAddr);
+        } else {
+            throw new NoConnectionException("No connection to " + remoteLabel);
+        }
+    }
+
+    public void disconnectAll() throws IOException, NoConnectionException {
+
+        for (Map.Entry<String, ServiceClient> entry : mapAddrClients.entrySet()) {
+            entry.getValue().disconnect();
         }
 
         if (mapAddrClients.size() > 0) {
