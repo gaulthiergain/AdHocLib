@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;

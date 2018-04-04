@@ -114,28 +114,6 @@ public abstract class ServiceClient extends Service {
         }
     }
 
-    /**
-     * Method allowing to close the current connection to the remote host.
-     *
-     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
-     */
-    public void disconnect() throws NoConnectionException, IOException {
-        if (v) Log.d(TAG, "disconnect()");
-
-        if (state == STATE_NONE) {
-            throw new NoConnectionException("No remote connection");
-        } else {
-            if (state == STATE_CONNECTED) {
-                network.closeConnection();
-            } else if (state == STATE_LISTENING_CONNECTED) {
-                stopListeningInBackground();
-            }
-
-            // Update the state of the connection
-            setState(STATE_NONE);
-        }
-    }
-
     protected long getBackOffTime() {
         return (backOffTime *= 2);
     }

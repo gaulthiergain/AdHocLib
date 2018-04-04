@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
@@ -23,6 +24,9 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
     final Neighbors neighbors;
     final short nbThreads;
     final boolean background;
+    final HashMap<String, String> mapAddrLabel;
+    final HashMap<String, SocketManager> mapAddrNetwork;
+
     ServiceServer serviceServer;
 
     WrapperConnOriented(boolean v, Context context, boolean json, short nbThreads, boolean background, String label, HashMap<String, AdHocDevice> mapAddressDevice, ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
@@ -30,26 +34,16 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         this.neighbors = new Neighbors();
         this.nbThreads = nbThreads;
         this.background = background;
-    }
-
-    private String getAddrFromLabel(String remoteLabel) throws NoConnectionException {
-
-        for (Map.Entry<String, String> entry : mapAddrLabel.entrySet()) {
-            if (entry.getValue().equals(remoteLabel)) {
-                return entry.getKey();
-            }
-        }
-
-        throw new NoConnectionException("No connection to " + remoteLabel);
+        this.mapAddrLabel = new HashMap<>();
+        this.mapAddrNetwork = new HashMap<>();
     }
 
     public void disconnect(String remoteLabel) throws IOException, NoConnectionException {
 
-        String remoteAddr = getAddrFromLabel(remoteLabel);
-        ServiceClient serviceClient = mapAddrClients.get(remoteAddr);
-        if (serviceClient != null) {
-            serviceClient.disconnect();
-            mapAddrClients.remove(remoteAddr);
+        SocketManager socketManager = neighbors.getNeighbor(remoteLabel);
+        if (socketManager != null) {
+            socketManager.closeConnection();
+            neighbors.remove(remoteLabel);
         } else {
             throw new NoConnectionException("No connection to " + remoteLabel);
         }
@@ -61,12 +55,13 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
     public void disconnectAll() throws IOException, NoConnectionException {
 
-        for (Map.Entry<String, ServiceClient> entry : mapAddrClients.entrySet()) {
-            entry.getValue().disconnect();
-        }
-
-        if (mapAddrClients.size() > 0) {
-            mapAddrClients.clear();
+        if (neighbors.getNeighbors().size() > 0) {
+            for (Map.Entry<String, SocketManager> entry : neighbors.getNeighbors().entrySet()) {
+                entry.getValue().closeConnection();
+            }
+            neighbors.getNeighbors().clear();
+        } else {
+            throw new NoConnectionException("No connection");
         }
     }
 

@@ -5,7 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
@@ -14,24 +14,20 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 public abstract class AbstractWrapper {
 
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
+    final static byte CLOSE_CONNECTION = 12;
 
     final boolean v;
     final boolean json;
     final Context context;
 
     final ListenerApp listenerApp;
-
-    final HashMap<String, String> mapAddrLabel;
-    final HashMap<String, ServiceClient> mapAddrClients;
-    final HashMap<String, AdHocDevice> mapAddressDevice;
-    final HashMap<String, SocketManager> mapAddrNetwork;
     final ListenerDataLink listenerDataLink;
+    final HashMap<String, AdHocDevice> mapMacDevice;
 
     byte type;
     String label;
@@ -43,7 +39,7 @@ public abstract class AbstractWrapper {
 
 
     AbstractWrapper(boolean v, Context context, boolean json, String label,
-                    HashMap<String, AdHocDevice> mapAddressDevice,
+                    HashMap<String, AdHocDevice> mapMacDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -53,10 +49,7 @@ public abstract class AbstractWrapper {
         this.label = label;
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
-        this.mapAddrLabel = new HashMap<>();
-        this.mapAddrClients = new HashMap<>();
-        this.mapAddrNetwork = new HashMap<>();
-        this.mapAddressDevice = mapAddressDevice;
+        this.mapMacDevice = mapMacDevice;
         this.listenerDataLink = listenerDataLink;
     }
 

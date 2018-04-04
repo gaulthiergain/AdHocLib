@@ -146,16 +146,16 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 // Add devices into the peers
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
+                    if (!mapMacDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
-                        mapAddressDevice.put(entry.getValue().deviceAddress,
+                        mapMacDevice.put(entry.getValue().deviceAddress,
                                 new AdHocDevice(entry.getValue().deviceAddress,
                                         entry.getValue().deviceName, type));
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevice);
                 }
 
                 discoveryCompleted = true;
@@ -322,9 +322,6 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 // Add mapping IP - network
                 mapAddrNetwork.put(remoteAddress, network);
-
-                // Add wifi client to hashmap
-                mapAddrClients.put(remoteAddress, wifiServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(

@@ -76,8 +76,10 @@ class ThreadClient extends Thread {
         // Close network
         try {
             network.closeConnection();
+            network = null;
         } catch (IOException e) {
-            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+            // Network is already closed
+            network = null;
         }
     }
 

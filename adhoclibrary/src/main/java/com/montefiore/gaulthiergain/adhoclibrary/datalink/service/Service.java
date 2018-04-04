@@ -5,7 +5,10 @@ import android.content.Context;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+
+import java.io.IOException;
 
 /**
  * <p>This class defines the constants for connection states and message handling and aims to serve

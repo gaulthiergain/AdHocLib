@@ -42,4 +42,17 @@ public class Neighbors {
         return neighbors;
     }
 
+    public void remove(String remoteLabel) {
+        if (neighbors.containsKey(remoteLabel)) {
+            neighbors.remove(remoteLabel);
+        }
+    }
+
+    public SocketManager getNeighbor(String remoteLabel) {
+        if (neighbors.containsKey(remoteLabel)) {
+            return neighbors.get(remoteLabel);
+        }
+
+        return null;
+    }
 }

@@ -3,9 +3,11 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 

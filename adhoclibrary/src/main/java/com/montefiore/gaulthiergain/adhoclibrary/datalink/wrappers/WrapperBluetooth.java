@@ -101,7 +101,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
             @Override
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
 
-                mapAddressDevice.clear();
+                mapMacDevice.clear();
                 mapUuidDevices.clear();
 
                 // Add no paired devices into the mapUuidDevices
@@ -110,14 +110,14 @@ public class WrapperBluetooth extends WrapperConnOriented {
                         mapUuidDevices.put(entry.getValue().getUuid(), entry.getValue());
                         if (v) Log.d(TAG, "Add no paired " + entry.getValue().getUuid()
                                 + " into mapUuidDevices");
-                        mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                        mapMacDevice.put(entry.getValue().getDevice().getAddress(),
                                 new AdHocDevice(entry.getValue().getDevice().getAddress(),
                                         entry.getValue().getDevice().getName(), type));
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevice);
                 }
 
                 discoveryCompleted = true;
@@ -147,7 +147,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     public HashMap<String, AdHocDevice> getPaired() {
 
         // Clear the discovered device
-        mapAddressDevice.clear();
+        mapMacDevice.clear();
         mapUuidDevices.clear();
 
         // Add paired devices into the mapUuidDevices
@@ -157,13 +157,13 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getUuid()
                         + " into mapUuidDevices");
 
-                mapAddressDevice.put(entry.getValue().getDevice().getAddress(),
+                mapMacDevice.put(entry.getValue().getDevice().getAddress(),
                         new AdHocDevice(entry.getValue().getDevice().getAddress(),
                                 entry.getValue().getDevice().getName(), type));
             }
         }
 
-        return mapAddressDevice;
+        return mapMacDevice;
     }
 
     @Override
@@ -234,7 +234,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             @Override
             public void onConnection(RemoteConnection remoteDevice) {
-
             }
 
             @Override
@@ -300,9 +299,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                 // Add network to temporary hashmap
                 mapAddrNetwork.put(remoteUUIDString, network);
-
-                // Add bluetooth client to hashmap
-                mapAddrClients.put(remoteUUIDString, bluetoothServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
