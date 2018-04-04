@@ -66,9 +66,7 @@ public class AodvManager {
 
             @Override
             public void brokenLink(String remoteNode) throws IOException {
-                if (remoteNode != null) {
-                    brokenLinkDetected(remoteNode);
-                }
+                brokenLinkDetected(remoteNode);
             }
 
             @Override
@@ -87,7 +85,7 @@ public class AodvManager {
      *                    environment.
      * @param config      a Config object which contains specific configurations.
      * @param listenerApp a ListenerApp object which serves as callback functions.
-     * @throws IOException     Signals that an I/O exception of some sort has occurred.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
     public AodvManager(boolean verbose, Context context, Config config, ListenerApp listenerApp)
             throws IOException {

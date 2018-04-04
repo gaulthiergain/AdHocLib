@@ -32,9 +32,11 @@ public abstract class AbstractWrapper {
     final boolean background;
     final ListenerApp listenerApp;
     final Neighbors neighbors;
-    final HashMap<String, String> mapLabelAddr;
-    final ListenerDataLink listenerDataLink;
+    final HashMap<String, String> mapAddrLabel;
+    final HashMap<String, ServiceClient> mapAddrClients;
     final HashMap<String, AdHocDevice> mapAddressDevice;
+    final ListenerDataLink listenerDataLink;
+
 
     byte type;
     String label;
@@ -43,7 +45,7 @@ public abstract class AbstractWrapper {
     boolean enabled;
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
-    HashMap<String, ServiceClient> mapUuidClients;
+
 
     AbstractWrapper(boolean v, Context context, boolean json, short nbThreads, boolean background, String label,
                     HashMap<String, AdHocDevice> mapAddressDevice,
@@ -59,8 +61,8 @@ public abstract class AbstractWrapper {
         this.nbThreads = nbThreads;
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
-        this.mapLabelAddr = new HashMap<>();
-        this.mapUuidClients = new HashMap<>();
+        this.mapAddrLabel = new HashMap<>();
+        this.mapAddrClients = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
         this.neighbors = neighbors;
         this.listenerDataLink = listenerDataLink;
@@ -103,7 +105,7 @@ public abstract class AbstractWrapper {
     public boolean disconnect(String remoteDest) {
 
         try {
-            ServiceClient serviceClient = mapUuidClients.get(remoteDest);
+            ServiceClient serviceClient = mapAddrClients.get(remoteDest);
             if (remoteDest != null) {
                 serviceClient.disconnect();
                 return true;
@@ -118,14 +120,13 @@ public abstract class AbstractWrapper {
 
     public void disconnectAll() {
 
-        for (String remoteDest : mapUuidClients.keySet()) {
+        for (String remoteDest : mapAddrClients.keySet()) {
             disconnect(remoteDest);
         }
 
-        if(mapUuidClients.size() > 0){
-            mapUuidClients.clear();
+        if (mapAddrClients.size() > 0) {
+            mapAddrClients.clear();
         }
-
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {

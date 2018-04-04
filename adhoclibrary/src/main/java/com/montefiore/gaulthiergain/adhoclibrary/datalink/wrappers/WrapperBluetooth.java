@@ -106,6 +106,7 @@ public class WrapperBluetooth extends AbstractWrapper {
             public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
 
                 mapAddressDevice.clear();
+                mapUuidDevices.clear();
 
                 // Add no paired devices into the mapUuidDevices
                 for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
@@ -150,6 +151,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     public HashMap<String, AdHocDevice> getPaired() {
 
         mapAddressDevice.clear();
+        mapUuidDevices.clear();
 
         // Add paired devices into the mapUuidDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
@@ -188,7 +190,6 @@ public class WrapperBluetooth extends AbstractWrapper {
         bluetoothManager.disable();
         enabled = false;
     }
-
 
 
     @Override
@@ -231,22 +232,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
-
-                try {
-                    listenerDataLink.brokenLink(remoteLabel);
-                    neighbors.getNeighbors().remove(remoteLabel);
-                } catch (IOException e) {
-                    listenerApp.traceException(e);
-                } catch (NoConnectionException e) {
-                    listenerApp.traceException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+                connectionClosed(remoteDevice);
             }
 
             @Override
@@ -295,22 +281,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Link broken with " + remoteLabel);
-
-                try {
-                    listenerDataLink.brokenLink(remoteLabel);
-                    neighbors.getNeighbors().remove(remoteLabel);
-                } catch (IOException e) {
-                    listenerApp.traceException(e);
-                } catch (NoConnectionException e) {
-                    listenerApp.traceException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+                connectionClosed(remoteDevice);
             }
 
             @Override
@@ -329,11 +300,13 @@ public class WrapperBluetooth extends AbstractWrapper {
             @Override
             public void connected(UUID uuid, SocketManager network) throws IOException, NoConnectionException {
 
+                String remoteUUIDString = uuid.toString();
+
                 // Add network to temporary hashmap
-                mapUuidNetwork.put(uuid.toString(), network);
+                mapUuidNetwork.put(remoteUUIDString, network);
 
                 // Add bluetooth client to hashmap
-                mapUuidClients.put(uuid.toString(), bluetoothServiceClient);
+                mapAddrClients.put(remoteUUIDString, bluetoothServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
@@ -346,57 +319,91 @@ public class WrapperBluetooth extends AbstractWrapper {
         new Thread(bluetoothServiceClient).start();
     }
 
+    private void connectionClosed(RemoteConnection remoteDevice) {
+        //Get label from MAC
+        String remoteLabel = mapAddrLabel.get(remoteDevice.getDeviceAddress());
+        if (remoteLabel != null) {
+
+            if (v) Log.d(TAG, "Link broken with " + remoteLabel);
+            try {
+
+                // Get remote UUID from remote MAC
+                String remoteUUID = BluetoothUtil.UUID + remoteDevice.getDeviceAddress()
+                        .replace(":", "").toLowerCase();
+
+                listenerDataLink.brokenLink(remoteLabel);
+                neighbors.getNeighbors().remove(remoteLabel);
+                mapAddrLabel.remove(remoteDevice.getDeviceAddress());
+
+                if (mapUuidNetwork.containsKey(remoteUUID)) {
+                    mapUuidNetwork.remove(remoteUUID);
+                }
+
+
+            } catch (IOException e) {
+                listenerApp.traceException(e);
+            } catch (NoConnectionException e) {
+                listenerApp.traceException(e);
+            }
+
+            listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+        } else {
+            listenerApp.traceException(new NoConnectionException("Error while closing connection"));
+        }
+    }
+
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
+
+        String remoteMac = message.getPdu().toString();
+        String remoteLabel = message.getHeader().getSenderAddr();
+
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
-                SocketManager socketManager = bluetoothServiceServer.getActiveConnections().get(message.getPdu().toString());
+
+                SocketManager socketManager = bluetoothServiceServer.getActiveConnections().get(remoteMac);
 
                 if (socketManager != null) {
 
                     socketManager.sendMessage(new MessageAdHoc(
-                            new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
+                            new Header(CONNECT_CLIENT, label, ownName), ownMac));
 
-                    if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
-                            + " " + message.getHeader().getSenderAddr());
+                    if (v) Log.d(TAG, "Add mapping: " + remoteMac + " " + remoteLabel);
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(message.getPdu().toString(),
-                            message.getHeader().getSenderAddr());
+                    mapAddrLabel.put(remoteMac, remoteLabel);
 
-                    if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
+                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                                message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
                     }
 
                     // Add the neighbor into the neighbors object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
                 }
                 break;
             }
             case CONNECT_CLIENT: {
-                SocketManager socketManager = mapUuidNetwork.get(message.getPdu().toString());
+
+                // Get remote UUID from remote MAC
+                String remoteUUID = BluetoothUtil.UUID + remoteMac.replace(":", "").toLowerCase();
+
+                SocketManager socketManager = mapUuidNetwork.get(remoteUUID);
                 if (socketManager != null) {
 
-                    if (v) Log.d(TAG, "Add mapping: " + message.getPdu().toString()
-                            + " " + message.getHeader().getSenderAddr());
+                    if (v) Log.d(TAG, "Add mapping: " + remoteMac + " " + remoteLabel);
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(message.getPdu().toString(),
-                            message.getHeader().getSenderAddr());
+                    mapAddrLabel.put(remoteMac, remoteLabel);
 
-                    if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
+                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                                message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
                     }
 
                     // Add the active connection into the neighbors object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
                 }
                 break;
             }
