@@ -1,11 +1,15 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 
 import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>This class defines the server's logic and methods and aims to serve as a common interface for
@@ -47,4 +51,17 @@ public abstract class ServiceServer extends Service {
             setState(STATE_NONE);
         }
     }
+
+
+    /**
+     * Method allowing to return the active connections managed by the server.
+     *
+     * @return a ConcurrentHashMap<String, SocketManager> which maps a remote device with a
+     * SocketManager (socket).
+     */
+    public ConcurrentHashMap<String, SocketManager> getActiveConnections() {
+        return threadListen.getActiveConnexion();
+    }
+
+    public abstract void listen(ServiceConfig serviceConfig) throws IOException;
 }

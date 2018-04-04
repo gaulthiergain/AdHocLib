@@ -10,19 +10,18 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
@@ -35,7 +34,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WrapperWifi extends AbstractWrapper {
+public class WrapperWifi extends WrapperConnOriented {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
 
@@ -43,18 +42,16 @@ public class WrapperWifi extends AbstractWrapper {
     private String ownIpAddress;
     private String groupOwnerAddr;
     private WifiAdHocManager wifiAdHocManager;
-    private WifiServiceServer wifiServiceServer;
 
-    private HashMap<String, SocketManager> mapIpNetwork;
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
-    public WrapperWifi(boolean verbose, Context context, Config config, Neighbors neighbors,
+    public WrapperWifi(boolean verbose, Context context, Config config,
                        HashMap<String, AdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
         super(verbose, context, config.isJson(), config.getNbThreadWifi(), config.isBackground(),
-                config.getLabel(), mapAddressDevice, neighbors, listenerApp, listenerDataLink);
+                config.getLabel(), mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -86,7 +83,7 @@ public class WrapperWifi extends AbstractWrapper {
                     if (v) Log.d(TAG, "OWN IP address: " + ownIpAddress);
 
                     try {
-                        wifiServiceServer.stopListening();
+                        serviceServer.stopListening();
                     } catch (IOException e) {
                         listenerApp.traceException(e);
                     }
@@ -99,7 +96,6 @@ public class WrapperWifi extends AbstractWrapper {
                 this.type = DataLinkManager.WIFI;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = config.getServerPort();
-                this.mapIpNetwork = new HashMap<>();
                 this.mapLabelRemoteDeviceName = new HashMap<>();
                 this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
@@ -128,7 +124,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     @Override
     public void stopListening() throws IOException {
-        wifiServiceServer.stopListening();
+        serviceServer.stopListening();
     }
 
     @Override
@@ -225,7 +221,7 @@ public class WrapperWifi extends AbstractWrapper {
 
     @Override
     public void listenServer() throws IOException {
-        wifiServiceServer = new WifiServiceServer(v, context, json, new MessageListener() {
+        serviceServer = new WifiServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -267,7 +263,7 @@ public class WrapperWifi extends AbstractWrapper {
         });
 
         // Start the wifi server listening process
-        wifiServiceServer.listen(nbThreads, serverPort);
+        serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
@@ -324,8 +320,8 @@ public class WrapperWifi extends AbstractWrapper {
                     IOException,
                     NoConnectionException {
 
-                // Add mapping MAC - network
-                mapIpNetwork.put(remoteAddress, network);
+                // Add mapping IP - network
+                mapAddrNetwork.put(remoteAddress, network);
 
                 // Add wifi client to hashmap
                 mapAddrClients.put(remoteAddress, wifiServiceClient);
@@ -377,7 +373,7 @@ public class WrapperWifi extends AbstractWrapper {
                 final String remoteLabel = message.getHeader().getSenderAddr();
                 String ip = message.getPdu().toString();
 
-                final SocketManager socketManager = wifiServiceServer.getActiveConnections().get(ip);
+                final SocketManager socketManager = serviceServer.getActiveConnections().get(ip);
                 if (socketManager != null) {
 
                     if (v) Log.d(TAG, "Add mapping: " + ip + " " + remoteLabel);
@@ -408,7 +404,7 @@ public class WrapperWifi extends AbstractWrapper {
                 String remoteLabel = message.getHeader().getSenderAddr();
                 String ip = message.getPdu().toString();
 
-                SocketManager socketManager = mapIpNetwork.get(ip);
+                SocketManager socketManager = mapAddrNetwork.get(ip);
                 if (socketManager != null) {
 
                     if (v) Log.d(TAG, "Add mapping: " + ip + " " + label);
@@ -425,7 +421,7 @@ public class WrapperWifi extends AbstractWrapper {
                     }
 
                     // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, socketManager);
                 }
                 break;
             }
@@ -452,7 +448,7 @@ public class WrapperWifi extends AbstractWrapper {
             }
 
             // Add the active connection into the autoConnectionActives object
-            neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
+            neighbors.addNeighbors(remoteLabel, socketManager);
 
         } catch (IOException e) {
             listenerApp.traceException(e);

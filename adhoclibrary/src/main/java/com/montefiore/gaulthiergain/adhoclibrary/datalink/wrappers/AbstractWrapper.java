@@ -10,8 +10,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -28,15 +26,14 @@ public abstract class AbstractWrapper {
     final boolean v;
     final boolean json;
     final Context context;
-    final short nbThreads;
     final boolean background;
     final ListenerApp listenerApp;
-    final Neighbors neighbors;
+
     final HashMap<String, String> mapAddrLabel;
     final HashMap<String, ServiceClient> mapAddrClients;
     final HashMap<String, AdHocDevice> mapAddressDevice;
+    final HashMap<String, SocketManager> mapAddrNetwork;
     final ListenerDataLink listenerDataLink;
-
 
     byte type;
     String label;
@@ -47,9 +44,8 @@ public abstract class AbstractWrapper {
     DataLinkManager.ListenerDiscovery discoveryListener;
 
 
-    AbstractWrapper(boolean v, Context context, boolean json, short nbThreads, boolean background, String label,
-                    HashMap<String, AdHocDevice> mapAddressDevice,
-                    Neighbors neighbors,
+    AbstractWrapper(boolean v, Context context, boolean json, boolean background,
+                    String label, HashMap<String, AdHocDevice> mapAddressDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -58,13 +54,12 @@ public abstract class AbstractWrapper {
         this.enabled = true;
         this.context = context;
         this.label = label;
-        this.nbThreads = nbThreads;
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
         this.mapAddrLabel = new HashMap<>();
         this.mapAddrClients = new HashMap<>();
+        this.mapAddrNetwork = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
-        this.neighbors = neighbors;
         this.listenerDataLink = listenerDataLink;
     }
 
@@ -102,68 +97,17 @@ public abstract class AbstractWrapper {
         this.discoveryListener = discoveryListener;
     }
 
-    private String getAddrFromLabel(String remoteLabel) throws NoConnectionException {
-
-        for (Map.Entry<String, String> entry : mapAddrLabel.entrySet()) {
-            if (entry.getValue().equals(remoteLabel)) {
-                return entry.getKey();
-            }
-        }
-
-        throw new NoConnectionException("No connection to " + remoteLabel);
-    }
-
-    public void disconnect(String remoteLabel) throws IOException, NoConnectionException {
-
-        String remoteAddr = getAddrFromLabel(remoteLabel);
-        ServiceClient serviceClient = mapAddrClients.get(remoteAddr);
-        if (serviceClient != null) {
-            serviceClient.disconnect();
-            mapAddrClients.remove(remoteAddr);
-        } else {
-            throw new NoConnectionException("No connection to " + remoteLabel);
-        }
-    }
-
-    public void disconnectAll() throws IOException, NoConnectionException {
-
-        for (Map.Entry<String, ServiceClient> entry : mapAddrClients.entrySet()) {
-            entry.getValue().disconnect();
-        }
-
-        if (mapAddrClients.size() > 0) {
-            mapAddrClients.clear();
-        }
-    }
-
-    public void sendMessage(MessageAdHoc message, String address) throws IOException {
-
-        NetworkObject networkObject = neighbors.getNeighbors().get(address);
-        if (networkObject != null && networkObject.getType() == type) {
-            SocketManager socketManager = (SocketManager) networkObject.getSocketManager();
-            socketManager.sendMessage(message);
-        }
-    }
-
-    public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
-            if (entry.getValue().getType() == type) {
-                if (!entry.getKey().equals(excludedAddress)) {
-                    SocketManager socketManager = (SocketManager) entry.getValue().getSocketManager();
-                    socketManager.sendMessage(message);
-                }
-            }
-        }
-    }
-
-    public void broadcast(MessageAdHoc message) throws IOException {
-        for (Map.Entry<String, NetworkObject> entry : neighbors.getNeighbors().entrySet()) {
-            if (entry.getValue().getType() == type) {
-                SocketManager socketManager = (SocketManager) entry.getValue().getSocketManager();
-                socketManager.sendMessage(message);
-            }
-        }
-    }
-
     public abstract void unregisterAdapter();
+
+    public abstract void sendMessage(MessageAdHoc message, String address) throws IOException;
+
+    public abstract boolean isDirectNeighbors(String address);
+
+    public abstract void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException;
+
+    public abstract void broadcast(MessageAdHoc message) throws IOException;
+
+    public abstract void disconnect(String remoteDest) throws IOException, NoConnectionException;
+
+    public abstract void disconnectAll() throws IOException, NoConnectionException;
 }

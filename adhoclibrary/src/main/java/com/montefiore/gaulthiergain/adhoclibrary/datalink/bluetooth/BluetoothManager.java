@@ -12,7 +12,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 

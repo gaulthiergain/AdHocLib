@@ -18,12 +18,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
@@ -36,24 +35,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class WrapperBluetooth extends AbstractWrapper {
+public class WrapperBluetooth extends WrapperConnOriented {
 
     private static final String TAG = "[AdHoc][WrapperBt]";
 
     private UUID ownUUID;
     private boolean secure;
     private BluetoothManager bluetoothManager;
-    private BluetoothServiceServer bluetoothServiceServer;
 
-    private HashMap<String, SocketManager> mapUuidNetwork;
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
-    public WrapperBluetooth(boolean verbose, Context context, Config config, Neighbors neighbors,
+    public WrapperBluetooth(boolean verbose, Context context, Config config,
                             HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
         super(verbose, context, config.isJson(), config.getNbThreadBt(), config.isBackground(), config.getLabel(),
-                mapAddressDevice, neighbors, listenerAodv, listenerDataLink);
+                mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
@@ -66,7 +63,6 @@ public class WrapperBluetooth extends AbstractWrapper {
                 this.ownName = BluetoothUtil.getCurrentName();
 
                 this.mapUuidDevices = new HashMap<>();
-                this.mapUuidNetwork = new HashMap<>();
 
                 this.listenServer();
             } else {
@@ -96,7 +92,7 @@ public class WrapperBluetooth extends AbstractWrapper {
 
     @Override
     public void stopListening() throws IOException {
-        bluetoothServiceServer.stopListening();
+        serviceServer.stopListening();
     }
 
     @Override
@@ -206,7 +202,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     @Override
     public void listenServer() throws IOException {
 
-        bluetoothServiceServer = new BluetoothServiceServer(v, context, json, new MessageListener() {
+        serviceServer = new BluetoothServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -247,9 +243,8 @@ public class WrapperBluetooth extends AbstractWrapper {
             }
         });
 
-        // Start the bluetoothServiceServer listening process
-        bluetoothServiceServer.listen(nbThreads, secure, "secure",
-                BluetoothAdapter.getDefaultAdapter(), ownUUID);
+        // Start the serviceServer listening process
+        serviceServer.listen(new ServiceConfig(nbThreads, secure, BluetoothAdapter.getDefaultAdapter(), ownUUID));
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
@@ -304,7 +299,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 String remoteUUIDString = uuid.toString();
 
                 // Add network to temporary hashmap
-                mapUuidNetwork.put(remoteUUIDString, network);
+                mapAddrNetwork.put(remoteUUIDString, network);
 
                 // Add bluetooth client to hashmap
                 mapAddrClients.put(remoteUUIDString, bluetoothServiceClient);
@@ -333,8 +328,8 @@ public class WrapperBluetooth extends AbstractWrapper {
                 neighbors.getNeighbors().remove(remoteLabel);
                 mapAddrLabel.remove(remoteUUID);
 
-                if (mapUuidNetwork.containsKey(remoteUUID)) {
-                    mapUuidNetwork.remove(remoteUUID);
+                if (mapAddrNetwork.containsKey(remoteUUID)) {
+                    mapAddrNetwork.remove(remoteUUID);
                 }
 
             } catch (IOException e) {
@@ -360,7 +355,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 String remoteUUID = macToUUID(remoteMac);
                 String remoteLabel = message.getHeader().getSenderAddr();
 
-                SocketManager socketManager = bluetoothServiceServer.getActiveConnections().get(remoteMac);
+                SocketManager socketManager = serviceServer.getActiveConnections().get(remoteMac);
                 if (socketManager != null) {
 
                     socketManager.sendMessage(new MessageAdHoc(
@@ -377,7 +372,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     }
 
                     // Add the neighbor into the neighbors object
-                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, socketManager);
                 }
                 break;
             }
@@ -386,7 +381,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                 String remoteUUID = (String) message.getPdu();
                 String remoteLabel = message.getHeader().getSenderAddr();
 
-                SocketManager socketManager = mapUuidNetwork.get(remoteUUID);
+                SocketManager socketManager = mapAddrNetwork.get(remoteUUID);
                 if (socketManager != null) {
 
                     if (v) Log.d(TAG, "Add mapping: " + remoteUUID + " " + remoteLabel);
@@ -400,7 +395,7 @@ public class WrapperBluetooth extends AbstractWrapper {
                     }
 
                     // Add the active connection into the neighbors object
-                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, socketManager);
                 }
                 break;
             }
@@ -411,7 +406,7 @@ public class WrapperBluetooth extends AbstractWrapper {
     }
 
     private String macToUUID(String mac) {
-        return BluetoothUtil.UUID + mac.replace(":","").toLowerCase();
+        return BluetoothUtil.UUID + mac.replace(":", "").toLowerCase();
     }
 
 }

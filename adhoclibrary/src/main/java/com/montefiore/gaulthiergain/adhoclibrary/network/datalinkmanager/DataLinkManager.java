@@ -27,7 +27,6 @@ public class DataLinkManager {
     public static final byte WIFI = 0;
     public static final byte BLUETOOTH = 1;
 
-    private final Neighbors neighbors;
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
@@ -37,24 +36,23 @@ public class DataLinkManager {
             throws IOException {
 
         this.listenerApp = listenerApp;
-        this.neighbors = new Neighbors();
         this.mapAddressDevice = new HashMap<>();
 
         this.wrappers = new AbstractWrapper[2];
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
-            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config, neighbors,
-                    mapAddressDevice, listenerApp, listenerDataLink);
+            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config, mapAddressDevice,
+                    listenerApp, listenerDataLink);
         } else {
             // UDP stream
-            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config, neighbors,
-                    mapAddressDevice, listenerApp, listenerDataLink);
+            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config, mapAddressDevice,
+                    listenerApp, listenerDataLink);
         }
 
 
-        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config, neighbors,
-                mapAddressDevice, listenerApp, listenerDataLink);
+        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config, mapAddressDevice,
+                listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
         checkState();
@@ -197,7 +195,16 @@ public class DataLinkManager {
     }
 
     public boolean isDirectNeighbors(String address) {
-        return neighbors.getNeighbors().containsKey(address);
+
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                if (wrapper.isDirectNeighbors(address)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
