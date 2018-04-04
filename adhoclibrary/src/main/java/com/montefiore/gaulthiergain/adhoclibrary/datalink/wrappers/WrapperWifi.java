@@ -252,22 +252,7 @@ public class WrapperWifi extends AbstractWrapper {
 
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Server broken with " + remoteLabel);
-
-                try {
-                    remoteDevice.setDeviceAddress(remoteLabel);
-                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
-                    neighbors.getNeighbors().remove(remoteLabel);
-                    listenerDataLink.brokenLink(remoteLabel);
-                } catch (IOException | NoConnectionException e) {
-                    listenerApp.traceException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+                connectionClosed(remoteDevice);
             }
 
             @Override
@@ -292,22 +277,7 @@ public class WrapperWifi extends AbstractWrapper {
                 groupOwnerAddr, serverPort, 10000, ATTEMPTS, new MessageListener() {
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
-
-                //Get label from ip
-                String remoteLabel = mapLabelAddr.get(remoteDevice.getDeviceAddress());
-
-                if (v) Log.d(TAG, "Client broken with " + remoteLabel);
-
-                try {
-                    remoteDevice.setDeviceAddress(remoteLabel);
-                    remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
-                    neighbors.getNeighbors().remove(remoteLabel);
-                    listenerDataLink.brokenLink(remoteLabel);
-                } catch (IOException | NoConnectionException e) {
-                    listenerApp.traceException(e);
-                }
-
-                listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+                connectionClosed(remoteDevice);
             }
 
             @Override
@@ -346,16 +316,19 @@ public class WrapperWifi extends AbstractWrapper {
             }
         });
 
-        wifiServiceClient.setListenerAutoConnect(new WifiServiceClient.ListenerAutoConnect() {
+        wifiServiceClient.setListenerAutoConnect(new WifiServiceClient.ListenerAutoConnect()
+
+        {
             @Override
-            public void connected(String remoteAddress, SocketManager network) throws IOException,
+            public void connected(String remoteAddress, SocketManager network) throws
+                    IOException,
                     NoConnectionException {
 
                 // Add mapping MAC - network
                 mapIpNetwork.put(remoteAddress, network);
 
-                // Add bluetooth client to hashmap
-                mapUuidClients.put(remoteAddress, wifiServiceClient);
+                // Add wifi client to hashmap
+                mapAddrClients.put(remoteAddress, wifiServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
@@ -366,67 +339,93 @@ public class WrapperWifi extends AbstractWrapper {
 
         // Start the wifiServiceClient thread
         new Thread(wifiServiceClient).start();
+    }
 
+    private void connectionClosed(RemoteConnection remoteDevice) {
+        //Get label from ip
+        String remoteLabel = mapAddrLabel.get(remoteDevice.getDeviceAddress());
+        if (remoteLabel != null) {
+            if (v) Log.d(TAG, "Client broken with " + remoteLabel);
+
+            try {
+
+                remoteDevice.setDeviceAddress(remoteLabel);
+                remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
+                neighbors.getNeighbors().remove(remoteLabel);
+                mapLabelRemoteDeviceName.remove(remoteLabel);
+                mapAddrLabel.remove(remoteDevice.getDeviceAddress());
+                listenerDataLink.brokenLink(remoteLabel);
+
+            } catch (IOException | NoConnectionException e) {
+                listenerApp.traceException(e);
+            }
+
+            listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+        } else {
+            listenerApp.traceException(new NoConnectionException("Error while closing connection"));
+        }
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
+
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
+
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
-                final SocketManager socketManager = wifiServiceServer.getActiveConnections().get(message.getPdu().toString());
+
+                final String remoteLabel = message.getHeader().getSenderAddr();
+                String ip = message.getPdu().toString();
+
+                final SocketManager socketManager = wifiServiceServer.getActiveConnections().get(ip);
                 if (socketManager != null) {
 
-                    if (v)
-                        Log.d(TAG, "Add mapping: " + socketManager.getISocket().getRemoteSocketAddress()
-                                + " " + message.getHeader().getSenderAddr());
+                    if (v) Log.d(TAG, "Add mapping: " + ip + " " + remoteLabel);
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(socketManager.getISocket().getRemoteSocketAddress(),
-                            message.getHeader().getSenderAddr());
+                    mapAddrLabel.put(ip, remoteLabel);
 
-                }
-
-                // If ownIP address is not known, request it by event
-                if (ownIpAddress == null) {
-                    wifiAdHocManager.requestGO(new WifiAdHocManager.ListenerWifiGroupOwner() {
-                        @Override
-                        public void getGroupOwner(String address) {
-                            ownIpAddress = address;
-                            wifiAdHocManager.unregisterGroupOwner();
-                            sendConnectClient(message, socketManager);
-                        }
-                    });
-                } else {
-                    sendConnectClient(message, socketManager);
+                    // If ownIP address is not known, request it by event
+                    if (ownIpAddress == null) {
+                        wifiAdHocManager.requestGO(new WifiAdHocManager.ListenerWifiGroupOwner() {
+                            @Override
+                            public void getGroupOwner(String address) {
+                                ownIpAddress = address;
+                                wifiAdHocManager.unregisterGroupOwner();
+                                sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
+                                        socketManager);
+                            }
+                        });
+                    } else {
+                        sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
+                                socketManager);
+                    }
                 }
                 break;
             }
             case CONNECT_CLIENT: {
-                SocketManager socketManager = mapIpNetwork.get(message.getPdu().toString());
+
+                String remoteLabel = message.getHeader().getSenderAddr();
+                String ip = message.getPdu().toString();
+
+                SocketManager socketManager = mapIpNetwork.get(ip);
                 if (socketManager != null) {
 
-                    if (v)
-                        Log.d(TAG, "Add mapping: " + socketManager.getISocket().getRemoteSocketAddress()
-                                + " " + message.getHeader().getSenderAddr());
+                    if (v) Log.d(TAG, "Add mapping: " + ip + " " + label);
 
                     // Add mapping MAC - label
-                    mapLabelAddr.put(socketManager.getISocket().getRemoteSocketAddress(),
-                            message.getHeader().getSenderAddr());
+                    mapAddrLabel.put(ip, remoteLabel);
 
                     // Add mapping label - remoteConnection
-                    mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                    mapLabelRemoteDeviceName.put(remoteLabel, message.getHeader().getSenderName());
 
-                    if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
+                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                                message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
                     }
 
                     // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                            new NetworkObject(type, socketManager));
+                    neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
                 }
                 break;
             }
@@ -436,30 +435,28 @@ public class WrapperWifi extends AbstractWrapper {
         }
     }
 
-    private void sendConnectClient(MessageAdHoc message, SocketManager socketManager) {
-        if (socketManager != null) {
-            // Send CONNECT message to establish the pairing
-            try {
-                socketManager.sendMessage(new MessageAdHoc(
-                        new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
+    private void sendConnectClient(String remoteLabel, String name, SocketManager socketManager) {
 
-                // Add mapping label - remoteConnection
-                mapLabelRemoteDeviceName.put(message.getHeader().getSenderAddr(),
-                        message.getHeader().getSenderName());
 
-                if (!neighbors.getNeighbors().containsKey(message.getHeader().getSenderAddr())) {
-                    // Callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
-                }
+        // Send CONNECT message to establish the pairing
+        try {
+            socketManager.sendMessage(new MessageAdHoc(
+                    new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
 
-                // Add the active connection into the autoConnectionActives object
-                neighbors.addNeighbors(message.getHeader().getSenderAddr(),
-                        new NetworkObject(type, socketManager));
+            // Add mapping label - remoteConnection
+            mapLabelRemoteDeviceName.put(remoteLabel, name);
 
-            } catch (IOException e) {
-                listenerApp.traceException(e);
+            if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
+                // Callback connection
+                listenerApp.onConnection(remoteLabel, name);
             }
+
+            // Add the active connection into the autoConnectionActives object
+            neighbors.addNeighbors(remoteLabel, new NetworkObject(type, socketManager));
+
+        } catch (IOException e) {
+            listenerApp.traceException(e);
         }
+
     }
 }
