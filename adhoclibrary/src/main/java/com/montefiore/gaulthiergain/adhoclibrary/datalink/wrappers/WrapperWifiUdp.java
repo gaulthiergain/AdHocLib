@@ -22,8 +22,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
 public class WrapperWifiUdp extends AbstractWrapper {
 
     private static final String TAG = "[AdHoc][WrapperWifiUdp]";
@@ -60,7 +59,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config.isJson(), config.isBackground(), config.getLabel(),
+        super(verbose, context, config.isJson(), config.getLabel(),
                 mapAddressDevice, listenerAodv, listenerDataLink);
 
         ConnectionListener connectionListener = new ConnectionListener() {

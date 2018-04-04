@@ -18,15 +18,13 @@ import java.util.Map;
 
 public abstract class AbstractWrapper {
 
-    final static short ATTEMPTS = 3;
-
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
 
     final boolean v;
     final boolean json;
     final Context context;
-    final boolean background;
+
     final ListenerApp listenerApp;
 
     final HashMap<String, String> mapAddrLabel;
@@ -44,13 +42,12 @@ public abstract class AbstractWrapper {
     DataLinkManager.ListenerDiscovery discoveryListener;
 
 
-    AbstractWrapper(boolean v, Context context, boolean json, boolean background,
-                    String label, HashMap<String, AdHocDevice> mapAddressDevice,
+    AbstractWrapper(boolean v, Context context, boolean json, String label,
+                    HashMap<String, AdHocDevice> mapAddressDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
         this.json = json;
-        this.background = background;
         this.enabled = true;
         this.context = context;
         this.label = label;

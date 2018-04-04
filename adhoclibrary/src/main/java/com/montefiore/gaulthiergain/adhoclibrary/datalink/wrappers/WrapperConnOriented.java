@@ -18,14 +18,18 @@ import java.util.Map;
 
 public abstract class WrapperConnOriented extends AbstractWrapper {
 
+    final static short ATTEMPTS = 3;
+
     final Neighbors neighbors;
     final short nbThreads;
+    final boolean background;
     ServiceServer serviceServer;
 
     WrapperConnOriented(boolean v, Context context, boolean json, short nbThreads, boolean background, String label, HashMap<String, AdHocDevice> mapAddressDevice, ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, json, background, label, mapAddressDevice, listenerApp, listenerDataLink);
+        super(v, context, json, label, mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.nbThreads = nbThreads;
+        this.background = background;
     }
 
     private String getAddrFromLabel(String remoteLabel) throws NoConnectionException {
