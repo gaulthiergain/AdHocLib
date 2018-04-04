@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
@@ -41,6 +43,7 @@ public abstract class AbstractWrapper {
     boolean enabled;
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
+    HashMap<String, ServiceClient> mapUuidClients;
 
     AbstractWrapper(boolean v, Context context, boolean json, short nbThreads, boolean background, String label,
                     HashMap<String, AdHocDevice> mapAddressDevice,
@@ -57,6 +60,7 @@ public abstract class AbstractWrapper {
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
         this.mapLabelAddr = new HashMap<>();
+        this.mapUuidClients = new HashMap<>();
         this.mapAddressDevice = mapAddressDevice;
         this.neighbors = neighbors;
         this.listenerDataLink = listenerDataLink;
@@ -76,8 +80,6 @@ public abstract class AbstractWrapper {
 
     public abstract void unregisterConnection();
 
-    public abstract void disconnect();
-
     public abstract void updateName(String name);
 
     public abstract void listenServer() throws IOException;
@@ -96,6 +98,34 @@ public abstract class AbstractWrapper {
 
     public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
         this.discoveryListener = discoveryListener;
+    }
+
+    public boolean disconnect(String remoteDest) {
+
+        try {
+            ServiceClient serviceClient = mapUuidClients.get(remoteDest);
+            if (remoteDest != null) {
+                serviceClient.disconnect();
+                return true;
+            }
+        } catch (NoConnectionException e) {
+            listenerApp.traceException(e);
+        } catch (IOException e) {
+            listenerApp.traceException(e);
+        }
+        return false;
+    }
+
+    public void disconnectAll() {
+
+        for (String remoteDest : mapUuidClients.keySet()) {
+            disconnect(remoteDest);
+        }
+
+        if(mapUuidClients.size() > 0){
+            mapUuidClients.clear();
+        }
+
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {

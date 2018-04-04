@@ -193,10 +193,6 @@ public class WrapperWifi extends AbstractWrapper {
         enabled = false;
     }
 
-    @Override
-    public void disconnect() {
-        //todo add client into list and disconnect it
-    }
 
     @Override
     public void unregisterAdapter() {
@@ -357,6 +353,9 @@ public class WrapperWifi extends AbstractWrapper {
 
                 // Add mapping MAC - network
                 mapIpNetwork.put(remoteAddress, network);
+
+                // Add bluetooth client to hashmap
+                mapUuidClients.put(remoteAddress, wifiServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(

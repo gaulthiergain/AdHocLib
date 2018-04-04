@@ -197,7 +197,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void disconnect() {
+    public void disconnectAll() {
 
     }
 

@@ -222,10 +222,6 @@ public class DataLinkManager {
         return null;
     }
 
-    public void disconnect() {
-        //TODO implement
-    }
-
     public void enableAll(final ListenerAdapter listenerAdapter) {
         for (AbstractWrapper wrapper : wrappers) {
             if (!wrapper.isEnabled()) {
@@ -308,6 +304,23 @@ public class DataLinkManager {
 
     public boolean isBluetoothEnable() {
         return wrappers[BLUETOOTH].isEnabled();
+    }
+
+    public void disconnectAll() {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.disconnectAll();
+            }
+        }
+    }
+
+
+    public void disconnect(String remoteDest) {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.disconnect(remoteDest);
+            }
+        }
     }
 
     public interface ListenerDiscovery {

@@ -16,11 +16,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Neighbors;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.NetworkObject;
@@ -189,10 +189,7 @@ public class WrapperBluetooth extends AbstractWrapper {
         enabled = false;
     }
 
-    @Override
-    public void disconnect() {
-        //todo array list of bluetooth client and iterate over to disconnect
-    }
+
 
     @Override
     public void unregisterAdapter() {
@@ -334,6 +331,9 @@ public class WrapperBluetooth extends AbstractWrapper {
 
                 // Add network to temporary hashmap
                 mapUuidNetwork.put(uuid.toString(), network);
+
+                // Add bluetooth client to hashmap
+                mapUuidClients.put(uuid.toString(), bluetoothServiceClient);
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(

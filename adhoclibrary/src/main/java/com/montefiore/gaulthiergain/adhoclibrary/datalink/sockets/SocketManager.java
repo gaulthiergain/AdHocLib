@@ -1,7 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -45,12 +43,10 @@ public class SocketManager {
     public void sendMessage(MessageAdHoc msg) throws IOException {
 
         if (json) {
-            Log.d("[AdHoc]", "JSON send");
             PrintWriter pw = new PrintWriter(oos);
             pw.println(mapper.writeValueAsString(msg));
             pw.flush();
         } else {
-            Log.d("[AdHoc]", "Byte send");
             byte[] byteArray = serialize(msg);
             if (byteArray != null) {
                 oos.writeInt(byteArray.length);
@@ -62,7 +58,6 @@ public class SocketManager {
     public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException {
 
         if (json) {
-            Log.d("[AdHoc]", "JSON rcv");
             BufferedReader in = new BufferedReader(new InputStreamReader(ois));
             MessageAdHoc msg;
             try {
@@ -72,7 +67,6 @@ public class SocketManager {
             }
             return msg;
         } else {
-            Log.d("[AdHoc]", "bytes rcv");
             int length = ois.readInt();
             if (length > 0) {
                 byte[] message = new byte[length];

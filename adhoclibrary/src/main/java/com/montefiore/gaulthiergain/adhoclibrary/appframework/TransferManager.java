@@ -104,7 +104,13 @@ public class TransferManager {
         return dataLinkManager.isBluetoothEnable();
     }
 
-    //TODO DISCONNECT
+    public void disconnectAll() {
+        dataLinkManager.disconnectAll();
+    }
+
+    public void disconnect(String remoteDest) {
+        dataLinkManager.disconnect(remoteDest);
+    }
 
     /*-----------------------------------------Getters--------------------------------------------*/
 
@@ -115,4 +121,6 @@ public class TransferManager {
     public Config getConfig() {
         return config;
     }
+
+
 }
