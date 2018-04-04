@@ -152,16 +152,16 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                 // Add devices into hashmap
                 for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!mapAddressDevice.containsKey(entry.getValue().deviceAddress)) {
+                    if (!mapMacDevice.containsKey(entry.getValue().deviceAddress)) {
                         if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
-                        mapAddressDevice.put(entry.getValue().deviceAddress,
+                        mapMacDevice.put(entry.getValue().deviceAddress,
                                 new AdHocDevice(entry.getValue().deviceAddress,
                                         entry.getValue().deviceName, type));
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevice);
                 }
 
                 discoveryCompleted = true;
@@ -261,19 +261,22 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcast(MessageAdHoc message) {
-        for (Map.Entry<String, WifiAdHocDevice> entry : neighbors.entrySet()) {
+        /*for (Map.Entry<String, WifiAdHocDevice> entry : neighbors.entrySet()) {
             _sendMessage(message, entry.getValue().getIpAddress());
-        }
+        }*/
+
+        _sendMessage(message, "192.168.49.255");
     }
 
     @Override
     public void disconnectAll() {
-
+        broadcast(new MessageAdHoc(new Header(CLOSE_CONNECTION, label, ownName), ""));
     }
 
     @Override
     public void disconnect(String remoteDest) throws IOException, NoConnectionException {
-
+        _sendMessage(new MessageAdHoc(new Header(CLOSE_CONNECTION, label, ownName), ""),
+                remoteDest);
     }
 
     @Override
@@ -349,14 +352,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (Map.Entry<String, WifiAdHocDevice> entry : neighbors.entrySet()) {
 
-                    WifiAdHocDevice wifiAdHocDevice = entry.getValue();
-                    MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
-                            , System.currentTimeMillis());
-                    _sendMessage(msg, wifiAdHocDevice.getIpAddress());
-                    if (v) Log.d(TAG, "Send HELLO message to " + entry.getKey());
-                }
+                MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
+                        , System.currentTimeMillis());
+                broadcast(msg);
+                if (v) Log.d(TAG, "Broadcast HELLO message");
 
                 timerHello(time);
             }
@@ -387,21 +387,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                             // Remove the hello message
                             iter.remove();
+                            connectionClosed(entry.getKey());
 
-                            // Process broken link in protocol
-                            listenerDataLink.brokenLink(entry.getKey());
-
-                            // Callback via handler
-                            WifiAdHocDevice wifiAdHocDevice = neighbors.get(entry.getKey());
-                            if (wifiAdHocDevice != null) {
-                                // Used handler to avoid using runOnUiThread in main app
-                                mHandler.obtainMessage(1,
-                                        new String[]{entry.getKey(), wifiAdHocDevice.getName()})
-                                        .sendToTarget();
-                            }
-
-                            // Remove the remote device from a neighbors
-                            neighbors.remove(entry.getKey());
                         } catch (IOException | NoConnectionException e) {
                             listenerApp.traceException(e);
                         }
@@ -410,6 +397,24 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 timerHelloCheck(time);
             }
         }, time);
+    }
+
+    private void connectionClosed(String label) throws IOException, NoConnectionException {
+        // Process broken link in protocol
+
+        listenerDataLink.brokenLink(label);
+
+        // Callback via handler
+        WifiAdHocDevice wifiAdHocDevice = neighbors.get(label);
+        if (wifiAdHocDevice != null) {
+            // Used handler to avoid using runOnUiThread in main app
+            mHandler.obtainMessage(1,
+                    new String[]{label, wifiAdHocDevice.getName()})
+                    .sendToTarget();
+        }
+
+        // Remove the remote device from a neighbors
+        neighbors.remove(label);
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
@@ -466,7 +471,24 @@ public class WrapperWifiUdp extends AbstractWrapper {
                                 udpmsg.getSourceAddress()));
                 break;
             }
+            case CLOSE_CONNECTION: {
+
+                String label = message.getHeader().getSenderAddr();
+                // Remove the neighbors
+                if (neighbors.containsKey(label)) {
+                    if (v) Log.d(TAG, "Remove " + label + "from neighbors");
+
+                    if (helloMessages.containsKey(label)) {
+                        helloMessages.remove(label);
+                    }
+
+                    connectionClosed(label);
+                }
+            }
             case Constants.HELLO: {
+                long upTime = System.currentTimeMillis() - (long) message.getPdu();
+                Log.d("HELLO", "rcvd hello " + upTime);
+
                 // Add neighbors messages to hashmap
                 helloMessages.put(message.getHeader().getSenderAddr(), (long) message.getPdu());
                 break;
