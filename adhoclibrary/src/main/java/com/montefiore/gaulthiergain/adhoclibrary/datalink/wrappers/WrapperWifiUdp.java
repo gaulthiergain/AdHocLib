@@ -269,14 +269,15 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void disconnectAll() {
-        broadcast(new MessageAdHoc(new Header(CLOSE_CONNECTION, label, ownName), ""));
+    public void disconnectAll() throws IOException, NoConnectionException {
+        // Not used in this context
+        throw new NoConnectionException("No connection in UDP Wifi");
     }
 
     @Override
     public void disconnect(String remoteDest) throws IOException, NoConnectionException {
-        _sendMessage(new MessageAdHoc(new Header(CLOSE_CONNECTION, label, ownName), ""),
-                remoteDest);
+        // Not used in this context
+        throw new NoConnectionException("No connection in UDP Wifi");
     }
 
     @Override
@@ -353,8 +354,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
             @Override
             public void run() {
 
-                MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)
-                        , System.currentTimeMillis());
+                MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), "");
                 broadcast(msg);
                 if (v) Log.d(TAG, "Broadcast HELLO message");
 
@@ -380,10 +380,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                     Map.Entry<String, Long> entry = iter.next();
                     long upTime = (System.currentTimeMillis() - entry.getValue());
+                    Log.d(TAG, "UpTime: " + upTime);
                     if (upTime > Constants.HELLO_PACKET_INTERVAL_SND) {
                         try {
-                            if (v)
-                                Log.d(TAG, "Neighbor " + entry.getKey() + " is down for " + upTime);
+                            if (v) Log.d(TAG, "Neighbor " + entry.getKey() + " is down for " + upTime);
 
                             // Remove the hello message
                             iter.remove();
@@ -400,8 +400,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     private void connectionClosed(String label) throws IOException, NoConnectionException {
-        // Process broken link in protocol
 
+        // Process broken link in protocol
         listenerDataLink.brokenLink(label);
 
         // Callback via handler
@@ -471,26 +471,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
                                 udpmsg.getSourceAddress()));
                 break;
             }
-            case CLOSE_CONNECTION: {
-
-                String label = message.getHeader().getSenderAddr();
-                // Remove the neighbors
-                if (neighbors.containsKey(label)) {
-                    if (v) Log.d(TAG, "Remove " + label + "from neighbors");
-
-                    if (helloMessages.containsKey(label)) {
-                        helloMessages.remove(label);
-                    }
-
-                    connectionClosed(label);
-                }
-            }
             case Constants.HELLO: {
-                long upTime = System.currentTimeMillis() - (long) message.getPdu();
-                Log.d("HELLO", "rcvd hello " + upTime);
-
-                // Add neighbors messages to hashmap
-                helloMessages.put(message.getHeader().getSenderAddr(), (long) message.getPdu());
+                // Add helloMessages messages to hashmap
+                helloMessages.put(message.getHeader().getSenderAddr(), System.currentTimeMillis());
                 break;
             }
             default:
