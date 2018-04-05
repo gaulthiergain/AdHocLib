@@ -201,7 +201,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public boolean updateDeviceName(String name) {
-        return wifiAdHocManager.updateDeviceName(name);
+        if (wifiAdHocManager.updateDeviceName(name)) {
+            this.ownName = name;
+            return true;
+        }
+        return false;
     }
 
     @Override

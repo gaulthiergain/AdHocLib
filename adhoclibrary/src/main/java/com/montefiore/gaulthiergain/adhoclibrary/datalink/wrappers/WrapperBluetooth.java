@@ -193,7 +193,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     public boolean updateDeviceName(String name) {
-        return bluetoothManager.updateDeviceName(name);
+        if (bluetoothManager.updateDeviceName(name)) {
+            this.ownName = name;
+            return true;
+        }
+        return false;
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
