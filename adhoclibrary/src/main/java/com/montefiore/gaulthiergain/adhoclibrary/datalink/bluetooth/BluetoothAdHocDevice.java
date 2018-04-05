@@ -121,7 +121,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      *
      * @return an integer value which represents the rssi of the remote Bluetooth device.
      */
-    public int getRssi() {
+    int getRssi() {
         return rssi;
     }
 
@@ -139,8 +139,6 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
     @Override
     public String toString() {
         return "BluetoothAdHocDevice{" +
-                "uuidString='" + uuidString + '\'' +
-                ", rssi=" + rssi +
                 ", deviceAddress='" + deviceAddress + '\'' +
                 ", deviceName='" + deviceName + '\'' +
                 ", type=" + display(type) +

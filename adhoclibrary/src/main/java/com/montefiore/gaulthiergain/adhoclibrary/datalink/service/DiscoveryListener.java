@@ -12,9 +12,8 @@ public interface DiscoveryListener {
     /**
      * Callback when the discovery is finished.
      *
-     * @param mapNameDevice a HashMap<String, BluetoothAdHocDevice> which contains a
-     *                               mapping between the name of a device and a
-     *                               {@link AdHocDevice} object.
+     * @param mapNameDevice a HashMap<String, AdHocDevice> which contains a mapping between the name
+     *                      of a device and a {@link AdHocDevice} object.
      */
     void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice);
 
