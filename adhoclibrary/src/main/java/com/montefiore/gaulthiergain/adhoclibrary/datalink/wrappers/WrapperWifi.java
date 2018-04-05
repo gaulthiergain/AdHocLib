@@ -49,8 +49,8 @@ public class WrapperWifi extends WrapperConnOriented {
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(verbose, context, config.isJson(), config.getNbThreadWifi(), config.isBackground(),
-                config.getLabel(), mapAddressDevice, listenerApp, listenerDataLink);
+        super(verbose, context, config, config.getNbThreadWifi(), mapAddressDevice,
+                listenerApp, listenerDataLink);
 
         try {
             ConnectionListener connectionListener = new ConnectionListener() {
@@ -114,6 +114,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
     @Override
     public void connect(AdHocDevice device) {
+
         wifiAdHocManager.connect(device.getDeviceAddress());
     }
 
@@ -260,7 +261,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, json, background,
-                groupOwnerAddr, serverPort, 10000, ATTEMPTS, new MessageListener() {
+                groupOwnerAddr, serverPort, 10000, attemps, new MessageListener() {
             @Override
             public void onConnectionClosed(RemoteConnection remoteDevice) {
                 connectionClosed(remoteDevice);

@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -110,19 +111,6 @@ public class AodvManager {
         MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
 
         send(msg, address);
-    }
-
-    /**
-     * Method allowing to connect to other devices
-     *
-     * @param hashMap
-     */
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
-        dataLink.connect(hashMap);
-    }
-
-    public void connect(AdHocDevice adHocDevice) throws DeviceException {
-        dataLink.connect(adHocDevice);
     }
 
     /*---------------------------------------Private methods---------------------------------------/

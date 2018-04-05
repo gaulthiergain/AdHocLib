@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
@@ -17,23 +18,23 @@ import java.util.Map;
 
 public abstract class WrapperConnOriented extends AbstractWrapper {
 
-    final static short ATTEMPTS = 3;
 
-    final Neighbors neighbors;
+    final short attemps;
     final short nbThreads;
     final boolean background;
+    final Neighbors neighbors;
     final HashMap<String, String> mapAddrLabel;
     final HashMap<String, SocketManager> mapAddrNetwork;
 
     ServiceServer serviceServer;
 
-    WrapperConnOriented(boolean v, Context context, boolean json, short nbThreads, boolean background,
-                        String label, HashMap<String, AdHocDevice> mapAddressDevice,
+    WrapperConnOriented(boolean v, Context context, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, json, label, mapAddressDevice, listenerApp, listenerDataLink);
+        super(v, context, config.isJson(), config.getLabel(), mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
+        this.attemps = config.getAttemps();
         this.nbThreads = nbThreads;
-        this.background = background;
+        this.background = config.isBackground();
         this.mapAddrLabel = new HashMap<>();
         this.mapAddrNetwork = new HashMap<>();
     }

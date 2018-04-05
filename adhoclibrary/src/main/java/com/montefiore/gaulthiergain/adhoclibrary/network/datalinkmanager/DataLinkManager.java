@@ -15,6 +15,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapp
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUdp;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -146,7 +147,7 @@ public class DataLinkManager {
         }).start();
     }
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
 
         if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
@@ -162,7 +163,7 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException, DeviceAlreadyConnectedException {
 
         if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");

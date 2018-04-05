@@ -23,6 +23,7 @@ public class Config {
     private boolean json;
     private boolean secure;
     private int serverPort;
+    private short attemps;
     private short nbThreadBt;
     private short nbThreadWifi;
     private boolean background;
@@ -33,6 +34,7 @@ public class Config {
         this.secure = true;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
+        this.attemps = 3;
         this.serverPort = 52000;
         this.background = true;
         this.reliableTransportWifi = true;
@@ -40,12 +42,13 @@ public class Config {
         this.label = String.valueOf(UUID.randomUUID());
     }
 
-    public Config(String name, String label, boolean json, boolean secure, int serverPort,
+    public Config(String name, String label, boolean json, boolean secure, int attemps, int serverPort,
                   short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi) {
         this.name = name;
         this.label = label;
         this.json = json;
         this.secure = secure;
+        this.attemps = (short) attemps;
         this.serverPort = serverPort;
         this.nbThreadBt = nbThreadBt;
         this.nbThreadWifi = nbThreadWifi;
@@ -75,6 +78,10 @@ public class Config {
 
     public int getServerPort() {
         return serverPort;
+    }
+
+    public short getAttemps() {
+        return attemps;
     }
 
     public short getNbThreadBt() {
@@ -120,6 +127,10 @@ public class Config {
         } else {
             this.serverPort = serverPort;
         }
+    }
+
+    public void setAttemps(int attemps) {
+        this.attemps = (short) attemps;
     }
 
     public void setNbThreadBt(int nbThreadBt) throws MaxThreadReachedException {

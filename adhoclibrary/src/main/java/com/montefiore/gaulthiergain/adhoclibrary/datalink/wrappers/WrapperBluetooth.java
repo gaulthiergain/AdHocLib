@@ -48,8 +48,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
                             HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(verbose, context, config.isJson(), config.getNbThreadBt(), config.isBackground(), config.getLabel(),
-                mapAddressDevice, listenerAodv, listenerDataLink);
+        super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
@@ -76,7 +75,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void connect(AdHocDevice device) {
+    public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
         String uuid = macToUUID(device.getDeviceAddress());
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(uuid);
@@ -84,8 +83,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
             if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
                 _connect(btDevice);
             } else {
-                listenerApp.traceException(new DeviceAlreadyConnectedException(btDevice.getUuid()
-                        + " is already connected"));
+                throw new DeviceAlreadyConnectedException(btDevice.getUuid()
+                        + " is already connected");
             }
         }
     }
@@ -244,7 +243,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
-                json, background, secure, ATTEMPTS, bluetoothAdHocDevice, new MessageListener() {
+                json, background, secure, attemps, bluetoothAdHocDevice, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {

@@ -9,6 +9,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void connect(AdHocDevice device);
+    public abstract void connect(AdHocDevice device) throws DeviceAlreadyConnectedException;
 
     public abstract void stopListening() throws IOException;
 

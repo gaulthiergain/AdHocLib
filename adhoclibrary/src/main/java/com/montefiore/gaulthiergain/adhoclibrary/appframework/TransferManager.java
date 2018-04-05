@@ -8,6 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -48,13 +49,6 @@ public class TransferManager {
 
     /*--------------------------------------Network methods---------------------------------------*/
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException {
-        aodvManager.connect(adHocDevice);
-    }
-
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
-        aodvManager.connect(hashMap);
-    }
 
     public void sendMessageTo(Object msg, String remoteDest) throws IOException {
         aodvManager.sendMessageTo(msg, remoteDest);
@@ -63,6 +57,14 @@ public class TransferManager {
     //TODO BROADCAST and BRODCAST_EXCEPT
 
     /*-------------------------------------DataLink methods---------------------------------------*/
+
+    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+        dataLinkManager.connect(adHocDevice);
+    }
+
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException, DeviceAlreadyConnectedException {
+        dataLinkManager.connect(hashMap);
+    }
 
     public void stopListening() throws IOException {
         dataLinkManager.stopListening();
