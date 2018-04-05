@@ -92,19 +92,7 @@ public class WrapperWifi extends WrapperConnOriented {
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
-                this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-                this.serverPort = config.getServerPort();
-                this.mapLabelRemoteDeviceName = new HashMap<>();
-                this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-                    @Override
-                    public void getDeviceName(String name) {
-                        // Update ownName
-                        ownName = name;
-                        wifiAdHocManager.unregisterInitName();
-                    }
-                });
-                this.listenServer();
+                init(config);
             } else {
                 enabled = false;
             }
@@ -114,6 +102,23 @@ public class WrapperWifi extends WrapperConnOriented {
     }
 
     /*-------------------------------------Override methods---------------------------------------*/
+
+    @Override
+    public void init(Config config) throws IOException {
+        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.serverPort = config.getServerPort();
+        this.mapLabelRemoteDeviceName = new HashMap<>();
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
+
+            @Override
+            public void getDeviceName(String name) {
+                // Update ownName
+                ownName = name;
+                wifiAdHocManager.unregisterInitName();
+            }
+        });
+        this.listenServer();
+    }
 
     @Override
     public void connect(AdHocDevice device) {
@@ -194,17 +199,15 @@ public class WrapperWifi extends WrapperConnOriented {
     }
 
     @Override
-    public void updateName(String name) {
-        try {
-            wifiAdHocManager.updateName(name);
-        } catch (InvocationTargetException e) {
-            listenerApp.traceException(e);
-        } catch (IllegalAccessException e) {
-            listenerApp.traceException(e);
-        } catch (NoSuchMethodException e) {
-            listenerApp.traceException(e);
-        }
+    public void resetDeviceName() {
+        wifiAdHocManager.resetDeviceName();
     }
+
+    @Override
+    public boolean updateDeviceName(String name) {
+        return wifiAdHocManager.updateDeviceName(name);
+    }
+
 
     /*--------------------------------------Public methods----------------------------------------*/
 
@@ -217,8 +220,9 @@ public class WrapperWifi extends WrapperConnOriented {
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
 
-    @Override
-    public void listenServer() throws IOException {
+    /*--------------------------------------Private methods---------------------------------------*/
+
+    private void listenServer() throws IOException {
         serviceServer = new WifiServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -253,8 +257,6 @@ public class WrapperWifi extends WrapperConnOriented {
         // Start the wifi server listening process
         serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
-
-    /*--------------------------------------Private methods---------------------------------------*/
 
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, json, background,

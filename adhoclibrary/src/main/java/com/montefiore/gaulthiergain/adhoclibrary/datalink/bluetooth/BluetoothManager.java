@@ -31,7 +31,7 @@ public class BluetoothManager {
     private final String TAG = "[AdHoc][Blue.Manager]";
     private final HashMap<String, AdHocDevice> hashMapBluetoothDevice;
 
-    private String initName;
+    private String initialName;
     private boolean registered = false;
     private BroadcastReceiver mReceiverAdapter;
     private DiscoveryListener discoveryListener;
@@ -56,6 +56,7 @@ public class BluetoothManager {
             // Device supports Bluetooth
             this.v = verbose;
             this.context = context;
+            this.initialName = bluetoothAdapter.getName();
             this.hashMapBluetoothDevice = new HashMap<>();
         }
     }
@@ -100,36 +101,14 @@ public class BluetoothManager {
         return hashMapBluetoothPairedDevice;
     }
 
-    public void updateDeviceName(String name) {
-        bluetoothAdapter.setName(name);
+    public boolean updateDeviceName(String name) {
+        return bluetoothAdapter.setName(name);
     }
 
-    public void resetDeviceName() throws DeviceException {
-        if (initName != null && !initName.contains("#e091#")) {
-            bluetoothAdapter.setName(initName);
-        } else if (initName != null && initName.contains("#e091#")) {
-            if (initName.split("#").length > 2) {
-                bluetoothAdapter.setName(initName.split("#")[2]);
-            } else {
-                throw new DeviceException("No initial name found");
-            }
+    public void resetDeviceName() {
+        if (initialName != null) {
+            bluetoothAdapter.setName(initialName);
         }
-        /*
-        OLD update name
-        if (initName == null) {
-            initName = bluetoothAdapter.getName();
-        }
-
-        if (initName.contains("#e091#")) {
-            if (initName.split("#").length > 2) {
-                initName = initName.split("#")[2];
-            }
-        }
-
-        if (v) Log.i(TAG, "localdevicename : " + bluetoothAdapter.getName());
-        bluetoothAdapter.setName(name + initName);
-        if (v) Log.i(TAG, "localdevicename : " + name + initName);
-         */
     }
 
     /**

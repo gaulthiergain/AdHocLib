@@ -44,6 +44,7 @@ public class WifiAdHocManager {
     private boolean v;
     private Context context;
     private Channel channel;
+    private String initialName;
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
@@ -51,6 +52,7 @@ public class WifiAdHocManager {
 
     public static final int DISCOVERY_TIME = 10000;
     private int valueGroupOwner = -1;
+
 
     /**
      * Constructor
@@ -341,22 +343,26 @@ public class WifiAdHocManager {
         return ipAddrStr.toString();
     }
 
-    public void updateName(String name) throws InvocationTargetException, IllegalAccessException,
-            NoSuchMethodException {
-        Method m = wifiP2pManager.getClass().getMethod(
-                "setDeviceName",
-                Channel.class, String.class,
-                WifiP2pManager.ActionListener.class);
+    public void resetDeviceName() {
+        if (initialName != null) {
+            updateDeviceName(initialName);
+        }
+    }
 
-        m.invoke(wifiP2pManager, channel, name, new WifiP2pManager.ActionListener() {
-            public void onSuccess() {
-                //Code for Success in changing name
-            }
+    public boolean updateDeviceName(String name) {
+        try {
+            Method m = wifiP2pManager.getClass().getMethod("setDeviceName", new Class[]{channel.getClass(), String.class,
+                    WifiP2pManager.ActionListener.class});
+            m.invoke(wifiP2pManager, channel, name, null);
 
-            public void onFailure(int reason) {
-                //Code to be done while name change Fails
-            }
-        });
+            return true;
+        } catch (IllegalAccessException e) {
+            return false;
+        } catch (InvocationTargetException e) {
+            return false;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     public void requestGO(final ListenerWifiGroupOwner listenerWifiGroupOwner) {
@@ -464,6 +470,7 @@ public class WifiAdHocManager {
                 @Override
                 public void getDeviceName(String name) {
                     listenerWifiDeviceName.getDeviceName(name);
+                    initialName = name;
                 }
             });
             nameRegistered = true;

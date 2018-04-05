@@ -31,11 +31,13 @@ public class DataLinkManager {
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
+    private Config config;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
 
+        this.config = config;
         this.listenerApp = listenerApp;
         this.mapAddressDevice = new HashMap<>();
 
@@ -315,6 +317,22 @@ public class DataLinkManager {
         return wrappers[BLUETOOTH].isEnabled();
     }
 
+    public boolean updateBluetoothName(String newName) {
+        return wrappers[BLUETOOTH].updateDeviceName(newName);
+    }
+
+    public boolean updateWifiName(String newName) {
+        return wrappers[WIFI].updateDeviceName(newName);
+    }
+
+    public void resetBluetoothName() {
+        wrappers[BLUETOOTH].resetDeviceName();
+    }
+
+    public void resetWifiName() {
+        wrappers[WIFI].resetDeviceName();
+    }
+
     public void disconnectAll() throws IOException, NoConnectionException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -322,7 +340,6 @@ public class DataLinkManager {
             }
         }
     }
-
 
     public void disconnect(String remoteDest) throws IOException, NoConnectionException {
         for (AbstractWrapper wrapper : wrappers) {
@@ -339,7 +356,7 @@ public class DataLinkManager {
     private void processListenerAdapter(int type, boolean success, final ListenerAdapter listenerAdapter) {
         if (success) {
             try {
-                wrappers[type].listenServer();
+                wrappers[type].init(config);
                 wrappers[type].unregisterAdapter();
                 if (type == BLUETOOTH) {
                     listenerAdapter.onEnableBluetooth(true);

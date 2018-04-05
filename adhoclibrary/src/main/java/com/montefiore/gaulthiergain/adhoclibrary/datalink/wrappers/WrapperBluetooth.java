@@ -54,15 +54,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
         try {
             this.bluetoothManager = new BluetoothManager(v, context);
             if (bluetoothManager.isEnabled()) {
-
-                this.secure = config.isSecure();
-                this.ownMac = BluetoothUtil.getCurrentMac(context);
-                this.ownUUID = UUID.fromString(macToUUID(ownMac));
-                this.ownName = BluetoothUtil.getCurrentName();
-
-                this.mapUuidDevices = new HashMap<>();
-
-                this.listenServer();
+                init(config);
             } else {
                 enabled = false;
             }
@@ -72,6 +64,16 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     /*-------------------------------------Override methods---------------------------------------*/
+
+    @Override
+    public void init(Config config) throws IOException {
+        this.secure = config.isSecure();
+        this.ownMac = BluetoothUtil.getCurrentMac(context);
+        this.ownUUID = UUID.fromString(macToUUID(ownMac));
+        this.ownName = BluetoothUtil.getCurrentName();
+        this.mapUuidDevices = new HashMap<>();
+        this.listenServer();
+    }
 
     @Override
     public void connect(AdHocDevice device) {
@@ -185,13 +187,18 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void updateName(String name) {
-        bluetoothManager.updateDeviceName(name);
+    public void resetDeviceName() {
+        bluetoothManager.resetDeviceName();
     }
 
     @Override
-    public void listenServer() throws IOException {
+    public boolean updateDeviceName(String name) {
+        return bluetoothManager.updateDeviceName(name);
+    }
 
+    /*--------------------------------------Private methods---------------------------------------*/
+
+    private void listenServer() throws IOException {
         serviceServer = new BluetoothServiceServer(v, context, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -226,7 +233,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
         serviceServer.listen(new ServiceConfig(nbThreads, secure, BluetoothAdapter.getDefaultAdapter(), ownUUID));
     }
 
-    /*--------------------------------------Private methods---------------------------------------*/
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
                 json, background, secure, ATTEMPTS, bluetoothAdHocDevice, new MessageListener() {

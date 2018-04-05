@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -9,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public class TransferManager {
@@ -103,6 +105,22 @@ public class TransferManager {
 
     public boolean isBluetoothEnable() {
         return dataLinkManager.isBluetoothEnable();
+    }
+
+    public boolean updateBluetoothName(String newName) {
+        return dataLinkManager.updateBluetoothName(newName);
+    }
+
+    public boolean updateWifiName(String newName) {
+        return dataLinkManager.updateWifiName(newName);
+    }
+
+    public void resetBluetoothName() {
+        dataLinkManager.resetBluetoothName();
+    }
+
+    public void resetWifiName() {
+        dataLinkManager.resetWifiName();
     }
 
     public void disconnectAll() throws IOException, NoConnectionException {

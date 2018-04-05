@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -11,13 +12,13 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.Listene
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public abstract class AbstractWrapper {
 
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
-    final static byte CLOSE_CONNECTION = 12;
 
     final boolean v;
     final boolean json;
@@ -64,9 +65,11 @@ public abstract class AbstractWrapper {
 
     public abstract void unregisterConnection();
 
-    public abstract void updateName(String name);
+    public abstract void resetDeviceName();
 
-    public abstract void listenServer() throws IOException;
+    public abstract boolean updateDeviceName(String name);
+
+    public abstract void init(Config config) throws IOException;
 
     public boolean isEnabled() {
         return enabled;

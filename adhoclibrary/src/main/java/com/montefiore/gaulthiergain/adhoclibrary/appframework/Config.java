@@ -1,5 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
+import android.content.Context;
+
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.BadServerPortException;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
@@ -152,4 +154,5 @@ public class Config {
     public void setBackground(boolean background) {
         this.background = background;
     }
+
 }

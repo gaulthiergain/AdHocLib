@@ -95,22 +95,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
 
-                this.neighbors = new HashMap<>();
-                this.helloMessages = new HashMap<>();
-                this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
-                this.serverPort = config.getServerPort();
-
-                this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-                    @Override
-                    public void getDeviceName(String name) {
-                        ownName = name;
-                        wifiAdHocManager.unregisterInitName();
-                    }
-                });
-
-                this.listenServer();
-                this.ackSet = new HashSet<>();
+                init(config);
             } else {
                 enabled = false;
             }
@@ -194,25 +179,23 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void listenServer() {
-        udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
-            @Override
-            public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
-                }
-            }
+    public void init(Config config) {
+        this.neighbors = new HashMap<>();
+        this.helloMessages = new HashMap<>();
+        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.serverPort = config.getServerPort();
+
+        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
 
             @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
+            public void getDeviceName(String name) {
+                ownName = name;
+                wifiAdHocManager.unregisterInitName();
             }
         });
-        //Run timers for HELLO messages
-        timerHello(Constants.HELLO_PACKET_INTERVAL);
-        timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
+
+        this.listenServer();
+        this.ackSet = new HashSet<>();
     }
 
     @Override
@@ -221,16 +204,13 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void updateName(String name) {
-        try {
-            wifiAdHocManager.updateName(name);
-        } catch (InvocationTargetException e) {
-            listenerApp.traceException(e);
-        } catch (IllegalAccessException e) {
-            listenerApp.traceException(e);
-        } catch (NoSuchMethodException e) {
-            listenerApp.traceException(e);
-        }
+    public void resetDeviceName() {
+        wifiAdHocManager.resetDeviceName();
+    }
+
+    @Override
+    public boolean updateDeviceName(String name) {
+        return wifiAdHocManager.updateDeviceName(name);
     }
 
     @Override
@@ -249,21 +229,17 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcast(MessageAdHoc message) {
-        /*for (Map.Entry<String, WifiUdpDevice> entry : neighbors.entrySet()) {
-            _sendMessage(message, entry.getValue().getIpAddress());
-        }*/
-
         _sendMessage(message, "192.168.49.255");
     }
 
     @Override
-    public void disconnectAll() throws IOException, NoConnectionException {
+    public void disconnectAll() throws NoConnectionException {
         // Not used in this context
         throw new NoConnectionException("No connection in UDP Wifi");
     }
 
     @Override
-    public void disconnect(String remoteDest) throws IOException, NoConnectionException {
+    public void disconnect(String remoteDest) throws NoConnectionException {
         // Not used in this context
         throw new NoConnectionException("No connection in UDP Wifi");
     }
@@ -288,6 +264,27 @@ public class WrapperWifiUdp extends AbstractWrapper {
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
     /*--------------------------------------Private methods---------------------------------------*/
+
+    private void listenServer() {
+        udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
+            @Override
+            public void onMessageReceived(MessageAdHoc message) {
+                try {
+                    processMsgReceived(message);
+                } catch (IOException | NoConnectionException | AodvAbstractException e) {
+                    listenerApp.traceException(e);
+                }
+            }
+
+            @Override
+            public void catchException(Exception e) {
+                listenerApp.traceException(e);
+            }
+        });
+        //Run timers for HELLO messages
+        timerHello(Constants.HELLO_PACKET_INTERVAL);
+        timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
+    }
 
     private void timerConnectMessage(final MessageAdHoc message, final String dest, final int time) {
         Timer timer = new Timer();
