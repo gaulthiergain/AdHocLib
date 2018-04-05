@@ -206,16 +206,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
             }
 
             @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "onMessageSent");
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "onForward");
-            }
-
-            @Override
             public void catchException(Exception e) {
                 listenerApp.traceException(e);
             }
@@ -439,7 +429,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                            message.getHeader().getSenderName(), 0);
                 }
 
                 // Add remote host to neighbors
@@ -461,7 +451,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
                     // Callback connection
                     listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName());
+                            message.getHeader().getSenderName(), 0);
                 }
 
                 // Add remote host to neighbors

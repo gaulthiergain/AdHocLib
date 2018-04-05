@@ -66,9 +66,6 @@ public abstract class ServiceClient extends Service {
         } else {
             // Send message to remote device
             network.sendMessage(msg);
-
-            // Notify handler
-            handler.obtainMessage(Service.MESSAGE_WRITE, msg).sendToTarget();
         }
     }
 

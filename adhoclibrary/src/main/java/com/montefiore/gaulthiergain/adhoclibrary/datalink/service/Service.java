@@ -19,29 +19,28 @@ import java.io.IOException;
  */
 public abstract class Service {
 
+    protected final String TAG = "[AdHoc][Service]";
+
     // Constants that indicate the current connection state
-    public static final int STATE_NONE = 0;                 // no connection
-    public static final int STATE_LISTENING = 1;            // listening for incoming connections
-    public static final int STATE_CONNECTING = 2;           // initiating an outgoing connection
-    public static final int STATE_CONNECTED = 3;            // connected to a remote device
-    public static final int STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
+    protected static final int STATE_NONE = 0;                 // no connection
+    protected static final int STATE_LISTENING = 1;            // listening for incoming connections
+    protected static final int STATE_CONNECTING = 2;           // initiating an outgoing connection
+    protected static final int STATE_CONNECTED = 3;            // connected to a remote device
+    protected static final int STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
     // Constants for message handling
-    public static final int MESSAGE_READ = 5;               // message received
-    public static final int MESSAGE_WRITE = 6;              // message sent
-    public static final int FORWARD = 7;                    // broadcast sent
+    public static final int MESSAGE_READ = 5;                   // message received
 
     // Constants for connection
-    public static final int CONNECTION_ABORTED = 8;         // connection aborted
-    public static final int CONNECTION_PERFORMED = 9;       // connection performed
-    public static final int CATH_EXCEPTION = 10;            // catch exception
-    public static final int CONNECTION_FAILED = 11;         // connection failed
+    public static final int CONNECTION_ABORTED = 6;             // connection aborted
+    public static final int CONNECTION_PERFORMED = 7;           // connection performed
+    public static final int CATH_EXCEPTION = 8;                 // catch exception
+    public static final int CONNECTION_FAILED = 9;              // connection failed
 
     protected int state;
     protected final boolean v;
     protected final boolean json;
     protected final Context context;
-    protected final String TAG = "[AdHoc][Service]";
 
     private final MessageListener messageListener;
 
@@ -90,10 +89,6 @@ public abstract class Service {
                     if (v) Log.d(TAG, "MESSAGE_READ");
                     messageListener.onMessageReceived((MessageAdHoc) msg.obj);
                     break;
-                case MESSAGE_WRITE:
-                    if (v) Log.d(TAG, "MESSAGE_WRITE");
-                    messageListener.onMessageSent((MessageAdHoc) msg.obj);
-                    break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");
                     messageListener.onConnectionClosed((RemoteConnection) msg.obj);
@@ -105,10 +100,6 @@ public abstract class Service {
                 case CONNECTION_FAILED:
                     if (v) Log.d(TAG, "CONNECTION_FAILED");
                     messageListener.onConnectionFailed((RemoteConnection) msg.obj);
-                    break;
-                case FORWARD:
-                    if (v) Log.d(TAG, "FORWARD");
-                    messageListener.onForward((MessageAdHoc) msg.obj);
                     break;
                 case CATH_EXCEPTION:
                     if (v) Log.d(TAG, "CATH_EXCEPTION");

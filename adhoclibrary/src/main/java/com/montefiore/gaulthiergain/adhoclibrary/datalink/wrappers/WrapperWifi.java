@@ -230,16 +230,6 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
-
-            @Override
             public void catchException(Exception e) {
                 listenerApp.traceException(e);
             }
@@ -292,16 +282,6 @@ public class WrapperWifi extends WrapperConnOriented {
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
                     listenerApp.traceException(e);
                 }
-            }
-
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message forward: " + message.getPdu().toString());
             }
 
             @Override
@@ -412,7 +392,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
                     }
 
                     // Add the active connection into the autoConnectionActives object
@@ -439,7 +419,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
             if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                 // Callback connection
-                listenerApp.onConnection(remoteLabel, name);
+                listenerApp.onConnection(remoteLabel, name, 0);
             }
 
             // Add the active connection into the autoConnectionActives object

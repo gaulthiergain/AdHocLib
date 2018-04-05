@@ -26,7 +26,16 @@ public class AdHocDevice {
         return type;
     }
 
-    protected String display(int type) {
+    @Override
+    public String toString() {
+        return "AdHocDevice{" +
+                "deviceAddress='" + deviceAddress + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", type=" + display(type) +
+                '}';
+    }
+
+    private String display(int type) {
         if (type == DataLinkManager.BLUETOOTH) {
             return "Bluetooth";
         }

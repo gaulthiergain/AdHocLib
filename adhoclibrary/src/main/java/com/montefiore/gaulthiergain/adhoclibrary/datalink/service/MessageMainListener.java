@@ -17,20 +17,6 @@ public interface MessageMainListener {
     void onMessageReceived(MessageAdHoc message);
 
     /**
-     * Callback when message is sent.
-     *
-     * @param message a MessageAdHoc object which defines the message.
-     */
-    void onMessageSent(MessageAdHoc message);
-
-    /**
-     * Callback when message is forwarded.
-     *
-     * @param message a MessageAdHoc object which defines the message.
-     */
-    void onForward(MessageAdHoc message);
-
-    /**
      * Callback when exception occurs.
      *
      * @param e an Exception object which represents the exception.

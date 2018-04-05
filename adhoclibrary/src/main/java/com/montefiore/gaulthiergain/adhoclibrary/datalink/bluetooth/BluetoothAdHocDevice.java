@@ -135,13 +135,4 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
     BluetoothDevice getDevice() {
         return device;
     }
-
-    @Override
-    public String toString() {
-        return "BluetoothAdHocDevice{" +
-                ", deviceAddress='" + deviceAddress + '\'' +
-                ", deviceName='" + deviceName + '\'' +
-                ", type=" + display(type) +
-                '}';
-    }
 }

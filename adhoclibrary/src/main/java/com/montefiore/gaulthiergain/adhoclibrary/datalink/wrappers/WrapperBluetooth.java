@@ -147,9 +147,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             if (!mapUuidDevices.containsKey(entry.getValue().getUuid())) {
                 mapUuidDevices.put(entry.getValue().getUuid(), entry.getValue());
-                if (v) Log.d(TAG, "Add paired " + entry.getValue().getUuid()
-                        + " into mapUuidDevices");
-
+                if (v)
+                    Log.d(TAG, "Add paired " + entry.getValue().getUuid() + " into mapUuidDevices");
                 mapMacDevice.put(entry.getValue().getDeviceAddress(), entry.getValue());
             }
         }
@@ -204,16 +203,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
-            }
-
-            @Override
             public void catchException(Exception e) {
                 listenerApp.traceException(e);
             }
@@ -248,16 +237,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 } catch (IOException | NoConnectionException | AodvAbstractException e) {
                     listenerApp.traceException(e);
                 }
-            }
-
-            @Override
-            public void onMessageSent(MessageAdHoc message) {
-                if (v) Log.d(TAG, "Message sent: " + message.getPdu().toString());
-            }
-
-            @Override
-            public void onForward(MessageAdHoc message) {
-                if (v) Log.d(TAG, "OnForward: " + message.getPdu().toString());
             }
 
             @Override
@@ -355,7 +334,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
                     }
 
                     // Add the neighbor into the neighbors object
@@ -378,7 +357,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName());
+                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
                     }
 
                     // Add the active connection into the neighbors object

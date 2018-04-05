@@ -25,8 +25,6 @@ public interface ListenerApp {
      */
     void onReceivedData(String senderName, String senderAddress, Object pdu);
 
-    void onSendData(String senderName, String senderAddress, Object pdu);
-
     /**
      * Callback when exception occurs.
      *
@@ -36,7 +34,7 @@ public interface ListenerApp {
 
     void onConnectionClosed(String remoteAddress, String remoteName);
 
-    void onConnection(String remoteAddress, String remoteName);
+    void onConnection(String remoteAddress, String remoteName, int hops);
 
     void onConnectionFailed(String remoteName);
 }

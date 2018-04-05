@@ -25,7 +25,6 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
     private final boolean secure;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
-
     private ListenerAutoConnect listenerAutoConnect;
 
     /**
