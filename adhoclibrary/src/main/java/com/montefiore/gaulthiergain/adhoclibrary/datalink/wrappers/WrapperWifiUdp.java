@@ -184,16 +184,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         this.helloMessages = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = config.getServerPort();
-
-        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-            @Override
-            public void getDeviceName(String name) {
-                ownName = name;
-                wifiAdHocManager.unregisterInitName();
-            }
-        });
-
+        this.ownName = wifiAdHocManager.getDeviceName();
         this.listenServer();
         this.ackSet = new HashSet<>();
     }
@@ -339,9 +330,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
             @Override
             public void run() {
 
-                MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), "");
-                broadcast(msg);
-                if (v) Log.d(TAG, "Broadcast HELLO message");
+                if (neighbors.size() > 0) {
+                    if (v) Log.d(TAG, "Broadcast HELLO message");
+                    MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), "");
+                    broadcast(msg);
+                }
 
                 timerHello(time);
             }
