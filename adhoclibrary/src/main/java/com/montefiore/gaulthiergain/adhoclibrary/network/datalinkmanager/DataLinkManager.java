@@ -18,6 +18,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUd
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -363,6 +364,18 @@ public class DataLinkManager {
                 wrapper.disconnect(remoteDest);
             }
         }
+    }
+
+    public ArrayList<String> getActifAdapterNames() {
+
+        ArrayList<String> adapterNames = new ArrayList<>();
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                adapterNames.add(wrapper.getAdapterName());
+            }
+        }
+
+        return adapterNames;
     }
 
     public interface ListenerDiscovery {

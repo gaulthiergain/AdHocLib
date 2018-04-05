@@ -204,6 +204,10 @@ public class WrapperWifi extends WrapperConnOriented {
         return false;
     }
 
+    @Override
+    public String getAdapterName() {
+        return wifiAdHocManager.getDeviceName();
+    }
 
     /*--------------------------------------Public methods----------------------------------------*/
 

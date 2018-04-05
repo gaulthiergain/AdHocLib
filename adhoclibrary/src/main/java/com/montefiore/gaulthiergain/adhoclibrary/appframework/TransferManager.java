@@ -11,6 +11,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TransferManager {
@@ -121,6 +122,10 @@ public class TransferManager {
 
     public void resetWifiName() throws DeviceException {
         dataLinkManager.resetWifiName();
+    }
+
+    public ArrayList<String> getActifAdapterNames() {
+        return dataLinkManager.getActifAdapterNames();
     }
 
     public void disconnectAll() throws IOException, NoConnectionException {

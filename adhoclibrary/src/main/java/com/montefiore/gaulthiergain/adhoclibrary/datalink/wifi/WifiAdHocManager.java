@@ -45,14 +45,14 @@ public class WifiAdHocManager {
     private Context context;
     private Channel channel;
     private String initialName;
+    private String currentAdapterName;
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
     private HashMap<String, AdHocDevice> hashMapWifiDevices;
 
-    public static final int DISCOVERY_TIME = 10000;
+    private static final int DISCOVERY_TIME = 10000;
     private int valueGroupOwner = -1;
-
 
     /**
      * Constructor
@@ -119,8 +119,8 @@ public class WifiAdHocManager {
         broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
-    public String getDeviceName(){
-        return initialName;
+    public String getDeviceName() {
+        return currentAdapterName;
     }
 
     private void getAdapterName() {
@@ -135,8 +135,8 @@ public class WifiAdHocManager {
 
             @Override
             public void getDeviceName(String name) {
-                initialName = name;
-                if (v) Log.d(TAG, "Get name of wifi device: " + initialName);
+                initialName = currentAdapterName = name;
+                if (v) Log.d(TAG, "Get name of wifi device: " + currentAdapterName);
                 unregisterInitName();
             }
         });
@@ -290,7 +290,7 @@ public class WifiAdHocManager {
         broadcastWifi.unregisterDiscovery();
     }
 
-    public void unregisterInitName() {
+    private void unregisterInitName() {
         if (v) Log.d(TAG, "unregisterName()");
         broadcastWifi.unregisterInitName();
 
@@ -367,6 +367,8 @@ public class WifiAdHocManager {
             Method m = wifiP2pManager.getClass().getMethod("setDeviceName", new Class[]{channel.getClass(), String.class,
                     WifiP2pManager.ActionListener.class});
             m.invoke(wifiP2pManager, channel, name, null);
+
+            currentAdapterName = name;
 
             return true;
         } catch (IllegalAccessException e) {

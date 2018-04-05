@@ -100,4 +100,6 @@ public abstract class AbstractWrapper {
     public abstract void disconnect(String remoteDest) throws IOException, NoConnectionException;
 
     public abstract void disconnectAll() throws IOException, NoConnectionException;
+
+    public abstract String getAdapterName();
 }

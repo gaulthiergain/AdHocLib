@@ -200,6 +200,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
         return false;
     }
 
+    @Override
+    public String getAdapterName() {
+        return bluetoothManager.getAdapterName();
+    }
+
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
