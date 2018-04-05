@@ -9,7 +9,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
@@ -20,7 +20,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -46,7 +45,7 @@ public class WrapperWifi extends WrapperConnOriented {
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
     public WrapperWifi(boolean verbose, Context context, Config config,
-                       HashMap<String, AbstractAdHocDevice> mapAddressDevice,
+                       HashMap<String, AdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
@@ -117,7 +116,7 @@ public class WrapperWifi extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(AbstractAdHocDevice device) {
+    public void connect(AdHocDevice device) {
         wifiAdHocManager.connect(device.getDeviceAddress());
     }
 
@@ -140,11 +139,11 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapNameDevice) {
+            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
                 if (v) Log.d(TAG, "onDiscoveryCompleted");
 
                 // Add devices into the peers
-                for (Map.Entry<String, AbstractAdHocDevice> entry : mapNameDevice.entrySet()) {
+                for (Map.Entry<String, AdHocDevice> entry : mapNameDevice.entrySet()) {
 
                     WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();
                     if (!mapMacDevice.containsKey(wifiDevice.getDeviceAddress())) {
@@ -165,7 +164,7 @@ public class WrapperWifi extends WrapperConnOriented {
     }
 
     @Override
-    public HashMap<String, AbstractAdHocDevice> getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }

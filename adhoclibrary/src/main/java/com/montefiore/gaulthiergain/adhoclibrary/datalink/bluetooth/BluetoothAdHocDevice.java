@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 
 /**
  * <p>This class represents a remote Bluetooth device and is really just a thin wrapper for a
@@ -13,7 +13,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocD
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothAdHocDevice extends AbstractAdHocDevice implements Parcelable {
+public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
 
     private final String uuidString;
     private final int rssi;

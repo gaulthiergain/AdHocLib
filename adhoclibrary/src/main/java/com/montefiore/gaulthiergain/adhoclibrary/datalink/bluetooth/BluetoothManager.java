@@ -11,7 +11,7 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
@@ -29,7 +29,7 @@ public class BluetoothManager {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
     private final String TAG = "[AdHoc][Blue.Manager]";
-    private final HashMap<String, AbstractAdHocDevice> hashMapBluetoothDevice;
+    private final HashMap<String, AdHocDevice> hashMapBluetoothDevice;
 
     private String initName;
     private boolean registered = false;

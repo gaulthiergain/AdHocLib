@@ -4,9 +4,7 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
@@ -30,7 +28,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
     ServiceServer serviceServer;
 
     WrapperConnOriented(boolean v, Context context, boolean json, short nbThreads, boolean background,
-                        String label, HashMap<String, AbstractAdHocDevice> mapAddressDevice,
+                        String label, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
         super(v, context, json, label, mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();

@@ -10,7 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
@@ -30,7 +30,7 @@ public class DataLinkManager {
 
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
-    private final HashMap<String, AbstractAdHocDevice> mapAddressDevice;
+    private final HashMap<String, AdHocDevice> mapAddressDevice;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
@@ -86,7 +86,7 @@ public class DataLinkManager {
                     wrapper.discovery();
                     wrapper.setDiscoveryListener(new ListenerDiscovery() {
                         @Override
-                        public void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapAddressDevice) {
+                        public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
                             listenerApp.onDiscoveryCompleted(mapAddressDevice);
                         }
                     });
@@ -143,7 +143,7 @@ public class DataLinkManager {
         }).start();
     }
 
-    public void connect(AbstractAdHocDevice adHocDevice) throws DeviceException {
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
 
         if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
@@ -159,13 +159,13 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(HashMap<String, AbstractAdHocDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
 
         if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        for (Map.Entry<String, AbstractAdHocDevice> entry : hashMap.entrySet()) {
+        for (Map.Entry<String, AdHocDevice> entry : hashMap.entrySet()) {
             switch (entry.getValue().getType()) {
                 case DataLinkManager.WIFI:
                     wrappers[WIFI].connect(entry.getValue());
@@ -224,7 +224,7 @@ public class DataLinkManager {
         }
     }
 
-    public HashMap<String, AbstractAdHocDevice> getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
         if (wrappers[BLUETOOTH].isEnabled()) {
             return wrappers[BLUETOOTH].getPaired();
         }
@@ -333,7 +333,7 @@ public class DataLinkManager {
     }
 
     public interface ListenerDiscovery {
-        void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapAddressDevice);
+        void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
 
     private void processListenerAdapter(int type, boolean success, final ListenerAdapter listenerAdapter) {

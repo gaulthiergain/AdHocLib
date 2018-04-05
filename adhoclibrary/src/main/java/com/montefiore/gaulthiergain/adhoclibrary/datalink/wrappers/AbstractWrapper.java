@@ -5,7 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -25,7 +25,7 @@ public abstract class AbstractWrapper {
 
     final ListenerApp listenerApp;
     final ListenerDataLink listenerDataLink;
-    final HashMap<String, AbstractAdHocDevice> mapMacDevice;
+    final HashMap<String, AdHocDevice> mapMacDevice;
 
     String label;
     String ownMac;
@@ -36,7 +36,7 @@ public abstract class AbstractWrapper {
 
 
     AbstractWrapper(boolean v, Context context, boolean json, String label,
-                    HashMap<String, AbstractAdHocDevice> mapMacDevice,
+                    HashMap<String, AdHocDevice> mapMacDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -50,13 +50,13 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void connect(AbstractAdHocDevice device);
+    public abstract void connect(AdHocDevice device);
 
     public abstract void stopListening() throws IOException;
 
     public abstract void discovery();
 
-    public abstract HashMap<String, AbstractAdHocDevice> getPaired();
+    public abstract HashMap<String, AdHocDevice> getPaired();
 
     public abstract void enable(int duration, ListenerAdapter listenerAdapter);
 

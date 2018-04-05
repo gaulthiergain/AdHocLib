@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 
 import java.util.HashMap;
 
@@ -14,7 +14,7 @@ public interface ListenerApp {
      *
      * @param mapAddressDevice
      */
-    void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapAddressDevice);
+    void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
 
     /**
      * Callback when a RREQ message is received.

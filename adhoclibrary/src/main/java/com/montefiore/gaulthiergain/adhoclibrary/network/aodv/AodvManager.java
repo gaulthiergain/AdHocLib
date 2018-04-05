@@ -7,7 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -117,11 +117,11 @@ public class AodvManager {
      *
      * @param hashMap
      */
-    public void connect(HashMap<String, AbstractAdHocDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
         dataLink.connect(hashMap);
     }
 
-    public void connect(AbstractAdHocDevice adHocDevice) throws DeviceException {
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
         dataLink.connect(adHocDevice);
     }
 

@@ -1,9 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import android.bluetooth.BluetoothDevice;
-
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
-
 import java.util.HashMap;
 
 /**
@@ -18,9 +14,9 @@ public interface DiscoveryListener {
      *
      * @param mapNameDevice a HashMap<String, BluetoothAdHocDevice> which contains a
      *                               mapping between the name of a device and a
-     *                               {@link AbstractAdHocDevice} object.
+     *                               {@link AdHocDevice} object.
      */
-    void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapNameDevice);
+    void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice);
 
     /**
      * Callback when the discovery started.

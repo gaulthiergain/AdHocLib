@@ -18,7 +18,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
@@ -47,7 +47,7 @@ public class WifiAdHocManager {
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
-    private HashMap<String, AbstractAdHocDevice> hashMapWifiDevices;
+    private HashMap<String, AdHocDevice> hashMapWifiDevices;
 
     public static final int DISCOVERY_TIME = 10000;
     private int valueGroupOwner = -1;

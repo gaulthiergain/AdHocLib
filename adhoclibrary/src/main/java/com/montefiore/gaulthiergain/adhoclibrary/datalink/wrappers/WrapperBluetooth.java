@@ -15,13 +15,12 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -46,7 +45,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
     public WrapperBluetooth(boolean verbose, Context context, Config config,
-                            HashMap<String, AbstractAdHocDevice> mapAddressDevice,
+                            HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
         super(verbose, context, config.isJson(), config.getNbThreadBt(), config.isBackground(), config.getLabel(),
@@ -75,7 +74,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(AbstractAdHocDevice device) {
+    public void connect(AdHocDevice device) {
 
         String uuid = macToUUID(device.getDeviceAddress());
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(uuid);
@@ -98,13 +97,13 @@ public class WrapperBluetooth extends WrapperConnOriented {
     public void discovery() {
         bluetoothManager.discovery(new DiscoveryListener() {
             @Override
-            public void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> hashMapBluetoothDevice) {
+            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> hashMapBluetoothDevice) {
 
                 mapMacDevice.clear();
                 mapUuidDevices.clear();
 
                 // Add no paired devices into the mapUuidDevices
-                for (Map.Entry<String, AbstractAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
+                for (Map.Entry<String, AdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
                     BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) entry.getValue();
                     if (!mapUuidDevices.containsKey(btDevice.getUuid())) {
                         mapUuidDevices.put(btDevice.getUuid(), btDevice);
@@ -137,7 +136,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public HashMap<String, AbstractAdHocDevice> getPaired() {
+    public HashMap<String, AdHocDevice> getPaired() {
 
         // Clear the discovered device
         mapMacDevice.clear();
