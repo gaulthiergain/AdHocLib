@@ -5,5 +5,4 @@ public interface ListenerAdapter {
     void onEnableBluetooth(boolean success);
 
     void onEnableWifi(boolean success);
-
 }

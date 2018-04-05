@@ -9,7 +9,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
@@ -237,54 +236,24 @@ public class DataLinkManager {
 
     public void enableAll(final ListenerAdapter listenerAdapter) {
         for (AbstractWrapper wrapper : wrappers) {
-            if (!wrapper.isEnabled()) {
-                wrapper.enable(0, new ListenerAdapter() {
-                    @Override
-                    public void onEnableBluetooth(boolean success) {
-                        processListenerAdapter(BLUETOOTH, success, listenerAdapter);
-                    }
-
-                    @Override
-                    public void onEnableWifi(boolean success) {
-                        processListenerAdapter(WIFI, success, listenerAdapter);
-                    }
-                });
-            }
+            enable(0, wrapper.getType(), listenerAdapter);
         }
     }
 
-    public void enableWifi(final ListenerAdapter listenerAdapter) {
-        if (!wrappers[WIFI].isEnabled()) {
-            wrappers[WIFI].enable(0, new ListenerAdapter() {
+    public void enable(int duration, final int type, final ListenerAdapter listenerAdapter) {
+
+        if (!wrappers[type].isEnabled()) {
+            wrappers[type].enable(duration, new ListenerAdapter() {
                 @Override
                 public void onEnableBluetooth(boolean success) {
-                    //do nothing in this case
-                    listenerAdapter.onEnableBluetooth(success);
+                    processListenerAdapter(type, success, listenerAdapter);
                 }
 
                 @Override
                 public void onEnableWifi(boolean success) {
-                    processListenerAdapter(WIFI, success, listenerAdapter);
+                    processListenerAdapter(type, success, listenerAdapter);
                 }
             });
-        }
-    }
-
-    public void enableBluetooth(int duration, final ListenerAdapter listenerAdapter) {
-        if (!wrappers[BLUETOOTH].isEnabled()) {
-            wrappers[BLUETOOTH].enable(duration, new ListenerAdapter() {
-                @Override
-                public void onEnableBluetooth(boolean success) {
-                    processListenerAdapter(BLUETOOTH, success, listenerAdapter);
-                }
-
-                @Override
-                public void onEnableWifi(boolean success) {
-                    //do nothing in this case
-                    listenerAdapter.onEnableWifi(success);
-                }
-            });
-
         }
     }
 
@@ -297,57 +266,30 @@ public class DataLinkManager {
         }
     }
 
-    public void disableWifi() throws IOException {
-        if (wrappers[WIFI].isEnabled()) {
-            wrappers[WIFI].stopListening();
-            wrappers[WIFI].disable();
+    public void disable(int type) throws IOException {
+        if (wrappers[type].isEnabled()) {
+            wrappers[type].stopListening();
+            wrappers[type].disable();
         }
     }
 
-    public void disableBluetooth() throws IOException {
-        if (wrappers[BLUETOOTH].isEnabled()) {
-            wrappers[BLUETOOTH].stopListening();
-            wrappers[BLUETOOTH].disable();
-        }
+    public boolean isEnable(int type) {
+        return wrappers[type].isEnabled();
     }
 
-    public boolean isWifiEnable() {
-        return wrappers[WIFI].isEnabled();
-    }
-
-    public boolean isBluetoothEnable() {
-        return wrappers[BLUETOOTH].isEnabled();
-    }
-
-    public boolean updateBluetoothName(String newName) throws DeviceException {
-        if (wrappers[BLUETOOTH].isEnabled()) {
-            return wrappers[BLUETOOTH].updateDeviceName(newName);
+    public boolean updateAdapterName(int type, String newName) throws DeviceException {
+        if (wrappers[type].isEnabled()) {
+            return wrappers[type].updateDeviceName(newName);
         } else {
-            throw new DeviceException("Bluetooth adapter is not enabled");
+            throw new DeviceException(getTypeString(type) + " adapter is not enabled");
         }
     }
 
-    public boolean updateWifiName(String newName) throws DeviceException {
-        if (wrappers[WIFI].isEnabled()) {
-            return wrappers[WIFI].updateDeviceName(newName);
+    public void resetAdapterName(int type) throws DeviceException {
+        if (wrappers[type].isEnabled()) {
+            wrappers[type].resetDeviceName();
         } else {
-            throw new DeviceException("WiFi adapter is not enabled");
-        }
-    }
-
-    public void resetBluetoothName() throws DeviceException {
-        if (wrappers[BLUETOOTH].isEnabled()) {
-            wrappers[BLUETOOTH].resetDeviceName();
-        } else {
-            throw new DeviceException("Bluetooth adapter is not enabled");
-        }
-    }
-
-    public void resetWifiName() throws DeviceException {
-        if (wrappers[WIFI].isEnabled()) {
-            wrappers[WIFI].resetDeviceName();
-        } else {
-            throw new DeviceException("WiFi adapter is not enabled");
+            throw new DeviceException(getTypeString(type) + " adapter is not enabled");
         }
     }
 
@@ -368,7 +310,6 @@ public class DataLinkManager {
     }
 
     public ArrayList<String> getActifAdapterNames() {
-
         ArrayList<String> adapterNames = new ArrayList<>();
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -406,6 +347,17 @@ public class DataLinkManager {
             } else {
                 listenerAdapter.onEnableWifi(false);
             }
+        }
+    }
+
+    private String getTypeString(int type) {
+        switch (type) {
+            case BLUETOOTH:
+                return "Bluetooth";
+            case WIFI:
+                return "WiFi";
+            default:
+                return "Unknwon";
         }
     }
 

@@ -23,6 +23,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -60,40 +61,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
         super(verbose, context, config.getName(), config.isJson(), config.getLabel(),
                 mapAddressDevice, listenerAodv, listenerDataLink);
 
-        ConnectionListener connectionListener = new ConnectionListener() {
-            @Override
-            public void onConnectionStarted() {
-                if (v) Log.d(TAG, "Connection Started");
-            }
-
-            @Override
-            public void onConnectionFailed(int reasonCode) {
-                if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
-                wifiAdHocManager.cancelConnection();
-            }
-
-            @Override
-            public void onGroupOwner(InetAddress groupOwnerAddress) {
-                ownIpAddress = groupOwnerAddress.getHostAddress();
-                if (v) Log.d(TAG, "onGroupOwner: " + ownIpAddress);
-            }
-
-            @Override
-            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
-
-                ownIpAddress = address.getHostAddress();
-                if (v) Log.d(TAG, "onClient: " + ownIpAddress);
-
-                ackSet.add(groupOwnerAddress.getHostAddress());
-                timerConnectMessage(new MessageAdHoc(new Header(CONNECT_SERVER, label, ownName),
-                                new UdpMsg(ownMac, ownIpAddress, groupOwnerAddress.getHostAddress())),
-                        groupOwnerAddress.getHostAddress(), TIMER_ACK);
-            }
-        };
         try {
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
+            this.type = DataLinkManager.WIFI;
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
-
                 init(config);
             } else {
                 enabled = false;
@@ -456,5 +427,38 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);
         }
+    }
+
+    private ConnectionListener initConnectionListener() {
+        return new ConnectionListener() {
+            @Override
+            public void onConnectionStarted() {
+                if (v) Log.d(TAG, "Connection Started");
+            }
+
+            @Override
+            public void onConnectionFailed(int reasonCode) {
+                if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
+                wifiAdHocManager.cancelConnection();
+            }
+
+            @Override
+            public void onGroupOwner(InetAddress groupOwnerAddress) {
+                ownIpAddress = groupOwnerAddress.getHostAddress();
+                if (v) Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+            }
+
+            @Override
+            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                ownIpAddress = address.getHostAddress();
+                if (v) Log.d(TAG, "onClient: " + ownIpAddress);
+
+                ackSet.add(groupOwnerAddress.getHostAddress());
+                timerConnectMessage(new MessageAdHoc(new Header(CONNECT_SERVER, label, ownName),
+                                new UdpMsg(ownMac, ownIpAddress, groupOwnerAddress.getHostAddress())),
+                        groupOwnerAddress.getHostAddress(), TIMER_ACK);
+            }
+        };
     }
 }

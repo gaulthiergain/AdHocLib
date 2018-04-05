@@ -20,6 +20,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListe
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -50,6 +51,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
         super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
+            this.type = DataLinkManager.BLUETOOTH;
             this.bluetoothManager = new BluetoothManager(v, context);
             if (bluetoothManager.isEnabled()) {
                 init(config);

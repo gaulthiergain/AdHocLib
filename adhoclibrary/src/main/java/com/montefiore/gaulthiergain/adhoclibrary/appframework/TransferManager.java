@@ -1,17 +1,14 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -83,11 +80,11 @@ public class TransferManager {
     }
 
     public void enableWifi(ListenerAdapter listenerAdapter) {
-        dataLinkManager.enableWifi(listenerAdapter);
+        dataLinkManager.enable(0, DataLinkManager.WIFI, listenerAdapter);
     }
 
     public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
-        dataLinkManager.enableBluetooth(duration, listenerAdapter);
+        dataLinkManager.enable(duration, DataLinkManager.BLUETOOTH, listenerAdapter);
     }
 
     public void disableAll() throws IOException {
@@ -95,35 +92,35 @@ public class TransferManager {
     }
 
     public void disableWifi() throws IOException {
-        dataLinkManager.disableWifi();
+        dataLinkManager.disable(DataLinkManager.WIFI);
     }
 
     public void disableBluetooth() throws IOException {
-        dataLinkManager.disableBluetooth();
+        dataLinkManager.disable(DataLinkManager.BLUETOOTH);
     }
 
     public boolean isWifiEnable() {
-        return dataLinkManager.isWifiEnable();
+        return dataLinkManager.isEnable(DataLinkManager.WIFI);
     }
 
     public boolean isBluetoothEnable() {
-        return dataLinkManager.isBluetoothEnable();
+        return dataLinkManager.isEnable(DataLinkManager.BLUETOOTH);
     }
 
     public boolean updateBluetoothName(String newName) throws DeviceException {
-        return dataLinkManager.updateBluetoothName(newName);
+        return dataLinkManager.updateAdapterName(DataLinkManager.BLUETOOTH, newName);
     }
 
     public boolean updateWifiName(String newName) throws DeviceException {
-        return dataLinkManager.updateWifiName(newName);
+        return dataLinkManager.updateAdapterName(DataLinkManager.WIFI, newName);
     }
 
     public void resetBluetoothName() throws DeviceException {
-        dataLinkManager.resetBluetoothName();
+        dataLinkManager.resetAdapterName(DataLinkManager.BLUETOOTH);
     }
 
     public void resetWifiName() throws DeviceException {
-        dataLinkManager.resetWifiName();
+        dataLinkManager.resetAdapterName(DataLinkManager.WIFI);
     }
 
     public ArrayList<String> getActifAdapterNames() {
@@ -142,6 +139,10 @@ public class TransferManager {
 
     public String getOwnAddress() {
         return config.getLabel();
+    }
+
+    public String getOwnName() {
+        return config.getName();
     }
 
     public Config getConfig() {

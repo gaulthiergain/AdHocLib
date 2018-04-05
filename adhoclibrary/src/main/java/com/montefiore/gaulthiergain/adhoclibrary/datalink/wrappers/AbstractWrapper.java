@@ -21,6 +21,7 @@ public abstract class AbstractWrapper {
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
 
+    int type;
     final boolean v;
     final boolean json;
     final String ownName;
@@ -35,7 +36,6 @@ public abstract class AbstractWrapper {
     boolean enabled;
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
-
 
     AbstractWrapper(boolean v, Context context, String ownName, boolean json, String label,
                     HashMap<String, AdHocDevice> mapMacDevice,
@@ -104,4 +104,8 @@ public abstract class AbstractWrapper {
     public abstract void disconnectAll() throws IOException;
 
     public abstract String getAdapterName();
+
+    public int getType() {
+        return type;
+    }
 }

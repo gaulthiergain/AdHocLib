@@ -19,6 +19,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -51,44 +52,8 @@ public class WrapperWifi extends WrapperConnOriented {
                 listenerApp, listenerDataLink);
 
         try {
-            ConnectionListener connectionListener = new ConnectionListener() {
-                @Override
-                public void onConnectionStarted() {
-                    if (v) Log.d(TAG, "Connection Started");
-                }
-
-                @Override
-                public void onConnectionFailed(int reasonCode) {
-                    if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
-                    wifiAdHocManager.cancelConnection();
-                }
-
-                @Override
-                public void onGroupOwner(InetAddress groupOwnerAddress) {
-                    ownIpAddress = groupOwnerAddress.getHostAddress();
-                    if (v) Log.d(TAG, "onGroupOwner: " + ownIpAddress);
-                }
-
-                @Override
-                public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
-
-                    groupOwnerAddr = groupOwnerAddress.getHostAddress();
-                    ownIpAddress = address.getHostAddress();
-
-                    if (v)
-                        Log.d(TAG, "onClient groupOwner Address: " + groupOwnerAddress.getHostAddress());
-                    if (v) Log.d(TAG, "OWN IP address: " + ownIpAddress);
-
-                    try {
-                        serviceServer.stopListening();
-                    } catch (IOException e) {
-                        listenerApp.traceException(e);
-                    }
-
-                    _connect();
-                }
-            };
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
+            this.type = DataLinkManager.WIFI;
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
                 init(config);
             } else {
@@ -422,5 +387,44 @@ public class WrapperWifi extends WrapperConnOriented {
             listenerApp.traceException(e);
         }
 
+    }
+
+    private ConnectionListener initConnectionListener() {
+        return new ConnectionListener() {
+            @Override
+            public void onConnectionStarted() {
+                if (v) Log.d(TAG, "Connection Started");
+            }
+
+            @Override
+            public void onConnectionFailed(int reasonCode) {
+                if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
+                wifiAdHocManager.cancelConnection();
+            }
+
+            @Override
+            public void onGroupOwner(InetAddress groupOwnerAddress) {
+                ownIpAddress = groupOwnerAddress.getHostAddress();
+                if (v) Log.d(TAG, "GroupOwner IP: " + ownIpAddress);
+            }
+
+            @Override
+            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+
+                groupOwnerAddr = groupOwnerAddress.getHostAddress();
+                ownIpAddress = address.getHostAddress();
+
+                if (v) Log.d(TAG, "GroupOwner IP: " + groupOwnerAddress.getHostAddress());
+                if (v) Log.d(TAG, "Own IP: " + ownIpAddress);
+
+                try {
+                    serviceServer.stopListening();
+                } catch (IOException e) {
+                    listenerApp.traceException(e);
+                }
+
+                _connect();
+            }
+        };
     }
 }
