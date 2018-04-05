@@ -10,8 +10,9 @@ import android.util.Log;
 
 public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
 
+    private final String TAG = "[AdHoc][BroadcastConn]";
+
     private final boolean v;
-    private final String TAG = "[AdHoc][" + getClass().getName() + "]";
     private WifiP2pManager manager;
     private Channel channel;
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;

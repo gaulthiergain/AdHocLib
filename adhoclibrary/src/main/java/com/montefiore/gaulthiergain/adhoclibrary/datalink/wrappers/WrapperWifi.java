@@ -108,15 +108,7 @@ public class WrapperWifi extends WrapperConnOriented {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = config.getServerPort();
         this.mapLabelRemoteDeviceName = new HashMap<>();
-        this.wifiAdHocManager.getDeviceName(new WifiAdHocManager.ListenerWifiDeviceName() {
-
-            @Override
-            public void getDeviceName(String name) {
-                // Update ownName
-                ownName = name;
-                wifiAdHocManager.unregisterInitName();
-            }
-        });
+        this.ownName = wifiAdHocManager.getDeviceName();
         this.listenServer();
     }
 

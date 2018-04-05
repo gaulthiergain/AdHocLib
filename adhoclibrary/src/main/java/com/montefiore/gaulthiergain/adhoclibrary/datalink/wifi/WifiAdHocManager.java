@@ -75,6 +75,7 @@ public class WifiAdHocManager {
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
+            this.getAdapterName();
             this.hashMapWifiDevices = new HashMap<>();
             if (connectionListener != null) {
                 this.connectionListener = connectionListener;
@@ -118,7 +119,11 @@ public class WifiAdHocManager {
         broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
-    public void getDeviceName(final ListenerWifiDeviceName listenerWifiDeviceName) {
+    public String getDeviceName(){
+        return initialName;
+    }
+
+    private void getAdapterName() {
         final IntentFilter intentFilter = new IntentFilter();
 
         //  Indicates this device's details have changed.
@@ -126,7 +131,15 @@ public class WifiAdHocManager {
         //  Update name
         intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
-        broadcastWifi.registerName(intentFilter, listenerWifiDeviceName);
+        broadcastWifi.registerName(intentFilter, new ListenerWifiDeviceName() {
+
+            @Override
+            public void getDeviceName(String name) {
+                initialName = name;
+                if (v) Log.d(TAG, "Get name of wifi device: " + initialName);
+                unregisterInitName();
+            }
+        });
     }
 
     /**
@@ -470,7 +483,6 @@ public class WifiAdHocManager {
                 @Override
                 public void getDeviceName(String name) {
                     listenerWifiDeviceName.getDeviceName(name);
-                    initialName = name;
                 }
             });
             nameRegistered = true;
