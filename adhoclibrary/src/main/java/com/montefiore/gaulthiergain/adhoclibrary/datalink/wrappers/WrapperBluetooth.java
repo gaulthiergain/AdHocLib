@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
@@ -16,11 +15,12 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUti
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
@@ -46,7 +46,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
     public WrapperBluetooth(boolean verbose, Context context, Config config,
-                            HashMap<String, AdHocDevice> mapAddressDevice,
+                            HashMap<String, AbstractAdHocDevice> mapAddressDevice,
                             ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
 
         super(verbose, context, config.isJson(), config.getNbThreadBt(), config.isBackground(), config.getLabel(),
@@ -57,7 +57,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
             if (bluetoothManager.isEnabled()) {
 
                 this.secure = config.isSecure();
-                this.type = DataLinkManager.BLUETOOTH;
                 this.ownMac = BluetoothUtil.getCurrentMac(context);
                 this.ownUUID = UUID.fromString(macToUUID(ownMac));
                 this.ownName = BluetoothUtil.getCurrentName();
@@ -76,9 +75,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(AdHocDevice device) {
+    public void connect(AbstractAdHocDevice device) {
 
-        String uuid = macToUUID(device.getMac());
+        String uuid = macToUUID(device.getDeviceAddress());
         BluetoothAdHocDevice btDevice = mapUuidDevices.get(uuid);
         if (btDevice != null) {
             if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
@@ -97,22 +96,21 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     public void discovery() {
-        bluetoothManager.discovery(new com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.DiscoveryListener() {
+        bluetoothManager.discovery(new DiscoveryListener() {
             @Override
-            public void onDiscoveryCompleted(HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice) {
+            public void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> hashMapBluetoothDevice) {
 
                 mapMacDevice.clear();
                 mapUuidDevices.clear();
 
                 // Add no paired devices into the mapUuidDevices
-                for (Map.Entry<String, BluetoothAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    if (!mapUuidDevices.containsKey(entry.getValue().getUuid())) {
-                        mapUuidDevices.put(entry.getValue().getUuid(), entry.getValue());
-                        if (v) Log.d(TAG, "Add no paired " + entry.getValue().getUuid()
-                                + " into mapUuidDevices");
-                        mapMacDevice.put(entry.getValue().getDevice().getAddress(),
-                                new AdHocDevice(entry.getValue().getDevice().getAddress(),
-                                        entry.getValue().getDevice().getName(), type));
+                for (Map.Entry<String, AbstractAdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
+                    BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) entry.getValue();
+                    if (!mapUuidDevices.containsKey(btDevice.getUuid())) {
+                        mapUuidDevices.put(btDevice.getUuid(), btDevice);
+                        if (v)
+                            Log.d(TAG, "Add no paired " + btDevice.getUuid() + " into mapUuidDevices");
+                        mapMacDevice.put(btDevice.getDeviceAddress(), btDevice);
                     }
                 }
 
@@ -132,19 +130,14 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onDeviceFound(BluetoothDevice device) {
-
-            }
-
-            @Override
-            public void onScanModeChange(int currentMode, int oldMode) {
+            public void onDiscoveryFailed(int reasonCode) {
 
             }
         });
     }
 
     @Override
-    public HashMap<String, AdHocDevice> getPaired() {
+    public HashMap<String, AbstractAdHocDevice> getPaired() {
 
         // Clear the discovered device
         mapMacDevice.clear();
@@ -152,14 +145,13 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
         // Add paired devices into the mapUuidDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+
             if (!mapUuidDevices.containsKey(entry.getValue().getUuid())) {
                 mapUuidDevices.put(entry.getValue().getUuid(), entry.getValue());
                 if (v) Log.d(TAG, "Add paired " + entry.getValue().getUuid()
                         + " into mapUuidDevices");
 
-                mapMacDevice.put(entry.getValue().getDevice().getAddress(),
-                        new AdHocDevice(entry.getValue().getDevice().getAddress(),
-                                entry.getValue().getDevice().getName(), type));
+                mapMacDevice.put(entry.getValue().getDeviceAddress(), entry.getValue());
             }
         }
 

@@ -11,6 +11,9 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -26,7 +29,7 @@ public class BluetoothManager {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
     private final String TAG = "[AdHoc][Blue.Manager]";
-    private final HashMap<String, BluetoothAdHocDevice> hashMapBluetoothDevice;
+    private final HashMap<String, AbstractAdHocDevice> hashMapBluetoothDevice;
 
     private String initName;
     private boolean registered = false;
@@ -91,7 +94,7 @@ public class BluetoothManager {
                 if (v) Log.d(TAG, "DeviceName: " + device.getName() +
                         " - DeviceHardwareAddress: " + device.getAddress());
                 hashMapBluetoothPairedDevice.put(device.getAddress(),
-                        new BluetoothAdHocDevice(device));
+                        new BluetoothAdHocDevice(device, DataLinkManager.BLUETOOTH));
             }
         }
         return hashMapBluetoothPairedDevice;
@@ -155,10 +158,6 @@ public class BluetoothManager {
                 BluetoothAdapter.ACTION_DISCOVERY_STARTED));
         context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
                 BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-
-        // Register for broadcasts when a device changes its mode
-        context.getApplicationContext().registerReceiver(mReceiver, new IntentFilter(
-                BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
     }
 
     /**
@@ -178,7 +177,7 @@ public class BluetoothManager {
     /**
      * Method allowing to cancel the discovery process.
      */
-    public void cancelDiscovery() {
+    private void cancelDiscovery() {
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         if (bluetoothAdapter.isDiscovering()) {
@@ -222,9 +221,7 @@ public class BluetoothManager {
 
                 // Get the BluetoothDevice object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                discoveryListener.onDeviceFound(device);
 
-                if (v) Log.d(TAG, "DeviceName: " + device.getName());
                 // Add devices into the hashMap
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
                     if (v) Log.d(TAG, "DeviceName: " + device.getName() +
@@ -242,13 +239,6 @@ public class BluetoothManager {
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_FINISHED");
                 // Listener onDiscoveryCompleted
                 discoveryListener.onDiscoveryCompleted(hashMapBluetoothDevice);
-            } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
-                if (v) Log.d(TAG, "ACTION_SCAN_MODE_CHANGED");
-                // Get current and old mode
-                int currentMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
-                int oldMode = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE, 0);
-                // Listener onScanModeChange
-                discoveryListener.onScanModeChange(currentMode, oldMode);
             }
         }
     };

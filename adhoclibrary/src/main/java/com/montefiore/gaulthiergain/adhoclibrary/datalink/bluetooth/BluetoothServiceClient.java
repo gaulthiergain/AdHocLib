@@ -60,7 +60,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
         if (state == STATE_NONE || state == STATE_CONNECTING) {
 
-            if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDevice().getName()
+            if (v) Log.d(TAG, "connect to: " + bluetoothAdHocDevice.getDeviceName()
                     + " (" + bluetoothAdHocDevice.getUuid() + ")");
 
             // Get the UUID
@@ -116,8 +116,8 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 if (v) Log.e(TAG, "Attempts: " + i + " failed");
                 if (attempts == i) {
                     handler.obtainMessage(Service.CONNECTION_FAILED, new RemoteConnection(
-                            bluetoothAdHocDevice.getDevice().getAddress(),
-                            bluetoothAdHocDevice.getDevice().getName())).sendToTarget();
+                            bluetoothAdHocDevice.getDeviceAddress(),
+                            bluetoothAdHocDevice.getDeviceName())).sendToTarget();
                     break;
                 }
 

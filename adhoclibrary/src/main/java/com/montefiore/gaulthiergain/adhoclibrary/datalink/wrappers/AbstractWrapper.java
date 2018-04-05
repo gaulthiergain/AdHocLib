@@ -5,10 +5,8 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -27,9 +25,8 @@ public abstract class AbstractWrapper {
 
     final ListenerApp listenerApp;
     final ListenerDataLink listenerDataLink;
-    final HashMap<String, AdHocDevice> mapMacDevice;
+    final HashMap<String, AbstractAdHocDevice> mapMacDevice;
 
-    byte type;
     String label;
     String ownMac;
     String ownName;
@@ -39,7 +36,7 @@ public abstract class AbstractWrapper {
 
 
     AbstractWrapper(boolean v, Context context, boolean json, String label,
-                    HashMap<String, AdHocDevice> mapMacDevice,
+                    HashMap<String, AbstractAdHocDevice> mapMacDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -53,13 +50,13 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void connect(AdHocDevice device);
+    public abstract void connect(AbstractAdHocDevice device);
 
     public abstract void stopListening() throws IOException;
 
     public abstract void discovery();
 
-    public abstract HashMap<String, AdHocDevice> getPaired();
+    public abstract HashMap<String, AbstractAdHocDevice> getPaired();
 
     public abstract void enable(int duration, ListenerAdapter listenerAdapter);
 

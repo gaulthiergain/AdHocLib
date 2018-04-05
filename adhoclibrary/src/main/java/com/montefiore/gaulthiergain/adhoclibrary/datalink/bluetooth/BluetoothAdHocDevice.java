@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+
 /**
  * <p>This class represents a remote Bluetooth device and is really just a thin wrapper for a
  * BluetoothDevice</p>
@@ -11,9 +13,9 @@ import android.os.Parcelable;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothAdHocDevice implements Parcelable {
+public class BluetoothAdHocDevice extends AbstractAdHocDevice implements Parcelable {
 
-    private final String longUuidString;
+    private final String uuidString;
     private final int rssi;
     private final BluetoothDevice device;
 
@@ -21,9 +23,11 @@ public class BluetoothAdHocDevice implements Parcelable {
      * Constructor
      *
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
+     * @param type
      */
-    BluetoothAdHocDevice(BluetoothDevice device) {
-        this.longUuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
+    BluetoothAdHocDevice(BluetoothDevice device, int type) {
+        super(device.getAddress(), device.getName(), type);
+        this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.rssi = -1;
         this.device = device;
     }
@@ -33,9 +37,11 @@ public class BluetoothAdHocDevice implements Parcelable {
      *
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
      * @param rssi   an integer value which represents the rssi of the remote Bluetooth device.
+     * @param type
      */
-    BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
-        this.longUuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
+    BluetoothAdHocDevice(BluetoothDevice device, int rssi, int type) {
+        super(device.getAddress(), device.getName(), type);
+        this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.rssi = rssi;
         this.device = device;
     }
@@ -47,7 +53,8 @@ public class BluetoothAdHocDevice implements Parcelable {
      *           references) that can be sent through an IBinder.
      */
     private BluetoothAdHocDevice(Parcel in) {
-        this.longUuidString = in.readString();
+        super(in.readString(), in.readString(), in.readInt());
+        this.uuidString = in.readString();
         this.rssi = in.readInt();
         this.device = in.readParcelable(BluetoothDevice.class.getClassLoader());
     }
@@ -76,7 +83,10 @@ public class BluetoothAdHocDevice implements Parcelable {
      */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(longUuidString);
+        dest.writeString(deviceAddress);
+        dest.writeString(deviceName);
+        dest.writeInt(type);
+        dest.writeString(uuidString);
         dest.writeInt(rssi);
         dest.writeParcelable(device, flags);
     }
@@ -103,7 +113,7 @@ public class BluetoothAdHocDevice implements Parcelable {
      * @return a String value which represents the UUID of the remote Bluetooth device.
      */
     public String getUuid() {
-        return longUuidString;
+        return uuidString;
     }
 
     /**
@@ -119,14 +129,21 @@ public class BluetoothAdHocDevice implements Parcelable {
      * Method allowing to get the BluetoothDevice object.
      *
      * @return a BluetoothDevice object which represents the remote Bluetooth device.
+     *
+     *
      */
-    public BluetoothDevice getDevice() {
+    BluetoothDevice getDevice() {
         return device;
     }
 
     @Override
     public String toString() {
-        return device.getAddress() + " - " + device.getName();
+        return "BluetoothAdHocDevice{" +
+                "uuidString='" + uuidString + '\'' +
+                ", rssi=" + rssi +
+                ", deviceAddress='" + deviceAddress + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", type=" + display(type) +
+                '}';
     }
-
 }

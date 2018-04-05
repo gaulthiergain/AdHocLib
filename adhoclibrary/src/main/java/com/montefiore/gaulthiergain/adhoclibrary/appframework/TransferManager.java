@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.io.IOException;
@@ -45,11 +45,11 @@ public class TransferManager {
 
     /*--------------------------------------Network methods---------------------------------------*/
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+    public void connect(AbstractAdHocDevice adHocDevice) throws DeviceException {
         aodvManager.connect(adHocDevice);
     }
 
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AbstractAdHocDevice> hashMap) throws DeviceException {
         aodvManager.connect(hashMap);
     }
 
@@ -69,7 +69,7 @@ public class TransferManager {
         dataLinkManager.discovery();
     }
 
-    public HashMap<String, AdHocDevice> getPairedDevices() {
+    public HashMap<String, AbstractAdHocDevice> getPairedDevices() {
         return dataLinkManager.getPaired();
     }
 

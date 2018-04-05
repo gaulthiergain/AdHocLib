@@ -1,14 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -18,16 +12,16 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
@@ -45,17 +39,17 @@ import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager {
 
+    public static String TAG = "[AdHoc][WifiManager]";
+
     private boolean v;
     private Context context;
     private Channel channel;
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
-    private BroadcastReceiver mReceiverAdapter;
     private ConnectionListener connectionListener;
-    private HashMap<String, WifiP2pDevice> hashMapWifiDevices;
+    private HashMap<String, AbstractAdHocDevice> hashMapWifiDevices;
 
     public static final int DISCOVERY_TIME = 10000;
-    public static String TAG = "[AdHoc][WifiManager]";
     private int valueGroupOwner = -1;
 
     /**
@@ -105,10 +99,15 @@ public class WifiAdHocManager {
                     connectionListener.onGroupOwner(info.groupOwnerAddress);
                 } else {
                     try {
-                        connectionListener.onClient(info.groupOwnerAddress,
-                                InetAddress.getByName(getDottedDecimalIP(getLocalIPAddress())));
+                        byte[] addr = getLocalIPAddress();
+                        if (addr != null) {
+                            connectionListener.onClient(info.groupOwnerAddress,
+                                    InetAddress.getByName(getDottedDecimalIP(addr)));
+                        } else {
+                            connectionListener.onConnectionFailed(3);
+                        }
                     } catch (UnknownHostException | SocketException e) {
-                        connectionListener.onClient(null, null);
+                        connectionListener.onConnectionFailed(3);
                     }
                 }
             }
@@ -148,8 +147,7 @@ public class WifiAdHocManager {
 
                 if (v) Log.d(TAG, "onPeersAvailable()");
 
-                List<WifiP2pDevice> refreshedPeers = new ArrayList<>();
-                refreshedPeers.addAll(peerList.getDeviceList());
+                List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
 
                 for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
                     if (v)
@@ -157,10 +155,12 @@ public class WifiAdHocManager {
                                 + " " + wifiP2pDevice.deviceName);
 
                     if (!hashMapWifiDevices.containsKey(wifiP2pDevice.deviceAddress)) {
-                        hashMapWifiDevices.put(wifiP2pDevice.deviceAddress, wifiP2pDevice);
+
+                        WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
+                                wifiP2pDevice.deviceName, DataLinkManager.WIFI);
+                        hashMapWifiDevices.put(device.getDeviceAddress(), device);
                         if (v)
-                            Log.d(TAG, "Devices added: " +
-                                    hashMapWifiDevices.get(wifiP2pDevice.deviceAddress).deviceName);
+                            Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {
                         if (v) Log.d(TAG, "Device already present");
                     }
@@ -174,7 +174,7 @@ public class WifiAdHocManager {
                 try {
                     Thread.sleep(DISCOVERY_TIME);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    discoveryListener.onDiscoveryFailed(0);
                 }
                 discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
             }
@@ -192,13 +192,13 @@ public class WifiAdHocManager {
     public void connect(String address) {
 
         // Get The device from its address
-        final WifiP2pDevice device = hashMapWifiDevices.get(address);
+        final WifiAdHocDevice device = (WifiAdHocDevice) hashMapWifiDevices.get(address);
         final WifiP2pConfig config = new WifiP2pConfig();
 
         if (config.groupOwnerIntent != -1) {
             config.groupOwnerIntent = valueGroupOwner;
         }
-        config.deviceAddress = device.deviceAddress;
+        config.deviceAddress = device.getDeviceAddress();
         config.wps.setup = WpsInfo.PBC;
 
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {

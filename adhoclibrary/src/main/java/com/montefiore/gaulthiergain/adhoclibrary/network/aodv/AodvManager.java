@@ -7,8 +7,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
@@ -117,11 +117,11 @@ public class AodvManager {
      *
      * @param hashMap
      */
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException {
+    public void connect(HashMap<String, AbstractAdHocDevice> hashMap) throws DeviceException {
         dataLink.connect(hashMap);
     }
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException {
+    public void connect(AbstractAdHocDevice adHocDevice) throws DeviceException {
         dataLink.connect(adHocDevice);
     }
 
@@ -446,7 +446,7 @@ public class AodvManager {
 
         if (data.getDestIpAddress().equals(ownAddress)) {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message");
-            if (listenerApp != null) listenerApp.receivedData(message.getHeader().getSenderName(),
+            if (listenerApp != null) listenerApp.onReceivedData(message.getHeader().getSenderName(),
                     message.getHeader().getSenderAddr(), data.getPayload());
         } else {
             // Forward the DATA message to the destination by checking the routing table

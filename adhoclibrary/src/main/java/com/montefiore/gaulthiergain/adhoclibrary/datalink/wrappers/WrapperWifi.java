@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 
 import android.content.Context;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
@@ -10,16 +9,17 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AbstractAdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
@@ -46,7 +46,7 @@ public class WrapperWifi extends WrapperConnOriented {
     private HashMap<String, String> mapLabelRemoteDeviceName;
 
     public WrapperWifi(boolean verbose, Context context, Config config,
-                       HashMap<String, AdHocDevice> mapAddressDevice,
+                       HashMap<String, AbstractAdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
@@ -93,7 +93,6 @@ public class WrapperWifi extends WrapperConnOriented {
             };
             this.wifiAdHocManager = new WifiAdHocManager(v, context, connectionListener);
             if (wifiAdHocManager.isEnabled()) {
-                this.type = DataLinkManager.WIFI;
                 this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
                 this.serverPort = config.getServerPort();
                 this.mapLabelRemoteDeviceName = new HashMap<>();
@@ -118,8 +117,8 @@ public class WrapperWifi extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(AdHocDevice device) {
-        wifiAdHocManager.connect(device.getMac());
+    public void connect(AbstractAdHocDevice device) {
+        wifiAdHocManager.connect(device.getDeviceAddress());
     }
 
     @Override
@@ -141,16 +140,16 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, WifiP2pDevice> peerslist) {
+            public void onDiscoveryCompleted(HashMap<String, AbstractAdHocDevice> mapNameDevice) {
                 if (v) Log.d(TAG, "onDiscoveryCompleted");
 
                 // Add devices into the peers
-                for (Map.Entry<String, WifiP2pDevice> entry : peerslist.entrySet()) {
-                    if (!mapMacDevice.containsKey(entry.getValue().deviceAddress)) {
-                        if (v) Log.d(TAG, "Add " + entry.getValue().deviceName + " into peers");
-                        mapMacDevice.put(entry.getValue().deviceAddress,
-                                new AdHocDevice(entry.getValue().deviceAddress,
-                                        entry.getValue().deviceName, type));
+                for (Map.Entry<String, AbstractAdHocDevice> entry : mapNameDevice.entrySet()) {
+
+                    WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();
+                    if (!mapMacDevice.containsKey(wifiDevice.getDeviceAddress())) {
+                        if (v) Log.d(TAG, "Add " + wifiDevice.getDeviceName() + " into peers");
+                        mapMacDevice.put(wifiDevice.getDeviceAddress(), wifiDevice);
                     }
                 }
 
@@ -166,7 +165,7 @@ public class WrapperWifi extends WrapperConnOriented {
     }
 
     @Override
-    public HashMap<String, AdHocDevice> getPaired() {
+    public HashMap<String, AbstractAdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }
