@@ -229,19 +229,19 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcast(MessageAdHoc message) {
-        _sendMessage(message, "192.168.49.255");
+        if (neighbors.size() > 0) {
+            _sendMessage(message, "192.168.49.255");
+        }
     }
 
     @Override
-    public void disconnectAll() throws NoConnectionException {
+    public void disconnectAll() {
         // Not used in this context
-        throw new NoConnectionException("No connection in UDP Wifi");
     }
 
     @Override
-    public void disconnect(String remoteDest) throws NoConnectionException {
+    public void disconnect(String remoteDest) {
         // Not used in this context
-        throw new NoConnectionException("No connection in UDP Wifi");
     }
 
     @Override
@@ -338,13 +338,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-
-                if (neighbors.size() > 0) {
-                    if (v) Log.d(TAG, "Broadcast HELLO message");
-                    MessageAdHoc msg = new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), "");
-                    broadcast(msg);
-                }
-
+                broadcast(new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), ""));
                 timerHello(time);
             }
         }, time);
