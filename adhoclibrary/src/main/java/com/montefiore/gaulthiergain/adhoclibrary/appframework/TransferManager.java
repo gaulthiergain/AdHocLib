@@ -107,19 +107,19 @@ public class TransferManager {
         return dataLinkManager.isBluetoothEnable();
     }
 
-    public boolean updateBluetoothName(String newName) {
+    public boolean updateBluetoothName(String newName) throws DeviceException {
         return dataLinkManager.updateBluetoothName(newName);
     }
 
-    public boolean updateWifiName(String newName) {
+    public boolean updateWifiName(String newName) throws DeviceException {
         return dataLinkManager.updateWifiName(newName);
     }
 
-    public void resetBluetoothName() {
+    public void resetBluetoothName() throws DeviceException {
         dataLinkManager.resetBluetoothName();
     }
 
-    public void resetWifiName() {
+    public void resetWifiName() throws DeviceException {
         dataLinkManager.resetWifiName();
     }
 

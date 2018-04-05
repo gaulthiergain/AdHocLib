@@ -317,20 +317,36 @@ public class DataLinkManager {
         return wrappers[BLUETOOTH].isEnabled();
     }
 
-    public boolean updateBluetoothName(String newName) {
-        return wrappers[BLUETOOTH].updateDeviceName(newName);
+    public boolean updateBluetoothName(String newName) throws DeviceException {
+        if (wrappers[BLUETOOTH].isEnabled()) {
+            return wrappers[BLUETOOTH].updateDeviceName(newName);
+        } else {
+            throw new DeviceException("Bluetooth adapter is not enabled");
+        }
     }
 
-    public boolean updateWifiName(String newName) {
-        return wrappers[WIFI].updateDeviceName(newName);
+    public boolean updateWifiName(String newName) throws DeviceException {
+        if (wrappers[WIFI].isEnabled()) {
+            return wrappers[WIFI].updateDeviceName(newName);
+        } else {
+            throw new DeviceException("WiFi adapter is not enabled");
+        }
     }
 
-    public void resetBluetoothName() {
-        wrappers[BLUETOOTH].resetDeviceName();
+    public void resetBluetoothName() throws DeviceException {
+        if (wrappers[BLUETOOTH].isEnabled()) {
+            wrappers[BLUETOOTH].resetDeviceName();
+        } else {
+            throw new DeviceException("Bluetooth adapter is not enabled");
+        }
     }
 
-    public void resetWifiName() {
-        wrappers[WIFI].resetDeviceName();
+    public void resetWifiName() throws DeviceException {
+        if (wrappers[WIFI].isEnabled()) {
+            wrappers[WIFI].resetDeviceName();
+        } else {
+            throw new DeviceException("WiFi adapter is not enabled");
+        }
     }
 
     public void disconnectAll() throws IOException, NoConnectionException {
