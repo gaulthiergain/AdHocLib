@@ -18,7 +18,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
@@ -69,7 +68,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
         this.secure = config.isSecure();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
         this.ownUUID = UUID.fromString(macToUUID(ownMac));
-        this.ownName = BluetoothUtil.getCurrentName();
         this.mapUuidDevices = new HashMap<>();
         this.listenServer();
     }
@@ -192,11 +190,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     public boolean updateDeviceName(String name) {
-        if (bluetoothManager.updateDeviceName(name)) {
-            this.ownName = name;
-            return true;
-        }
-        return false;
+        return bluetoothManager.updateDeviceName(name);
     }
 
     @Override
@@ -223,17 +217,17 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-                connectionClosed(remoteDevice);
+            public void onConnectionClosed(String remoteAddress) {
+                connectionClosed(remoteAddress);
             }
 
             @Override
-            public void onConnection(RemoteConnection remoteDevice) {
+            public void onConnection(String remoteAddress) {
             }
 
             @Override
-            public void onConnectionFailed(RemoteConnection remoteDevice) {
-                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            public void onConnectionFailed(String remoteMacAddress) {
+                listenerApp.onConnectionFailed(remoteMacAddress);
             }
         });
 
@@ -259,18 +253,18 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-                connectionClosed(remoteDevice);
+            public void onConnectionClosed(String remoteAddress) {
+                connectionClosed(remoteAddress);
             }
 
             @Override
-            public void onConnection(RemoteConnection remoteDevice) {
+            public void onConnection(String remoteAddress) {
 
             }
 
             @Override
-            public void onConnectionFailed(RemoteConnection remoteDevice) {
-                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            public void onConnectionFailed(String remoteAddress) {
+                listenerApp.onConnectionFailed(remoteAddress);
             }
 
         });
@@ -295,9 +289,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
         new Thread(bluetoothServiceClient).start();
     }
 
-    private void connectionClosed(RemoteConnection remoteDevice) {
+    private void connectionClosed(String remoteAddress) {
 
-        String remoteUUID = macToUUID(remoteDevice.getDeviceAddress());
+        String remoteUUID = macToUUID(remoteAddress);
         String remoteLabel = mapAddrLabel.get(remoteUUID);
         if (remoteLabel != null) {
 
@@ -318,7 +312,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 listenerApp.traceException(e);
             }
 
-            listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+            listenerApp.onConnectionClosed(remoteLabel, remoteAddress);
         } else {
             listenerApp.traceException(new NoConnectionException("Error while closing connection"));
         }

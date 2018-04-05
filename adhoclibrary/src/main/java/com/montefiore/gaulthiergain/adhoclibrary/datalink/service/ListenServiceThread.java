@@ -74,15 +74,13 @@ class ListenServiceThread extends Thread {
         if (network.getISocket() instanceof AdHocSocketWifi) {
             // Notify handler and set remote device address
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteConnection(network.getISocket().getRemoteSocketAddress()))
-                    .sendToTarget();
+                    network.getISocket().getRemoteSocketAddress()).sendToTarget();
         } else {
             // Get Socket
             BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
             // Notify handler and set remote device address and name
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteConnection(socket.getRemoteDevice().getAddress(),
-                            socket.getRemoteDevice().getName())).sendToTarget();
+                    socket.getRemoteDevice().getAddress()).sendToTarget();
         }
 
         try {

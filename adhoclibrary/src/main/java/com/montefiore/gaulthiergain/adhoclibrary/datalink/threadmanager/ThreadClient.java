@@ -6,7 +6,6 @@ import android.os.Handler;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -59,15 +58,13 @@ class ThreadClient extends Thread {
         if (socketDevice instanceof AdHocSocketWifi) {
             // Notify handler
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteConnection(network.getISocket().getRemoteSocketAddress()))
-                    .sendToTarget();
+                    network.getISocket().getRemoteSocketAddress()).sendToTarget();
         } else {
             // Get Socket
             BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
             // Notify handler
             handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    new RemoteConnection(socket.getRemoteDevice().getAddress(),
-                            socket.getRemoteDevice().getName())).sendToTarget();
+                    socket.getRemoteDevice().getAddress()).sendToTarget();
         }
 
         // Remove client from hashmap

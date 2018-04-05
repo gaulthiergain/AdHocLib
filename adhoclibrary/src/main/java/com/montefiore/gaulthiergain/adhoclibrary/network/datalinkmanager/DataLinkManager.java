@@ -351,7 +351,7 @@ public class DataLinkManager {
         }
     }
 
-    public void disconnectAll() throws IOException, NoConnectionException {
+    public void disconnectAll() throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.disconnectAll();
@@ -359,7 +359,7 @@ public class DataLinkManager {
         }
     }
 
-    public void disconnect(String remoteDest) throws IOException, NoConnectionException {
+    public void disconnect(String remoteDest) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.disconnect(remoteDest);

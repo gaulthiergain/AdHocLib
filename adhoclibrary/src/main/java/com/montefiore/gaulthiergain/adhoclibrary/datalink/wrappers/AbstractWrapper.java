@@ -23,6 +23,7 @@ public abstract class AbstractWrapper {
 
     final boolean v;
     final boolean json;
+    final String ownName;
     final Context context;
 
     final ListenerApp listenerApp;
@@ -31,19 +32,19 @@ public abstract class AbstractWrapper {
 
     String label;
     String ownMac;
-    String ownName;
     boolean enabled;
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
 
-    AbstractWrapper(boolean v, Context context, boolean json, String label,
+    AbstractWrapper(boolean v, Context context, String ownName, boolean json, String label,
                     HashMap<String, AdHocDevice> mapMacDevice,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
         this.json = json;
         this.enabled = true;
+        this.ownName = ownName;
         this.context = context;
         this.label = label;
         this.discoveryCompleted = false;
@@ -98,9 +99,9 @@ public abstract class AbstractWrapper {
 
     public abstract void broadcast(MessageAdHoc message) throws IOException;
 
-    public abstract void disconnect(String remoteDest) throws IOException, NoConnectionException;
+    public abstract void disconnect(String remoteDest) throws IOException;
 
-    public abstract void disconnectAll() throws IOException, NoConnectionException;
+    public abstract void disconnectAll() throws IOException;
 
     public abstract String getAdapterName();
 }

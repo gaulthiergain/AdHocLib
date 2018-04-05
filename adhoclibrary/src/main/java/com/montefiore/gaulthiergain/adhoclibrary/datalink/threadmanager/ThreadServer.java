@@ -13,7 +13,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWif
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.IServerSocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 import java.io.IOException;
@@ -143,8 +142,8 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteConnection(
-                            isocket.getRemoteSocketAddress(), "")).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED,
+                            isocket.getRemoteSocketAddress()).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }
@@ -177,9 +176,8 @@ public class ThreadServer extends Thread {
                     listSocketDevice.addSocketClient(isocket);
 
                     // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED, new RemoteConnection(
-                            socket.getRemoteDevice().getAddress(),
-                            socket.getRemoteDevice().getName())).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_PERFORMED,
+                            socket.getRemoteDevice().getAddress()).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
                 }

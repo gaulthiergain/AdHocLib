@@ -8,9 +8,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
  */
 public interface MessageListener extends MessageMainListener {
 
-    void onConnectionClosed(RemoteConnection remoteDevice);
+    void onConnectionClosed(String remoteAddress);
 
-    void onConnection(RemoteConnection remoteDevice);
+    void onConnection(String remoteAddress);
 
-    void onConnectionFailed(RemoteConnection remoteDevice);
+    void onConnectionFailed(String remoteAddress);
 }

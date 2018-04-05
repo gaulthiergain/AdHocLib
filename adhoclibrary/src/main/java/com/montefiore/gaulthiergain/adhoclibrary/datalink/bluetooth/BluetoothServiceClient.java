@@ -8,7 +8,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 
@@ -85,8 +84,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
                 // Notify handler
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                        new RemoteConnection(bluetoothSocket.getRemoteDevice().getAddress(),
-                                bluetoothSocket.getRemoteDevice().getName())).sendToTarget();
+                        bluetoothSocket.getRemoteDevice().getAddress()).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);
@@ -114,9 +112,8 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
                 if (v) Log.e(TAG, "Attempts: " + i + " failed");
                 if (attempts == i) {
-                    handler.obtainMessage(Service.CONNECTION_FAILED, new RemoteConnection(
-                            bluetoothAdHocDevice.getDeviceAddress(),
-                            bluetoothAdHocDevice.getDeviceName())).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_FAILED,
+                            bluetoothAdHocDevice.getDeviceAddress()).sendToTarget();
                     break;
                 }
 

@@ -12,7 +12,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
@@ -28,7 +27,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,13 +106,11 @@ public class WrapperWifi extends WrapperConnOriented {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = config.getServerPort();
         this.mapLabelRemoteDeviceName = new HashMap<>();
-        this.ownName = wifiAdHocManager.getDeviceName();
         this.listenServer();
     }
 
     @Override
     public void connect(AdHocDevice device) {
-
         wifiAdHocManager.connect(device.getDeviceAddress());
     }
 
@@ -198,11 +194,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
     @Override
     public boolean updateDeviceName(String name) {
-        if (wifiAdHocManager.updateDeviceName(name)) {
-            this.ownName = name;
-            return true;
-        }
-        return false;
+        return wifiAdHocManager.updateDeviceName(name);
     }
 
     @Override
@@ -240,18 +232,18 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-                connectionClosed(remoteDevice);
+            public void onConnectionClosed(String remoteAddress) {
+                connectionClosed(remoteAddress);
             }
 
             @Override
-            public void onConnection(RemoteConnection remoteDevice) {
+            public void onConnection(String remoteAddress) {
 
             }
 
             @Override
-            public void onConnectionFailed(RemoteConnection remoteDevice) {
-                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            public void onConnectionFailed(String remoteAddress) {
+                listenerApp.onConnectionFailed(remoteAddress);
             }
         });
 
@@ -263,19 +255,19 @@ public class WrapperWifi extends WrapperConnOriented {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, json, background,
                 groupOwnerAddr, serverPort, 10000, attemps, new MessageListener() {
             @Override
-            public void onConnectionClosed(RemoteConnection remoteDevice) {
-                connectionClosed(remoteDevice);
+            public void onConnectionClosed(String remoteAddress) {
+                connectionClosed(remoteAddress);
             }
 
             @Override
-            public void onConnection(RemoteConnection remoteDevice) {
+            public void onConnection(String remoteAddress) {
 
 
             }
 
             @Override
-            public void onConnectionFailed(RemoteConnection remoteDevice) {
-                listenerApp.onConnectionFailed(remoteDevice.getDeviceName());
+            public void onConnectionFailed(String remoteAddress) {
+                listenerApp.onConnectionFailed(remoteAddress);
             }
 
             @Override
@@ -315,26 +307,24 @@ public class WrapperWifi extends WrapperConnOriented {
         new Thread(wifiServiceClient).start();
     }
 
-    private void connectionClosed(RemoteConnection remoteDevice) {
+    private void connectionClosed(String remoteAddress) {
         //Get label from ip
-        String remoteLabel = mapAddrLabel.get(remoteDevice.getDeviceAddress());
+        String remoteLabel = mapAddrLabel.get(remoteAddress);
         if (remoteLabel != null) {
             if (v) Log.d(TAG, "Client broken with " + remoteLabel);
 
+            String remoteName = mapLabelRemoteDeviceName.get(remoteLabel);
+            neighbors.getNeighbors().remove(remoteLabel);
+            mapLabelRemoteDeviceName.remove(remoteLabel);
+            mapAddrLabel.remove(remoteAddress);
+
             try {
-
-                remoteDevice.setDeviceAddress(remoteLabel);
-                remoteDevice.setDeviceName(mapLabelRemoteDeviceName.get(remoteLabel));
-                neighbors.getNeighbors().remove(remoteLabel);
-                mapLabelRemoteDeviceName.remove(remoteLabel);
-                mapAddrLabel.remove(remoteDevice.getDeviceAddress());
                 listenerDataLink.brokenLink(remoteLabel);
-
             } catch (IOException | NoConnectionException e) {
                 listenerApp.traceException(e);
             }
 
-            listenerApp.onConnectionClosed(remoteLabel, remoteDevice.getDeviceName());
+            listenerApp.onConnectionClosed(remoteLabel, remoteName);
         } else {
             listenerApp.traceException(new NoConnectionException("Error while closing connection"));
         }

@@ -91,15 +91,15 @@ public abstract class Service {
                     break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");
-                    messageListener.onConnectionClosed((RemoteConnection) msg.obj);
+                    messageListener.onConnectionClosed((String) msg.obj);
                     break;
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
-                    messageListener.onConnection((RemoteConnection) msg.obj);
+                    messageListener.onConnection((String) msg.obj);
                     break;
                 case CONNECTION_FAILED:
                     if (v) Log.d(TAG, "CONNECTION_FAILED");
-                    messageListener.onConnectionFailed((RemoteConnection) msg.obj);
+                    messageListener.onConnectionFailed((String) msg.obj);
                     break;
                 case CATH_EXCEPTION:
                     if (v) Log.d(TAG, "CATH_EXCEPTION");

@@ -31,7 +31,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -58,7 +57,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config.isJson(), config.getLabel(),
+        super(verbose, context, config.getName(), config.isJson(), config.getLabel(),
                 mapAddressDevice, listenerAodv, listenerDataLink);
 
         ConnectionListener connectionListener = new ConnectionListener() {
@@ -184,7 +183,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
         this.helloMessages = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = config.getServerPort();
-        this.ownName = wifiAdHocManager.getDeviceName();
         this.listenServer();
         this.ackSet = new HashSet<>();
     }
@@ -201,11 +199,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public boolean updateDeviceName(String name) {
-        if (wifiAdHocManager.updateDeviceName(name)) {
-            this.ownName = name;
-            return true;
-        }
-        return false;
+        return wifiAdHocManager.updateDeviceName(name);
     }
 
     @Override
@@ -369,7 +363,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                             // Remove the hello message
                             iter.remove();
-                            connectionClosed(entry.getKey());
+                            leftPeer(entry.getKey());
 
                         } catch (IOException | NoConnectionException e) {
                             listenerApp.traceException(e);
@@ -381,7 +375,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         }, time);
     }
 
-    private void connectionClosed(String label) throws IOException, NoConnectionException {
+    private void leftPeer(String label) throws IOException, NoConnectionException {
 
         // Process broken link in protocol
         listenerDataLink.brokenLink(label);
@@ -393,10 +387,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
             mHandler.obtainMessage(1,
                     new String[]{label, wifiUdpDevice.getName()})
                     .sendToTarget();
-        }
 
-        // Remove the remote device from a neighbors
-        neighbors.remove(label);
+            // Remove the remote device from a neighbors
+            neighbors.remove(label);
+        }
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,

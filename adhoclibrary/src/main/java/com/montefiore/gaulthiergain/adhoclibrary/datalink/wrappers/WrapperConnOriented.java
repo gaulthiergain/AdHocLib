@@ -30,7 +30,8 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
     WrapperConnOriented(boolean v, Context context, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, config.isJson(), config.getLabel(), mapAddressDevice, listenerApp, listenerDataLink);
+        super(v, context, config.getName(), config.isJson(), config.getLabel(),
+                mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.attemps = config.getAttemps();
         this.nbThreads = nbThreads;
@@ -39,14 +40,12 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         this.mapAddrNetwork = new HashMap<>();
     }
 
-    public void disconnect(String remoteLabel) throws IOException, NoConnectionException {
+    public void disconnect(String remoteLabel) throws IOException {
 
         SocketManager socketManager = neighbors.getNeighbor(remoteLabel);
         if (socketManager != null) {
             socketManager.closeConnection();
             neighbors.remove(remoteLabel);
-        } else {
-            throw new NoConnectionException("No connection to " + remoteLabel);
         }
     }
 
@@ -54,15 +53,13 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         return neighbors.getNeighbors().containsKey(address);
     }
 
-    public void disconnectAll() throws IOException, NoConnectionException {
+    public void disconnectAll() throws IOException {
 
         if (neighbors.getNeighbors().size() > 0) {
             for (Map.Entry<String, SocketManager> entry : neighbors.getNeighbors().entrySet()) {
                 entry.getValue().closeConnection();
             }
             neighbors.getNeighbors().clear();
-        } else {
-            throw new NoConnectionException("No connection");
         }
     }
 

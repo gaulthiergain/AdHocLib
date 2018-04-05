@@ -130,11 +130,11 @@ public class TransferManager {
         return dataLinkManager.getActifAdapterNames();
     }
 
-    public void disconnectAll() throws IOException, NoConnectionException {
+    public void disconnectAll() throws IOException {
         dataLinkManager.disconnectAll();
     }
 
-    public void disconnect(String remoteDest) throws IOException, NoConnectionException {
+    public void disconnect(String remoteDest) throws IOException {
         dataLinkManager.disconnect(remoteDest);
     }
 

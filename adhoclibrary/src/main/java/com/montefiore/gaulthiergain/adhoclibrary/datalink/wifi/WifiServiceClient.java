@@ -7,7 +7,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.RemoteConnection;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 
@@ -66,8 +65,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
 
                 if (v) Log.e(TAG, "Attempts: " + i + " failed");
                 if (attempts == i) {
-                    handler.obtainMessage(Service.CONNECTION_FAILED, new RemoteConnection(
-                            remoteAddress, "")).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_FAILED, remoteAddress).sendToTarget();
                     break;
                 }
 
@@ -104,9 +102,11 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 }
 
                 // Notify handler
-                handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                        new RemoteConnection(socket.getRemoteSocketAddress().toString()
-                                .split(":")[0].substring(1), "")).sendToTarget();
+                String remoteSocket = "";
+                if (socket.getRemoteSocketAddress() != null) {
+                    remoteSocket = socket.getRemoteSocketAddress().toString().split(":")[0].substring(1);
+                }
+                handler.obtainMessage(Service.CONNECTION_PERFORMED, remoteSocket).sendToTarget();
 
                 // Update state
                 setState(STATE_CONNECTED);
