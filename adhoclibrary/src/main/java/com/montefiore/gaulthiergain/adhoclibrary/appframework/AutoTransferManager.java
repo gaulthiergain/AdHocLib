@@ -1,10 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ public class AutoTransferManager {
         this.listenerAutoApp = listenerAutoApp;
         this.transferManager = new TransferManager(verbose, context, initListener());
         this.connectedDevices = new HashSet<>();
+
+        WifiAdHocManager wifiAdHocManager = new WifiAdHocManager(true, context, null);
     }
 
     public void cancel() throws IOException {
@@ -43,10 +47,13 @@ public class AutoTransferManager {
         }
     }
 
-    public void start() throws IOException {
-        transferManager.start();
 
-        timer = new Timer();
+    public void start() throws IOException {
+        //transferManager.start();
+
+
+
+        /*timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -81,7 +88,7 @@ public class AutoTransferManager {
                     e.printStackTrace();
                 }
             }
-        }, 2000, 30000);
+        }, 2000, 30000);*/
     }
 
     public Config getConfig() {
@@ -92,7 +99,7 @@ public class AutoTransferManager {
         return new ListenerApp() {
             @Override
             public void onDeviceDiscovered(AdHocDevice device) {
-                connect(device);
+                //ignored
             }
 
             @Override
@@ -107,11 +114,9 @@ public class AutoTransferManager {
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-                /*for (Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
-                    String key = entry.getKey();
-                    Object value = entry.getValue();
-                    Log.d(TAG, "Discovered Completed " + key + " - " + value.toString());
-                }*/
+                for (Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
+                    connect(entry.getValue());
+                }
             }
 
             @Override
