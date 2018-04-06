@@ -2,13 +2,13 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
-public class AdHocDevice {
+public abstract class AdHocDevice {
 
     protected final String deviceAddress;
     protected final String deviceName;
     protected int type;
 
-    public AdHocDevice(String deviceAddress, String deviceName, int type) {
+    protected AdHocDevice(String deviceAddress, String deviceName, int type) {
         this.deviceAddress = deviceAddress;
         this.deviceName = deviceName;
         this.type = type;
