@@ -20,6 +20,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.lang.reflect.InvocationTargetException;
@@ -160,6 +161,9 @@ public class WifiAdHocManager {
             @Override
             public void onPeersAvailable(WifiP2pDeviceList peerList) {
 
+                // Listener onDiscoveryStarted
+                discoveryListener.onDiscoveryStarted();
+
                 if (v) Log.d(TAG, "onPeersAvailable()");
 
                 List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
@@ -172,8 +176,11 @@ public class WifiAdHocManager {
                     if (!hashMapWifiDevices.containsKey(wifiP2pDevice.deviceAddress)) {
 
                         WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
-                                wifiP2pDevice.deviceName, DataLinkManager.WIFI);
+                                wifiP2pDevice.deviceName);
                         hashMapWifiDevices.put(device.getDeviceAddress(), device);
+
+                        discoveryListener.onDeviceDiscovered(device);
+
                         if (v)
                             Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {

@@ -5,6 +5,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
+import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 /**
  * <p>This class represents a remote Bluetooth device and is really just a thin wrapper for a
@@ -23,10 +25,9 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      * Constructor
      *
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
-     * @param type
      */
-    BluetoothAdHocDevice(BluetoothDevice device, int type) {
-        super(device.getAddress(), device.getName(), type);
+    BluetoothAdHocDevice(BluetoothDevice device) {
+        super(device.getAddress(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.rssi = -1;
         this.device = device;
@@ -37,10 +38,9 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      *
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
      * @param rssi   an integer value which represents the rssi of the remote Bluetooth device.
-     * @param type
      */
-    BluetoothAdHocDevice(BluetoothDevice device, int rssi, int type) {
-        super(device.getAddress(), device.getName(), type);
+    BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
+        super(device.getAddress(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.rssi = rssi;
         this.device = device;
@@ -129,8 +129,6 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      * Method allowing to get the BluetoothDevice object.
      *
      * @return a BluetoothDevice object which represents the remote Bluetooth device.
-     *
-     *
      */
     BluetoothDevice getDevice() {
         return device;

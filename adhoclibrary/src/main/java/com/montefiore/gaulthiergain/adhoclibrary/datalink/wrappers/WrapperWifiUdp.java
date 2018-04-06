@@ -15,6 +15,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpMsg;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.WifiUdpDevice;
@@ -62,7 +63,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
-            this.type = DataLinkManager.WIFI;
+            this.type = Service.WIFI;
             this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
                 init(config);
@@ -91,12 +92,18 @@ public class WrapperWifiUdp extends AbstractWrapper {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-                if (v) Log.d(TAG, "onDiscoveryStarted");
+                listenerApp.onDiscoveryStarted();
             }
 
             @Override
             public void onDiscoveryFailed(int reasonCode) {
-                if (v) Log.d(TAG, "onDiscoveryFailed"); //todo exception here
+                //TODO switch with reason code
+                listenerApp.onDiscoveryFailed("");
+            }
+
+            @Override
+            public void onDeviceDiscovered(AdHocDevice device) {
+                listenerApp.onDeviceDiscovered(device);
             }
 
             @Override

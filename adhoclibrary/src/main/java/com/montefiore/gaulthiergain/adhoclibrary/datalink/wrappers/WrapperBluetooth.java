@@ -18,6 +18,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -51,7 +52,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
         super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
-            this.type = DataLinkManager.BLUETOOTH;
+            this.type = Service.BLUETOOTH;
             this.bluetoothManager = new BluetoothManager(v, context);
             if (bluetoothManager.isEnabled()) {
                 init(config);
@@ -98,6 +99,22 @@ public class WrapperBluetooth extends WrapperConnOriented {
     public void discovery() {
         bluetoothManager.discovery(new DiscoveryListener() {
             @Override
+            public void onDiscoveryStarted() {
+                listenerApp.onDiscoveryStarted();
+            }
+
+            @Override
+            public void onDiscoveryFailed(int reasonCode) {
+                //TODO switch with reason code
+                listenerApp.onDiscoveryFailed("");
+            }
+
+            @Override
+            public void onDeviceDiscovered(AdHocDevice device) {
+                listenerApp.onDeviceDiscovered(device);
+            }
+
+            @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> hashMapBluetoothDevice) {
 
                 mapMacDevice.clear();
@@ -124,15 +141,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 bluetoothManager.unregisterDiscovery();
             }
 
-            @Override
-            public void onDiscoveryStarted() {
-
-            }
-
-            @Override
-            public void onDiscoveryFailed(int reasonCode) {
-
-            }
         });
     }
 

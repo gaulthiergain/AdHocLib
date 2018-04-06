@@ -9,6 +9,10 @@ import java.util.HashMap;
  * @version 1.0
  */
 public interface DiscoveryListener {
+
+
+    void onDeviceDiscovered(AdHocDevice device);
+
     /**
      * Callback when the discovery is finished.
      *

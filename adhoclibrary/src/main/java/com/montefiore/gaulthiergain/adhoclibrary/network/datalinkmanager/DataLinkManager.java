@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
@@ -25,9 +26,6 @@ import java.util.Map;
 public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
-
-    public static final byte WIFI = 0;
-    public static final byte BLUETOOTH = 1;
 
     private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
@@ -45,16 +43,16 @@ public class DataLinkManager {
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
-            this.wrappers[WIFI] = new WrapperWifi(verbose, context, config, mapAddressDevice,
+            this.wrappers[Service.WIFI] = new WrapperWifi(verbose, context, config, mapAddressDevice,
                     listenerApp, listenerDataLink);
         } else {
             // UDP stream
-            this.wrappers[WIFI] = new WrapperWifiUdp(verbose, context, config, mapAddressDevice,
+            this.wrappers[Service.WIFI] = new WrapperWifiUdp(verbose, context, config, mapAddressDevice,
                     listenerApp, listenerDataLink);
         }
 
 
-        this.wrappers[BLUETOOTH] = new WrapperBluetooth(verbose, context, config, mapAddressDevice,
+        this.wrappers[Service.BLUETOOTH] = new WrapperBluetooth(verbose, context, config, mapAddressDevice,
                 listenerApp, listenerDataLink);
 
         // Check if data link communications are enabled (0 : all is disabled)
@@ -152,11 +150,11 @@ public class DataLinkManager {
         }
 
         switch (adHocDevice.getType()) {
-            case DataLinkManager.WIFI:
-                wrappers[WIFI].connect(adHocDevice);
+            case Service.WIFI:
+                wrappers[Service.WIFI].connect(adHocDevice);
                 break;
-            case DataLinkManager.BLUETOOTH:
-                wrappers[BLUETOOTH].connect(adHocDevice);
+            case Service.BLUETOOTH:
+                wrappers[Service.BLUETOOTH].connect(adHocDevice);
                 break;
         }
     }
@@ -169,11 +167,11 @@ public class DataLinkManager {
 
         for (Map.Entry<String, AdHocDevice> entry : hashMap.entrySet()) {
             switch (entry.getValue().getType()) {
-                case DataLinkManager.WIFI:
-                    wrappers[WIFI].connect(entry.getValue());
+                case Service.WIFI:
+                    wrappers[Service.WIFI].connect(entry.getValue());
                     break;
-                case DataLinkManager.BLUETOOTH:
-                    wrappers[BLUETOOTH].connect(entry.getValue());
+                case Service.BLUETOOTH:
+                    wrappers[Service.BLUETOOTH].connect(entry.getValue());
                     break;
             }
         }
@@ -227,8 +225,8 @@ public class DataLinkManager {
     }
 
     public HashMap<String, AdHocDevice> getPaired() {
-        if (wrappers[BLUETOOTH].isEnabled()) {
-            return wrappers[BLUETOOTH].getPaired();
+        if (wrappers[Service.BLUETOOTH].isEnabled()) {
+            return wrappers[Service.BLUETOOTH].getPaired();
         }
         return null;
     }
@@ -336,20 +334,20 @@ public class DataLinkManager {
             try {
                 wrappers[type].init(config);
                 wrappers[type].unregisterAdapter();
-                if (type == BLUETOOTH) {
+                if (type == Service.BLUETOOTH) {
                     listenerAdapter.onEnableBluetooth(true);
                 } else {
                     listenerAdapter.onEnableWifi(true);
                 }
             } catch (IOException e) {
-                if (type == BLUETOOTH) {
+                if (type == Service.BLUETOOTH) {
                     listenerAdapter.onEnableBluetooth(false);
                 } else {
                     listenerAdapter.onEnableWifi(false);
                 }
             }
         } else {
-            if (type == BLUETOOTH) {
+            if (type == Service.BLUETOOTH) {
                 listenerAdapter.onEnableBluetooth(false);
             } else {
                 listenerAdapter.onEnableWifi(false);
@@ -359,9 +357,9 @@ public class DataLinkManager {
 
     private String getTypeString(int type) {
         switch (type) {
-            case BLUETOOTH:
+            case Service.BLUETOOTH:
                 return "Bluetooth";
-            case WIFI:
+            case Service.WIFI:
                 return "WiFi";
             default:
                 return "Unknwon";

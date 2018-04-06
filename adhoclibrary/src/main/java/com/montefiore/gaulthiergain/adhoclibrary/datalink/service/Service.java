@@ -21,21 +21,25 @@ public abstract class Service {
 
     protected final String TAG = "[AdHoc][Service]";
 
+    // Constant for type
+    public static final byte WIFI = 0;
+    public static final byte BLUETOOTH = 1;
+
     // Constants that indicate the current connection state
-    protected static final int STATE_NONE = 0;                 // no connection
-    protected static final int STATE_LISTENING = 1;            // listening for incoming connections
-    protected static final int STATE_CONNECTING = 2;           // initiating an outgoing connection
-    protected static final int STATE_CONNECTED = 3;            // connected to a remote device
-    protected static final int STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
+    protected static final byte STATE_NONE = 0;                 // no connection
+    protected static final byte STATE_LISTENING = 1;            // listening for incoming connections
+    protected static final byte STATE_CONNECTING = 2;           // initiating an outgoing connection
+    protected static final byte STATE_CONNECTED = 3;            // connected to a remote device
+    protected static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
     // Constants for message handling
-    public static final int MESSAGE_READ = 5;                   // message received
+    public static final byte MESSAGE_READ = 5;                   // message received
 
     // Constants for connection
-    public static final int CONNECTION_ABORTED = 6;             // connection aborted
-    public static final int CONNECTION_PERFORMED = 7;           // connection performed
-    public static final int CATH_EXCEPTION = 8;                 // catch exception
-    public static final int CONNECTION_FAILED = 9;              // connection failed
+    public static final byte CONNECTION_ABORTED = 6;             // connection aborted
+    public static final byte CONNECTION_PERFORMED = 7;           // connection performed
+    public static final byte CATH_EXCEPTION = 8;                 // catch exception
+    public static final byte CONNECTION_FAILED = 9;              // connection failed
 
     protected int state;
     protected final boolean v;

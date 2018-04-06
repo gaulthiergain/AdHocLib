@@ -13,6 +13,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBa
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.util.HashMap;
@@ -95,7 +96,7 @@ public class BluetoothManager {
                 if (v) Log.d(TAG, "DeviceName: " + device.getName() +
                         " - DeviceHardwareAddress: " + device.getAddress());
                 hashMapBluetoothPairedDevice.put(device.getAddress(),
-                        new BluetoothAdHocDevice(device, DataLinkManager.BLUETOOTH));
+                        new BluetoothAdHocDevice(device, Service.BLUETOOTH));
             }
         }
         return hashMapBluetoothPairedDevice;
@@ -205,8 +206,14 @@ public class BluetoothManager {
                 if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
                     if (v) Log.d(TAG, "DeviceName: " + device.getName() +
                             " - DeviceHardwareAddress: " + device.getAddress());
-                    hashMapBluetoothDevice.put(device.getAddress(), new BluetoothAdHocDevice(device,
-                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)));
+
+                    BluetoothAdHocDevice btDevice = new BluetoothAdHocDevice(device,
+                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE));
+
+                    hashMapBluetoothDevice.put(device.getAddress(), btDevice);
+
+                    // Listener onDeviceDiscovered
+                    discoveryListener.onDeviceDiscovered(btDevice);
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 if (v) Log.d(TAG, "ACTION_DISCOVERY_STARTED");

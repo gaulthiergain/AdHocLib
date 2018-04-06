@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
@@ -19,7 +20,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
@@ -52,7 +52,7 @@ public class WrapperWifi extends WrapperConnOriented {
                 listenerApp, listenerDataLink);
 
         try {
-            this.type = DataLinkManager.WIFI;
+            this.type = Service.WIFI;
             this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
                 init(config);
@@ -89,12 +89,18 @@ public class WrapperWifi extends WrapperConnOriented {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-                if (v) Log.d(TAG, "onDiscoveryStarted");
+                listenerApp.onDiscoveryStarted();
             }
 
             @Override
             public void onDiscoveryFailed(int reasonCode) {
-                if (v) Log.d(TAG, "onDiscoveryFailed"); //todo exception here
+                //TODO switch with reason code
+                listenerApp.onDiscoveryFailed("");
+            }
+
+            @Override
+            public void onDeviceDiscovered(AdHocDevice device) {
+                listenerApp.onDeviceDiscovered(device);
             }
 
             @Override

@@ -4,11 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
 
-    WifiAdHocDevice(String deviceAddress, String deviceName, int type) {
-        super(deviceAddress, deviceName, type);
+    WifiAdHocDevice(String deviceAddress, String deviceName) {
+        super(deviceAddress, deviceName, Service.WIFI);
     }
 
     private WifiAdHocDevice(Parcel in) {

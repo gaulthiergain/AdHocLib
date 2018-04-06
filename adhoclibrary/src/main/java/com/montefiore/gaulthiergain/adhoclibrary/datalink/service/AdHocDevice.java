@@ -36,7 +36,7 @@ public abstract class AdHocDevice {
     }
 
     private String display(int type) {
-        if (type == DataLinkManager.BLUETOOTH) {
+        if (type == Service.BLUETOOTH) {
             return "Bluetooth";
         }
 
