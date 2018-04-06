@@ -5,6 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.BadServerPortException;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.MaxThreadReachedException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class Config {
         this.serverPort = 52000;
         this.background = true;
         this.reliableTransportWifi = true;
-        this.name = BluetoothUtil.getCurrentName();
+        this.name = Utils.getDeviceName();
         this.label = String.valueOf(UUID.randomUUID());
     }
 
