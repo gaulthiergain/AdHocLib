@@ -29,7 +29,7 @@ public interface DiscoveryListener {
     /**
      * Callback when the discovery fails.
      *
-     * @param reasonCode an integer value which represents the status of the discovery.
+     * @param exception
      */
-    void onDiscoveryFailed(int reasonCode);
+    void onDiscoveryFailed(Exception exception);
 }

@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.WifiDiscoveryException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -36,6 +37,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
+import static android.net.wifi.p2p.WifiP2pManager.BUSY;
+import static android.net.wifi.p2p.WifiP2pManager.ERROR;
+import static android.net.wifi.p2p.WifiP2pManager.P2P_UNSUPPORTED;
 import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager {
@@ -157,35 +161,31 @@ public class WifiAdHocManager {
         //  Indicates a change in the list of available hashMapWifiDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
 
+        // Listener onDiscoveryStarted
+        discoveryListener.onDiscoveryStarted();
+
         WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
             @Override
             public void onPeersAvailable(WifiP2pDeviceList peerList) {
-
-                // Listener onDiscoveryStarted
-                discoveryListener.onDiscoveryStarted();
 
                 if (v) Log.d(TAG, "onPeersAvailable()");
 
                 List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
 
                 for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
-                    if (v)
-                        Log.d(TAG, "Devices found: " + wifiP2pDevice.deviceAddress
-                                + " " + wifiP2pDevice.deviceName);
 
-                    if (!hashMapWifiDevices.containsKey(wifiP2pDevice.deviceAddress)) {
+                    WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
+                            wifiP2pDevice.deviceName);
 
-                        WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
-                                wifiP2pDevice.deviceName);
+                    if (!hashMapWifiDevices.containsKey(device.getDeviceAddress())) {
                         hashMapWifiDevices.put(device.getDeviceAddress(), device);
-
-                        discoveryListener.onDeviceDiscovered(device);
-
-                        if (v)
-                            Log.d(TAG, "Devices added: " + device.getDeviceName());
+                        if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {
-                        if (v) Log.d(TAG, "Device already present");
+                        if (v) Log.d(TAG, "Device" + device.getDeviceName() + "already present");
                     }
+
+                    // Listener onDiscoveryStarted
+                    discoveryListener.onDeviceDiscovered(device);
                 }
             }
         };
@@ -196,7 +196,7 @@ public class WifiAdHocManager {
                 try {
                     Thread.sleep(DISCOVERY_TIME);
                 } catch (InterruptedException e) {
-                    discoveryListener.onDiscoveryFailed(0);
+                    discoveryListener.onDiscoveryFailed(e);
                 }
                 discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
             }
@@ -513,7 +513,21 @@ public class WifiAdHocManager {
 
                 @Override
                 public void onFailure(int reasonCode) {
-                    discoveryListener.onDiscoveryFailed(reasonCode);
+                    switch (reasonCode){
+                        case ERROR:
+                            discoveryListener.onDiscoveryFailed(
+                                    new WifiDiscoveryException("Internal Error"));
+                            break;
+                        case P2P_UNSUPPORTED:
+                            discoveryListener.onDiscoveryFailed(
+                                    new WifiDiscoveryException("P2P is not supported"));
+                            break;
+                        case BUSY:
+                            discoveryListener.onDiscoveryFailed(
+                                    new WifiDiscoveryException("P2P is Busy"));
+                            break;
+                    }
+
                 }
             });
         }

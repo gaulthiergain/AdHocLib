@@ -41,8 +41,6 @@ public class WrapperWifi extends WrapperConnOriented {
     private String groupOwnerAddr;
     private WifiAdHocManager wifiAdHocManager;
 
-    private HashMap<String, String> mapLabelRemoteDeviceName;
-
     public WrapperWifi(boolean verbose, Context context, Config config,
                        HashMap<String, AdHocDevice> mapAddressDevice,
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
@@ -70,7 +68,6 @@ public class WrapperWifi extends WrapperConnOriented {
     public void init(Config config) throws IOException {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.serverPort = config.getServerPort();
-        this.mapLabelRemoteDeviceName = new HashMap<>();
         this.listenServer();
     }
 
@@ -93,9 +90,9 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onDiscoveryFailed(int reasonCode) {
+            public void onDiscoveryFailed(Exception e) {
                 //TODO switch with reason code
-                listenerApp.onDiscoveryFailed("");
+                listenerApp.onDiscoveryFailed(e);
             }
 
             @Override
@@ -278,29 +275,6 @@ public class WrapperWifi extends WrapperConnOriented {
         new Thread(wifiServiceClient).start();
     }
 
-    private void connectionClosed(String remoteAddress) {
-        //Get label from ip
-        String remoteLabel = mapAddrLabel.get(remoteAddress);
-        if (remoteLabel != null) {
-            if (v) Log.d(TAG, "Client broken with " + remoteLabel);
-
-            String remoteName = mapLabelRemoteDeviceName.get(remoteLabel);
-            neighbors.getNeighbors().remove(remoteLabel);
-            mapLabelRemoteDeviceName.remove(remoteLabel);
-            mapAddrLabel.remove(remoteAddress);
-
-            try {
-                listenerDataLink.brokenLink(remoteLabel);
-            } catch (IOException | NoConnectionException e) {
-                listenerApp.traceException(e);
-            }
-
-            listenerApp.onConnectionClosed(remoteLabel, remoteName);
-        } else {
-            listenerApp.traceException(new NoConnectionException("Error while closing connection"));
-        }
-    }
-
     private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
 
@@ -352,7 +326,7 @@ public class WrapperWifi extends WrapperConnOriented {
                     mapAddrLabel.put(ip, remoteLabel);
 
                     // Add mapping label - remoteConnection
-                    mapLabelRemoteDeviceName.put(remoteLabel, message.getHeader().getSenderName());
+                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
@@ -377,14 +351,13 @@ public class WrapperWifi extends WrapperConnOriented {
 
     private void sendConnectClient(String remoteLabel, String name, SocketManager socketManager) {
 
-
         // Send CONNECT message to establish the pairing
         try {
             socketManager.sendMessage(new MessageAdHoc(
                     new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
 
             // Add mapping label - remoteConnection
-            mapLabelRemoteDeviceName.put(remoteLabel, name);
+            mapLabelRemoteName.put(remoteLabel, name);
 
             if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                 // Callback connection

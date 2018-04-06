@@ -96,9 +96,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
             }
 
             @Override
-            public void onDiscoveryFailed(int reasonCode) {
-                //TODO switch with reason code
-                listenerApp.onDiscoveryFailed("");
+            public void onDiscoveryFailed(Exception exception) {
+                listenerApp.onDiscoveryFailed(exception);
             }
 
             @Override

@@ -104,9 +104,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onDiscoveryFailed(int reasonCode) {
+            public void onDiscoveryFailed(Exception e) {
                 //TODO switch with reason code
-                listenerApp.onDiscoveryFailed("");
+                listenerApp.onDiscoveryFailed(e);
             }
 
             @Override
@@ -228,7 +228,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(remoteAddress);
+                connectionClosed(macToUUID(remoteAddress));
             }
 
             @Override
@@ -264,7 +264,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(remoteAddress);
+                connectionClosed(macToUUID(remoteAddress));
             }
 
             @Override
@@ -299,35 +299,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
         new Thread(bluetoothServiceClient).start();
     }
 
-    private void connectionClosed(String remoteAddress) {
-
-        String remoteUUID = macToUUID(remoteAddress);
-        String remoteLabel = mapAddrLabel.get(remoteUUID);
-        if (remoteLabel != null) {
-
-            if (v) Log.d(TAG, "Link broken with " + remoteLabel);
-            try {
-
-                listenerDataLink.brokenLink(remoteLabel);
-                neighbors.getNeighbors().remove(remoteLabel);
-                mapAddrLabel.remove(remoteUUID);
-
-                if (mapAddrNetwork.containsKey(remoteUUID)) {
-                    mapAddrNetwork.remove(remoteUUID);
-                }
-
-            } catch (IOException e) {
-                listenerApp.traceException(e);
-            } catch (NoConnectionException e) {
-                listenerApp.traceException(e);
-            }
-
-            listenerApp.onConnectionClosed(remoteLabel, remoteAddress);
-        } else {
-            listenerApp.traceException(new NoConnectionException("Error while closing connection"));
-        }
-    }
-
     private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
             AodvUnknownTypeException, AodvUnknownDestException {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
@@ -349,6 +320,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                     // Add mapping MAC - label
                     mapAddrLabel.put(remoteUUID, remoteLabel);
+
+                    // Add mapping label - remoteConnection
+                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
@@ -372,6 +346,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                     // Add mapping UUID - label
                     mapAddrLabel.put(remoteUUID, remoteLabel);
+
+                    // Add mapping label - remoteConnection
+                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
 
                     if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
                         // Callback connection
