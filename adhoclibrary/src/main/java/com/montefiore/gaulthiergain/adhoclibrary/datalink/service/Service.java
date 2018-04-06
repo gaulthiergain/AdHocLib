@@ -103,7 +103,7 @@ public abstract class Service {
                     break;
                 case CONNECTION_FAILED:
                     if (v) Log.d(TAG, "CONNECTION_FAILED");
-                    messageListener.onConnectionFailed((String) msg.obj);
+                    messageListener.onConnectionFailed((Exception) msg.obj);
                     break;
                 case CATH_EXCEPTION:
                     if (v) Log.d(TAG, "CATH_EXCEPTION");

@@ -210,8 +210,8 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionFailed(String remoteAddress) {
-                listenerApp.onConnectionFailed(remoteAddress);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
             }
         });
 
@@ -234,8 +234,8 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionFailed(String remoteAddress) {
-                listenerApp.onConnectionFailed(remoteAddress);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
             }
 
             @Override
@@ -381,8 +381,8 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionFailed(int reasonCode) {
-                if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
                 wifiAdHocManager.cancelConnection();
             }
 

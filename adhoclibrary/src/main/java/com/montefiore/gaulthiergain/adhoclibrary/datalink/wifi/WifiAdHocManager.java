@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.WifiDiscoveryException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
@@ -112,10 +113,11 @@ public class WifiAdHocManager {
                             connectionListener.onClient(info.groupOwnerAddress,
                                     InetAddress.getByName(getDottedDecimalIP(addr)));
                         } else {
-                            connectionListener.onConnectionFailed(3);
+                            connectionListener.onConnectionFailed(
+                                    new NoConnectionException("Unknown IP address"));
                         }
                     } catch (UnknownHostException | SocketException e) {
-                        connectionListener.onConnectionFailed(3);
+                        connectionListener.onConnectionFailed(e);
                     }
                 }
             }
@@ -231,7 +233,17 @@ public class WifiAdHocManager {
 
             @Override
             public void onFailure(int reasonCode) {
-                connectionListener.onConnectionFailed(reasonCode);
+                switch (reasonCode) {
+                    case ERROR:
+                        connectionListener.onConnectionFailed(new NoConnectionException("Internal Error"));
+                        break;
+                    case P2P_UNSUPPORTED:
+                        connectionListener.onConnectionFailed(new NoConnectionException("P2P is not supported"));
+                        break;
+                    case BUSY:
+                        connectionListener.onConnectionFailed(new NoConnectionException("P2P is Busy"));
+                        break;
+                }
             }
         });
     }
@@ -513,7 +525,7 @@ public class WifiAdHocManager {
 
                 @Override
                 public void onFailure(int reasonCode) {
-                    switch (reasonCode){
+                    switch (reasonCode) {
                         case ERROR:
                             discoveryListener.onDiscoveryFailed(
                                     new WifiDiscoveryException("Internal Error"));
@@ -527,7 +539,6 @@ public class WifiAdHocManager {
                                     new WifiDiscoveryException("P2P is Busy"));
                             break;
                     }
-
                 }
             });
         }

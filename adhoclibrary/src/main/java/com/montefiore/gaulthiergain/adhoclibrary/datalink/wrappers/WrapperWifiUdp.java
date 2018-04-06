@@ -448,8 +448,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
             }
 
             @Override
-            public void onConnectionFailed(int reasonCode) {
-                if (v) Log.d(TAG, "Connection Failed: " + reasonCode);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
                 wifiAdHocManager.cancelConnection();
             }
 

@@ -65,7 +65,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
 
                 if (v) Log.e(TAG, "Attempts: " + i + " failed");
                 if (attempts == i) {
-                    handler.obtainMessage(Service.CONNECTION_FAILED, remoteAddress).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
                     break;
                 }
 
@@ -117,7 +117,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 }
             } catch (IOException e) {
                 setState(STATE_NONE);
-                throw new NoConnectionException("No remote connection to " + remoteAddress);
+                throw new NoConnectionException("Unable to connect to " + remoteAddress);
             }
         }
     }

@@ -21,5 +21,5 @@ public interface ListenerAutoApp {
 
     void onConnection(String remoteAddress, String remoteName, int hops);
 
-    void onConnectionFailed(String remoteName);//todo exception
+    void onConnectionFailed(Exception e);
 }

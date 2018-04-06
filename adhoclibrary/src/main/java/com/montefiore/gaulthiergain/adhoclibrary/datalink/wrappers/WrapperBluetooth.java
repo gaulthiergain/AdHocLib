@@ -236,8 +236,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionFailed(String remoteMacAddress) {
-                listenerApp.onConnectionFailed(remoteMacAddress);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
             }
         });
 
@@ -273,8 +273,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onConnectionFailed(String remoteAddress) {
-                listenerApp.onConnectionFailed(remoteAddress);
+            public void onConnectionFailed(Exception e) {
+                listenerApp.onConnectionFailed(e);
             }
 
         });

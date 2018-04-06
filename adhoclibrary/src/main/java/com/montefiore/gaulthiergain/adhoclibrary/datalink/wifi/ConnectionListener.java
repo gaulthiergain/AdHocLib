@@ -16,15 +16,8 @@ public interface ConnectionListener {
 
     /**
      * Callback when the connection fails.
-     *
-     * @param reasonCode an integer value which represents the status of the discovery. The origin
-     *                   of the error can be one of the following:
-     *                   - WifiP2pManager.BUSY
-     *                   - WifiP2pManager.ERROR
-     *                   - WifiP2pManager.P2P_UNSUPPORTED
-     *                   - WifiP2pManager.NO_SERVICE_REQUESTS
      */
-    void onConnectionFailed(int reasonCode);
+    void onConnectionFailed(Exception e);
 
     /**
      * Callback when the device is the groupOwner.

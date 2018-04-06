@@ -12,5 +12,5 @@ public interface MessageListener extends MessageMainListener {
 
     void onConnection(String remoteAddress);
 
-    void onConnectionFailed(String remoteAddress);
+    void onConnectionFailed(Exception e);
 }
