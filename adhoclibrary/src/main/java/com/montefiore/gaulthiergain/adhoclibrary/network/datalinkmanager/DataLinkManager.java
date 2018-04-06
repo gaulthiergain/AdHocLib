@@ -41,7 +41,6 @@ public class DataLinkManager {
         this.config = config;
         this.listenerApp = listenerApp;
         this.mapAddressDevice = new HashMap<>();
-
         this.wrappers = new AbstractWrapper[2];
 
         if (config.isReliableTransportWifi()) {
@@ -312,12 +311,20 @@ public class DataLinkManager {
     public ArrayList<String> getActifAdapterNames() {
         ArrayList<String> adapterNames = new ArrayList<>();
         for (AbstractWrapper wrapper : wrappers) {
-            if (wrapper.isEnabled()) {
-                adapterNames.add(wrapper.getAdapterName());
+            String name = getAdapterName(wrapper.getType());
+            if (name != null) {
+                adapterNames.add(name);
             }
         }
 
         return adapterNames;
+    }
+
+    public String getAdapterName(int type) {
+        if (wrappers[type].isEnabled()) {
+            return wrappers[type].getAdapterName();
+        }
+        return null;
     }
 
     public interface ListenerDiscovery {

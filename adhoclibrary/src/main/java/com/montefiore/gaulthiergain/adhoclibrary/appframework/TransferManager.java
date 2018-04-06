@@ -107,24 +107,32 @@ public class TransferManager {
         return dataLinkManager.isEnable(DataLinkManager.BLUETOOTH);
     }
 
-    public boolean updateBluetoothName(String newName) throws DeviceException {
+    public boolean updateBluetoothAdapterName(String newName) throws DeviceException {
         return dataLinkManager.updateAdapterName(DataLinkManager.BLUETOOTH, newName);
     }
 
-    public boolean updateWifiName(String newName) throws DeviceException {
+    public boolean updateWifiAdapterName(String newName) throws DeviceException {
         return dataLinkManager.updateAdapterName(DataLinkManager.WIFI, newName);
     }
 
-    public void resetBluetoothName() throws DeviceException {
+    public void resetBluetoothAdapterName() throws DeviceException {
         dataLinkManager.resetAdapterName(DataLinkManager.BLUETOOTH);
     }
 
-    public void resetWifiName() throws DeviceException {
+    public void resetWifiAdapterName() throws DeviceException {
         dataLinkManager.resetAdapterName(DataLinkManager.WIFI);
     }
 
     public ArrayList<String> getActifAdapterNames() {
         return dataLinkManager.getActifAdapterNames();
+    }
+
+    public String getWifiAdapterName() {
+        return dataLinkManager.getAdapterName(DataLinkManager.WIFI);
+    }
+
+    public String getBluetoothAdapterName() {
+        return dataLinkManager.getAdapterName(DataLinkManager.BLUETOOTH);
     }
 
     public void disconnectAll() throws IOException {
