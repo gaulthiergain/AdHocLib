@@ -18,7 +18,7 @@ import java.util.TimerTask;
 public class AutoTransferManager {
 
     private static final String TAG = "[AdHoc][AutoTransfer]";
-    private static final String PREFIX = "[PEER]";
+    public static final String PREFIX = "[PEER]";
 
     private final Set<String> connectedDevices;
     private final TransferManager transferManager;
