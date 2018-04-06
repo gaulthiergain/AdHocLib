@@ -9,7 +9,9 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlread
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,13 +19,16 @@ public class AutoTransferManager {
 
     private static final String TAG = "[AdHoc][AutoTransfer]";
     private static final String PREFIX = "[PEER]";
-    private TransferManager transferManager;
-    private ListenerAutoApp listenerAutoApp;
+
+    private final Set<String> connectedDevices;
+    private final TransferManager transferManager;
+    private final ListenerAutoApp listenerAutoApp;
     private Timer timer;
 
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
         this.listenerAutoApp = listenerAutoApp;
         this.transferManager = new TransferManager(verbose, context, initListener());
+        this.connectedDevices = new HashSet<>();
     }
 
     public void stop() throws IOException, DeviceException {
@@ -46,7 +51,12 @@ public class AutoTransferManager {
     public void start() throws IOException {
         transferManager.start();
 
-        timer = new Timer();
+        for (AdHocDevice device : transferManager.getPairedDevices().values()) {
+            Log.d(TAG, "PAIRED: " + String.valueOf(device));
+            connect(device);
+        }
+
+        /*timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -55,6 +65,10 @@ public class AutoTransferManager {
                 if (name != null && !name.contains(PREFIX)) {
                     try {
                         transferManager.updateBluetoothAdapterName(PREFIX + name);
+                        for (AdHocDevice device : transferManager.getPairedDevices().values()) {
+                            Log.d(TAG, "PAIRED: " + String.valueOf(device));
+                            connect(device);
+                        }
                     } catch (DeviceException e) {
                         e.printStackTrace();
                     }
@@ -77,7 +91,7 @@ public class AutoTransferManager {
                     e.printStackTrace();
                 }
             }
-        }, 2000, 30000);
+        }, 2000, 30000);*/
     }
 
     public Config getConfig() {
@@ -88,16 +102,7 @@ public class AutoTransferManager {
         return new ListenerApp() {
             @Override
             public void onDeviceDiscovered(AdHocDevice device) {
-                Log.d(TAG, "onDeviceDiscovered " + device);
-                if (device.getDeviceName().contains(PREFIX)) {
-                    try {
-                        transferManager.connect(device);
-                    } catch (DeviceException e) {
-                        e.printStackTrace();
-                    } catch (DeviceAlreadyConnectedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                connect(device);
             }
 
             @Override
@@ -131,11 +136,13 @@ public class AutoTransferManager {
 
             @Override
             public void onConnectionClosed(String remoteAddress, String remoteName) {
+                connectedDevices.remove(remoteName);
                 listenerAutoApp.onConnectionClosed(remoteAddress, remoteName);
             }
 
             @Override
             public void onConnection(String remoteAddress, String remoteName, int hops) {
+                connectedDevices.add(remoteName);
                 listenerAutoApp.onConnection(remoteAddress, remoteName, hops);
             }
 
@@ -146,7 +153,30 @@ public class AutoTransferManager {
         };
     }
 
+    private void connect(AdHocDevice device) {
+        Log.d(TAG, "onDeviceDiscovered " + device);
+        if (device.getDeviceName().contains(PREFIX) && !connectedDevices.contains(device.getDeviceName())) {
+            try {
+                transferManager.connect(device);
+            } catch (DeviceException e) {
+                e.printStackTrace();
+            } catch (DeviceAlreadyConnectedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "Already connected to " + device.getDeviceName());
+        }
+    }
+
     public void sendMessageTo(Object msg, String remoteDest) throws IOException {
         transferManager.sendMessageTo(msg, remoteDest);
+    }
+
+    public void broadcast(Object msg) throws IOException {
+        transferManager.broadcast(msg);
+    }
+
+    public void broadcastExcept(Object msg, String excludedAddress) throws IOException {
+        transferManager.broadcastExcept(msg, excludedAddress);
     }
 }

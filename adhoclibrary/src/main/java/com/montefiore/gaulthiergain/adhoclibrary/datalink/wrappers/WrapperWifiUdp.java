@@ -425,6 +425,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
                                 udpmsg.getSourceAddress()));
                 break;
             }
+            case BROADCAST: {
+                listenerApp.onReceivedData(message.getHeader().getSenderName(),
+                        message.getHeader().getSenderAddr(), message.getPdu());
+                break;
+            }
             case Constants.HELLO: {
                 // Add helloMessages messages to hashmap
                 helloMessages.put(message.getHeader().getSenderAddr(), System.currentTimeMillis());

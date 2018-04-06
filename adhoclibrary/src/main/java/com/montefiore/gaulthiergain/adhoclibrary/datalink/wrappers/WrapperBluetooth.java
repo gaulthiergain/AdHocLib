@@ -383,6 +383,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 }
                 break;
             }
+            case BROADCAST: {
+                listenerApp.onReceivedData(message.getHeader().getSenderName(),
+                        message.getHeader().getSenderAddr(), message.getPdu());
+                break;
+            }
             default:
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);

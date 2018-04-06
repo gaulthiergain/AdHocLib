@@ -20,6 +20,7 @@ public abstract class AbstractWrapper {
 
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
+    public final static byte BROADCAST = 12;
 
     int type;
     final boolean v;
