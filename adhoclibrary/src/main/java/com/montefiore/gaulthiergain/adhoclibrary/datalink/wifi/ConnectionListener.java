@@ -1,5 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -34,5 +35,5 @@ public interface ConnectionListener {
      *                          group owner.
      * @param ownAddress        an InetAddress object which represents the address of the device.
      */
-    void onClient(InetAddress groupOwnerAddress, InetAddress ownAddress);
+    void onClient(InetAddress groupOwnerAddress, InetAddress ownAddress) throws IOException;
 }

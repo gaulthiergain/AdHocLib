@@ -21,9 +21,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -91,7 +88,6 @@ public class WrapperWifi extends WrapperConnOriented {
 
             @Override
             public void onDiscoveryFailed(Exception e) {
-                //TODO switch with reason code
                 listenerApp.onDiscoveryFailed(e);
             }
 
@@ -189,19 +185,18 @@ public class WrapperWifi extends WrapperConnOriented {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
+                } catch (IOException e) {
+                    listenerApp.processMsgException(e);
                 }
             }
 
             @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
-            }
-
-            @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(remoteAddress);
+                try {
+                    connectionClosed(remoteAddress);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.onConnectionClosedFailed(e);
+                }
             }
 
             @Override
@@ -213,6 +208,7 @@ public class WrapperWifi extends WrapperConnOriented {
             public void onConnectionFailed(Exception e) {
                 listenerApp.onConnectionFailed(e);
             }
+
         });
 
         // Start the wifi server listening process
@@ -224,13 +220,16 @@ public class WrapperWifi extends WrapperConnOriented {
                 groupOwnerAddr, serverPort, 10000, attemps, new MessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(remoteAddress);
+                try {
+                    connectionClosed(remoteAddress);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.onConnectionClosedFailed(e);
+                }
             }
 
             @Override
             public void onConnection(String remoteAddress) {
-
-
+                //ignored
             }
 
             @Override
@@ -242,14 +241,9 @@ public class WrapperWifi extends WrapperConnOriented {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
+                } catch (IOException e) {
+                    listenerApp.processMsgException(e);
                 }
-            }
-
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
             }
         });
 
@@ -267,7 +261,6 @@ public class WrapperWifi extends WrapperConnOriented {
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
                         new Header(CONNECT_SERVER, label, ownName), ownIpAddress));
-
             }
         });
 
@@ -275,8 +268,7 @@ public class WrapperWifi extends WrapperConnOriented {
         new Thread(wifiServiceClient).start();
     }
 
-    private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
-            AodvUnknownTypeException, AodvUnknownDestException {
+    private void processMsgReceived(final MessageAdHoc message) throws IOException {
 
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
 
@@ -301,8 +293,12 @@ public class WrapperWifi extends WrapperConnOriented {
                             public void getGroupOwner(String address) {
                                 ownIpAddress = address;
                                 wifiAdHocManager.unregisterGroupOwner();
-                                sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
-                                        socketManager);
+                                try {
+                                    sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
+                                            socketManager);
+                                } catch (IOException e) {
+                                    listenerApp.onConnectionFailed(e);
+                                }
                             }
                         });
                     } else {
@@ -349,27 +345,22 @@ public class WrapperWifi extends WrapperConnOriented {
         }
     }
 
-    private void sendConnectClient(String remoteLabel, String name, SocketManager socketManager) {
+    private void sendConnectClient(String remoteLabel, String name, SocketManager socketManager) throws IOException {
 
         // Send CONNECT message to establish the pairing
-        try {
-            socketManager.sendMessage(new MessageAdHoc(
-                    new Header(CONNECT_CLIENT, label, ownName), ownIpAddress));
+        socketManager.sendMessage(new MessageAdHoc(new Header(CONNECT_CLIENT, label, ownName),
+                ownIpAddress));
 
-            // Add mapping label - remoteConnection
-            mapLabelRemoteName.put(remoteLabel, name);
+        // Add mapping label - remoteConnection
+        mapLabelRemoteName.put(remoteLabel, name);
 
-            if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
-                // Callback connection
-                listenerApp.onConnection(remoteLabel, name, 0);
-            }
-
-            // Add the active connection into the autoConnectionActives object
-            neighbors.addNeighbors(remoteLabel, socketManager);
-
-        } catch (IOException e) {
-            listenerApp.traceException(e);
+        if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
+            // Callback connection
+            listenerApp.onConnection(remoteLabel, name, 0);
         }
+
+        // Add the active connection into the autoConnectionActives object
+        neighbors.addNeighbors(remoteLabel, socketManager);
 
     }
 
@@ -393,7 +384,7 @@ public class WrapperWifi extends WrapperConnOriented {
             }
 
             @Override
-            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
+            public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) throws IOException {
 
                 groupOwnerAddr = groupOwnerAddress.getHostAddress();
                 ownIpAddress = address.getHostAddress();
@@ -401,11 +392,7 @@ public class WrapperWifi extends WrapperConnOriented {
                 if (v) Log.d(TAG, "GroupOwner IP: " + groupOwnerAddress.getHostAddress());
                 if (v) Log.d(TAG, "Own IP: " + ownIpAddress);
 
-                try {
-                    serviceServer.stopListening();
-                } catch (IOException e) {
-                    listenerApp.traceException(e);
-                }
+                serviceServer.stopListening();
 
                 _connect();
             }

@@ -1,8 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
+import java.io.IOException;
+
 public interface ListenerAutoApp {
     /**
-     * Callback when a RREQ message is received.
+     * Callback when a Data message is received.
      *
      * @param senderName
      * @param senderAddress
@@ -10,16 +12,13 @@ public interface ListenerAutoApp {
      */
     void onReceivedData(String senderName, String senderAddress, Object pdu);
 
-    /**
-     * Callback when exception occurs.
-     *
-     * @param e an Exception object which represents the exception.
-     */
-    void traceException(Exception e);
-
-    void onConnectionClosed(String remoteAddress, String remoteName);
-
     void onConnection(String remoteAddress, String remoteName, int hops);
 
     void onConnectionFailed(Exception e);
+
+    void onConnectionClosed(String remoteAddress, String remoteName);
+
+    void onConnectionClosedFailed(Exception e);
+
+    void processMsgException(Exception e);
 }

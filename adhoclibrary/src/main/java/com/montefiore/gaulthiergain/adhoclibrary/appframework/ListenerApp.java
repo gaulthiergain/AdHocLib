@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 /**

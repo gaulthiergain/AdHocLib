@@ -240,16 +240,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
-                }
-            }
-
-            @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
+                processMsgReceived(message);
             }
         });
         //Run timers for HELLO messages
@@ -283,7 +274,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     if (v)
                         Log.d(TAG, msg.toString() + " is sent on " + inetAddress + " on " + serverPort);
                 } catch (UnknownHostException e) {
-                    listenerApp.traceException(e);
+                    listenerApp.processMsgException(e);
                 }
             }
         }).start();
@@ -334,16 +325,16 @@ public class WrapperWifiUdp extends AbstractWrapper {
                     long upTime = (System.currentTimeMillis() - entry.getValue());
                     Log.d(TAG, "UpTime: " + upTime);
                     if (upTime > Constants.HELLO_PACKET_INTERVAL_SND) {
+
+                        if (v)
+                            Log.d(TAG, "Neighbor " + entry.getKey() + " is down for " + upTime);
+
+                        // Remove the hello message
+                        iter.remove();
                         try {
-                            if (v)
-                                Log.d(TAG, "Neighbor " + entry.getKey() + " is down for " + upTime);
-
-                            // Remove the hello message
-                            iter.remove();
                             leftPeer(entry.getKey());
-
-                        } catch (IOException | NoConnectionException e) {
-                            listenerApp.traceException(e);
+                        } catch (IOException e) {
+                            listenerApp.processMsgException(e);
                         }
                     }
                 }
@@ -352,7 +343,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         }, time);
     }
 
-    private void leftPeer(String label) throws IOException, NoConnectionException {
+    private void leftPeer(String label) throws IOException {
 
         // Process broken link in protocol
         listenerDataLink.brokenLink(label);
@@ -370,8 +361,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         }
     }
 
-    private void processMsgReceived(final MessageAdHoc message) throws IOException, NoConnectionException,
-            AodvUnknownTypeException, AodvUnknownDestException {
+    private void processMsgReceived(final MessageAdHoc message) {
 
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {

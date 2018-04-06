@@ -8,6 +8,7 @@ import android.os.Message;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -231,13 +232,13 @@ public class DataLinkManager {
         return null;
     }
 
-    public void enableAll(final ListenerAdapter listenerAdapter) {
+    public void enableAll(final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         for (AbstractWrapper wrapper : wrappers) {
             enable(0, wrapper.getType(), listenerAdapter);
         }
     }
 
-    public void enable(int duration, final int type, final ListenerAdapter listenerAdapter) {
+    public void enable(int duration, final int type, final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
 
         if (!wrappers[type].isEnabled()) {
             wrappers[type].enable(duration, new ListenerAdapter() {

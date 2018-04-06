@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
@@ -53,7 +54,7 @@ public class AodvManager {
      * @param verbose     a boolean value to set the debug/verbose mode.
      * @param listenerApp a ListenerApp object which serves as callback functions.
      */
-    private AodvManager(boolean verbose, ListenerApp listenerApp) {
+    private AodvManager(boolean verbose, final ListenerApp listenerApp) {
         this.v = verbose;
         this.aodvHelper = new AodvHelper(v);
         this.ownSequenceNum = Constants.FIRST_SEQUENCE_NUMBER;
@@ -71,9 +72,12 @@ public class AodvManager {
             }
 
             @Override
-            public void processMsgReceived(MessageAdHoc message) throws IOException, AodvUnknownTypeException,
-                    AodvUnknownDestException, NoConnectionException {
-                processAodvMsgReceived(message);
+            public void processMsgReceived(MessageAdHoc message) {
+                try {
+                    processAodvMsgReceived(message);
+                } catch (IOException | AodvAbstractException | NoConnectionException e) {
+                    listenerApp.processMsgException(e);
+                }
             }
         };
     }

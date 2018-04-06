@@ -6,6 +6,9 @@ import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -106,11 +109,9 @@ public abstract class Service {
                     messageListener.onConnectionFailed((Exception) msg.obj);
                     break;
                 case CATH_EXCEPTION:
-                    if (v) Log.d(TAG, "CATH_EXCEPTION");
-                    messageListener.catchException((Exception) msg.obj);
+                    Exception e = (Exception) msg.obj;
+                    if (v) Log.e(TAG, "CATH_EXCEPTION: " + e.getMessage());
                     break;
-                default:
-                    if (v) Log.d(TAG, "default");
             }
         }
     };

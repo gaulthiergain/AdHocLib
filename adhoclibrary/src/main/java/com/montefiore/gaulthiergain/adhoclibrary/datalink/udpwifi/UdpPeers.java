@@ -5,12 +5,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
-import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.CATH_EXCEPTION;
 import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.MESSAGE_READ;
 
 public class UdpPeers extends Thread {
@@ -30,11 +32,6 @@ public class UdpPeers extends Thread {
                     case MESSAGE_READ:
                         if (v) Log.d(TAG, "MESSAGE_READ");
                         messageListener.onMessageReceived((MessageAdHoc) msg.obj);
-                        break;
-                    case CATH_EXCEPTION:
-                        if (v) Log.d(TAG, "CATH_EXCEPTION");
-                        messageListener.catchException((Exception) msg.obj);
-
                         break;
                 }
             }

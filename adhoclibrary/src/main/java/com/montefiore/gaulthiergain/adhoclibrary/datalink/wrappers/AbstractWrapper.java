@@ -5,6 +5,7 @@ import android.content.Context;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -62,7 +63,7 @@ public abstract class AbstractWrapper {
 
     public abstract HashMap<String, AdHocDevice> getPaired();
 
-    public abstract void enable(int duration, ListenerAdapter listenerAdapter);
+    public abstract void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration;
 
     public abstract void disable();
 

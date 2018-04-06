@@ -25,6 +25,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListe
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
@@ -117,6 +118,8 @@ public class WifiAdHocManager {
                                     new NoConnectionException("Unknown IP address"));
                         }
                     } catch (UnknownHostException | SocketException e) {
+                        connectionListener.onConnectionFailed(e);
+                    } catch (IOException e) {
                         connectionListener.onConnectionFailed(e);
                     }
                 }

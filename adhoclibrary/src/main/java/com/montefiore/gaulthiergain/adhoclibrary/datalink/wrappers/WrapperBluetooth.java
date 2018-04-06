@@ -105,7 +105,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             @Override
             public void onDiscoveryFailed(Exception e) {
-                //TODO switch with reason code
                 listenerApp.onDiscoveryFailed(e);
             }
 
@@ -171,14 +170,10 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void enable(int duration, ListenerAdapter listenerAdapter) {
-        try {
-            bluetoothManager.enableDiscovery(duration);
-            bluetoothManager.onEnableBluetooth(listenerAdapter);
-            enabled = true;
-        } catch (BluetoothBadDuration e) {
-            listenerApp.traceException(e);
-        }
+    public void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
+        bluetoothManager.enableDiscovery(duration);
+        bluetoothManager.onEnableBluetooth(listenerAdapter);
+        enabled = true;
     }
 
     @Override
@@ -216,19 +211,18 @@ public class WrapperBluetooth extends WrapperConnOriented {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
+                } catch (IOException e) {
+                    listenerApp.processMsgException(e);
                 }
             }
 
             @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
-            }
-
-            @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(macToUUID(remoteAddress));
+                try {
+                    connectionClosed(remoteAddress);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.onConnectionClosedFailed(e);
+                }
             }
 
             @Override
@@ -239,6 +233,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
             public void onConnectionFailed(Exception e) {
                 listenerApp.onConnectionFailed(e);
             }
+
         });
 
         // Start the serviceServer listening process
@@ -252,19 +247,18 @@ public class WrapperBluetooth extends WrapperConnOriented {
             public void onMessageReceived(MessageAdHoc message) {
                 try {
                     processMsgReceived(message);
-                } catch (IOException | NoConnectionException | AodvAbstractException e) {
-                    listenerApp.traceException(e);
+                } catch (IOException e) {
+                    listenerApp.processMsgException(e);
                 }
             }
 
             @Override
-            public void catchException(Exception e) {
-                listenerApp.traceException(e);
-            }
-
-            @Override
             public void onConnectionClosed(String remoteAddress) {
-                connectionClosed(macToUUID(remoteAddress));
+                try {
+                    connectionClosed(remoteAddress);
+                } catch (IOException | NoConnectionException e) {
+                    listenerApp.onConnectionClosedFailed(e);
+                }
             }
 
             @Override
@@ -299,8 +293,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
         new Thread(bluetoothServiceClient).start();
     }
 
-    private void processMsgReceived(MessageAdHoc message) throws IOException, NoConnectionException,
-            AodvUnknownTypeException, AodvUnknownDestException {
+    private void processMsgReceived(MessageAdHoc message) throws IOException {
         if (v) Log.d(TAG, "Message rcvd " + message.toString());
 
         switch (message.getHeader().getType()) {

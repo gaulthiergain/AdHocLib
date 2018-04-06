@@ -1,5 +1,9 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
+
+import java.io.IOException;
+
 /**
  * <p>This interface allows to define callback functions for messages and connection handling.</p>
  *

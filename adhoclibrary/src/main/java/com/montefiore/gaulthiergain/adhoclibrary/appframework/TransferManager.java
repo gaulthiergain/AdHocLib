@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -89,14 +90,21 @@ public class TransferManager {
     }
 
     public void enableAll(ListenerAdapter listenerAdapter) {
-        dataLinkManager.enableAll(listenerAdapter);
+        try {
+            dataLinkManager.enableAll(listenerAdapter);
+        } catch (BluetoothBadDuration ignored) {
+        }
     }
 
     public void enableWifi(ListenerAdapter listenerAdapter) {
-        dataLinkManager.enable(0, Service.WIFI, listenerAdapter);
+        try {
+            dataLinkManager.enable(0, Service.WIFI, listenerAdapter);
+        } catch (BluetoothBadDuration ignored) {
+
+        }
     }
 
-    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) {
+    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         dataLinkManager.enable(duration, Service.BLUETOOTH, listenerAdapter);
     }
 

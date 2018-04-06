@@ -31,32 +31,22 @@ public class AutoTransferManager {
         this.connectedDevices = new HashSet<>();
     }
 
-    public void stop() throws IOException, DeviceException {
+    public void cancel() throws IOException {
+        transferManager.stopListening();
+    }
+
+    public void stopDiscovery() throws IOException {
 
         if (timer != null) {
             timer.cancel();
             timer = null;
         }
-
-        if (transferManager.isWifiEnable()) {
-            transferManager.resetWifiAdapterName();
-        }
-
-        if (transferManager.isBluetoothEnable()) {
-            transferManager.resetBluetoothAdapterName();
-        }
-        transferManager.stopListening();
     }
 
     public void start() throws IOException {
         transferManager.start();
 
-        for (AdHocDevice device : transferManager.getPairedDevices().values()) {
-            Log.d(TAG, "PAIRED: " + String.valueOf(device));
-            connect(device);
-        }
-
-        /*timer = new Timer();
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -91,7 +81,7 @@ public class AutoTransferManager {
                     e.printStackTrace();
                 }
             }
-        }, 2000, 30000);*/
+        }, 2000, 30000);
     }
 
     public Config getConfig() {
@@ -111,27 +101,22 @@ public class AutoTransferManager {
             }
 
             @Override
-            public void onDiscoveryFailed(String s) {
-                Log.d(TAG, "onDiscoveryFailed");
+            public void onDiscoveryFailed(Exception e) {
+                Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
             }
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-                for (Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
+                /*for (Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
                     String key = entry.getKey();
                     Object value = entry.getValue();
                     Log.d(TAG, "Discovered Completed " + key + " - " + value.toString());
-                }
+                }*/
             }
 
             @Override
             public void onReceivedData(String senderName, String senderAddress, Object pdu) {
                 listenerAutoApp.onReceivedData(senderName, senderAddress, pdu);
-            }
-
-            @Override
-            public void traceException(Exception e) {
-                listenerAutoApp.traceException(e);
             }
 
             @Override
@@ -141,22 +126,33 @@ public class AutoTransferManager {
             }
 
             @Override
+            public void onConnectionClosedFailed(Exception e) {
+                listenerAutoApp.onConnectionClosedFailed(e);
+            }
+
+            @Override
+            public void processMsgException(Exception e) {
+                listenerAutoApp.processMsgException(e);
+            }
+
+            @Override
             public void onConnection(String remoteAddress, String remoteName, int hops) {
                 connectedDevices.add(remoteName);
                 listenerAutoApp.onConnection(remoteAddress, remoteName, hops);
             }
 
             @Override
-            public void onConnectionFailed(String remoteName) {
-                listenerAutoApp.onConnectionFailed(remoteName);
+            public void onConnectionFailed(Exception e) {
+                listenerAutoApp.onConnectionFailed(e);
             }
         };
     }
 
     private void connect(AdHocDevice device) {
-        Log.d(TAG, "onDeviceDiscovered " + device);
+
         if (device.getDeviceName().contains(PREFIX) && !connectedDevices.contains(device.getDeviceName())) {
             try {
+                Log.d(TAG, "try to connect to " + device);
                 transferManager.connect(device);
             } catch (DeviceException e) {
                 e.printStackTrace();

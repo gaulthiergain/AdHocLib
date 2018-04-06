@@ -90,7 +90,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         }
     }
 
-    void connectionClosed(String remoteAddress) {
+    void connectionClosed(String remoteAddress) throws IOException, NoConnectionException {
         //Get label from address
         String remoteLabel = mapAddrLabel.get(remoteAddress);
         if (remoteLabel != null) {
@@ -104,15 +104,13 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
                 mapAddrNetwork.remove(remoteAddress);
             }
 
-            try {
+
                 listenerDataLink.brokenLink(remoteLabel);
-            } catch (IOException | NoConnectionException e) {
-                listenerApp.traceException(e);
-            }
+
 
             listenerApp.onConnectionClosed(remoteLabel, remoteName);
         } else {
-            listenerApp.traceException(new NoConnectionException("Error while closing connection"));
+            throw new NoConnectionException("Error while closing connection");
         }
     }
 }
