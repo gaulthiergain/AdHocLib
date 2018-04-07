@@ -84,11 +84,11 @@ public class BluetoothManager {
      * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
      * BluetoothAdHocDevice object.
      */
-    public HashMap<String, BluetoothAdHocDevice> getPairedDevices() {
+    public HashMap<String, AdHocDevice> getPairedDevices() {
         if (v) Log.d(TAG, "getPairedDevices()");
 
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        HashMap<String, BluetoothAdHocDevice> hashMapBluetoothPairedDevice = new HashMap<>();
+        HashMap<String, AdHocDevice> hashMapBluetoothPairedDevice = new HashMap<>();
 
         if (pairedDevices.size() > 0) {
             // Add each paired device into a hashMap

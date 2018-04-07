@@ -22,8 +22,9 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
     final short nbThreads;
     final boolean background;
     final Neighbors neighbors;
-    final HashMap<String, AdHocDevice> mapAddrDevices;
     final HashMap<String, SocketManager> mapAddrNetwork;
+
+    private final HashMap<String, AdHocDevice> mapAddrDevices;
 
     ServiceServer serviceServer;
 
@@ -120,7 +121,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
                 header.getName(), type);
 
         // Add mapping address (UUID) - AdHoc device
-        mapAddrDevices.put(header.getAddress(), device);
+        mapAddrDevices.put(header.getMac(), device);
 
         // Add the active connection into the neighbors object
         neighbors.addNeighbors(header.getLabel(), socketManager);

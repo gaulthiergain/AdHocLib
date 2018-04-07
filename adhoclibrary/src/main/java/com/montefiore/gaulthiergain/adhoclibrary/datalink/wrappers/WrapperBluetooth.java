@@ -136,13 +136,10 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public HashMap<String, AdHocDevice> getPaired() {
 
-        // Clear the discovered device
-        mapMacDevices.clear();
-
         // Add paired devices into the mapUuidDevices
-        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+        for (Map.Entry<String, AdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
 
-            if (!mapMacDevices.containsKey(entry.getValue().getUuid())) {
+            if (!mapMacDevices.containsKey(entry.getValue().getMacAddress())) {
                 if (v)
                     Log.d(TAG, "Add paired " + entry.getValue().getMacAddress() + " into mapUuidDevices");
                 mapMacDevices.put(entry.getValue().getMacAddress(), entry.getValue());
