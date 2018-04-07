@@ -40,12 +40,13 @@ class ListenServiceThread extends Thread {
     @Override
     public void run() {
 
+        if (v) Log.d(TAG, "Listening message ...");
+
         while (true) {
             try {
-                if (v) Log.d(TAG, "Waiting response from server ...");
-
+                MessageAdHoc messageAdHoc = network.receiveMessage();
                 // Get MessageAdHoc
-                handler.obtainMessage(Service.MESSAGE_READ, network.receiveMessage()).sendToTarget();
+                handler.obtainMessage(Service.MESSAGE_READ, messageAdHoc).sendToTarget();
             } catch (IOException e) {
                 if (network.getISocket() != null) {
                     processDisconnect();
