@@ -39,24 +39,20 @@ class ListenServiceThread extends Thread {
      */
     @Override
     public void run() {
-        if (v) Log.d(TAG, "start Listening ...");
 
-        MessageAdHoc message;
         while (true) {
             try {
                 if (v) Log.d(TAG, "Waiting response from server ...");
 
-                // Get response MessageAdHoc
-                message = network.receiveMessage();
-                if (v) Log.d(TAG, "Response: " + message);
-                handler.obtainMessage(Service.MESSAGE_READ, message).sendToTarget();
+                // Get MessageAdHoc
+                handler.obtainMessage(Service.MESSAGE_READ, network.receiveMessage()).sendToTarget();
             } catch (IOException e) {
                 if (network.getISocket() != null) {
                     processDisconnect();
                 }
                 break;
             } catch (ClassNotFoundException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();//Todo Message exception
             }
         }
     }

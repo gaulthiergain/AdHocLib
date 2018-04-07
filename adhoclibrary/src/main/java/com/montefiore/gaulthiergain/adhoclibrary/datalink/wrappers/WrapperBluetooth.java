@@ -299,6 +299,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                     receivedPeerMsg(header, socketManager);
                 }
+
                 break;
             }
             case CONNECT_CLIENT: {
@@ -310,6 +311,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 if (socketManager != null) {
                     receivedPeerMsg(header, socketManager);
                 }
+
                 break;
             }
             case BROADCAST: {
