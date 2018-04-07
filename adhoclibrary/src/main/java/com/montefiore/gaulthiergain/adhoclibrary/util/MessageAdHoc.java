@@ -18,6 +18,7 @@ public class MessageAdHoc implements Serializable {
     private Header header;
 
     @JsonSerialize(using = Serializer.class)
+    @JsonProperty("pdu")
     private Object pdu;
 
     public MessageAdHoc() {

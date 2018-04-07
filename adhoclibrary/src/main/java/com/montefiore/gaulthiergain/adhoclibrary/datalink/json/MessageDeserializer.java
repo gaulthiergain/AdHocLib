@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 
@@ -25,8 +26,14 @@ public class MessageDeserializer extends StdDeserializer<MessageAdHoc> {
     }
 
     @Override
-    public MessageAdHoc deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        JsonNode treeNode = jsonParser.readValueAsTree();
+    public MessageAdHoc deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
+        JsonNode treeNode;
+        try {
+            treeNode = jsonParser.readValueAsTree();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         if (treeNode == null) {
             return null;
@@ -36,16 +43,21 @@ public class MessageDeserializer extends StdDeserializer<MessageAdHoc> {
 
         Header header = null;
         if (treeNode.get(HEADER) != null) {
-            header = mapper.treeToValue(treeNode.get(HEADER), Header.class);
+            try {
+                header = mapper.treeToValue(treeNode.get(HEADER), Header.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         Object pdu = null;
-        if (treeNode.get(PDU) != null) {
+        if (treeNode.get(PDU) != NullNode.getInstance()) {
             String property = treeNode.get(PDU).fields().next().getKey();
             if (property != null) {
                 try {
                     pdu = processType(treeNode, property);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | JsonProcessingException e) {
                     e.printStackTrace();
                     pdu = null;
                 }

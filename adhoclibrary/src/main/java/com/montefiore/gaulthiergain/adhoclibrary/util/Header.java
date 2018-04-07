@@ -8,7 +8,7 @@ import java.io.Serializable;
  * Created by gaulthiergain on 17/11/17.
  */
 
-@JsonTypeName("Header")
+@JsonTypeName("header")
 public class Header implements Serializable {
     protected int type;
     protected String label;

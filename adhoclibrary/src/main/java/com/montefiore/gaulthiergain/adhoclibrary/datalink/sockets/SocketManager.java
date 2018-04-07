@@ -40,6 +40,7 @@ public class SocketManager {
         this.ois = new DataInputStream(isocket.getInputStream());
         this.mapper = new ObjectMapper();
         this.json = json;
+        Log.d("[AdHoc]", "JSON is " + json);
     }
 
     public void sendMessage(MessageAdHoc msg) throws IOException {
