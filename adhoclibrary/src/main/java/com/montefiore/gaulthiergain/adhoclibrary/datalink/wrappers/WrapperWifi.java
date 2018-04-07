@@ -296,7 +296,7 @@ public class WrapperWifi extends WrapperConnOriented {
                                 try {
                                     // Send CONNECT message to establish the pairing
                                     socketManager.sendMessage(new MessageAdHoc(
-                                            new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+                                            new SHeader(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
 
                                     receivedPeerMsg(header, socketManager);
                                 } catch (IOException e) {
@@ -307,7 +307,7 @@ public class WrapperWifi extends WrapperConnOriented {
                     } else {
                         // Send CONNECT message to establish the pairing
                         socketManager.sendMessage(new MessageAdHoc(
-                                new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+                                new SHeader(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
 
                         receivedPeerMsg(header, socketManager);
                     }
@@ -319,7 +319,7 @@ public class WrapperWifi extends WrapperConnOriented {
                 // Get Messsage Header
                 SHeader header = (SHeader) message.getHeader();
 
-                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
+                SocketManager socketManager = mapAddrNetwork.get(header.getMac());
                 if (socketManager != null) {
                     receivedPeerMsg(header, socketManager);
                 }
