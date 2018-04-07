@@ -62,6 +62,12 @@ public class WrapperWifi extends WrapperConnOriented {
     @Override
     public void init(Config config) throws IOException {
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
+            @Override
+            public void getDeviceName(String name) {
+                listenerDataLink.initInfos(ownMac, ownName);
+            }
+        });
         this.serverPort = config.getServerPort();
         this.listenServer();
     }
@@ -97,7 +103,7 @@ public class WrapperWifi extends WrapperConnOriented {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                mapMacDevices.clear(); //todo refactor this
+                //todo refactor this
 
                 // Add device into mapMacDevices
                 for (AdHocDevice device : mapNameDevice.values()) {

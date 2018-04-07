@@ -103,7 +103,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                mapMacDevices.clear(); //todo refactor this
+                //todo refactor this
 
                 // Add device into mapMacDevices
                 for (AdHocDevice device : mapNameDevice.values()) {
@@ -155,9 +155,15 @@ public class WrapperWifiUdp extends AbstractWrapper {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
+            @Override
+            public void getDeviceName(String name) {
+                listenerDataLink.initInfos(ownMac, ownName);
+            }
+        });
+        this.ackSet = new HashSet<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
-        this.ackSet = new HashSet<>();
     }
 
     @Override

@@ -63,7 +63,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public void init(Config config) throws IOException {
         this.secure = config.isSecure();
+        this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
+        this.listenerDataLink.initInfos(ownMac, ownName);
         this.ownStringUUID = BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase();
         this.listenServer();
     }
@@ -71,7 +73,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
-        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) device;
+        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress()); //todo exceptsion if null
+
         if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
             _connect(btDevice);
         } else {
@@ -106,7 +109,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                mapMacDevices.clear(); //todo refactor this
+                //todo refactor this
 
                 // Add device into mapMacDevices
                 for (AdHocDevice device : mapNameDevice.values()) {
@@ -141,7 +144,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
             if (!mapMacDevices.containsKey(entry.getValue().getUuid())) {
                 if (v)
-                    Log.d(TAG, "Add paired " + entry.getValue().getUuid() + " into mapUuidDevices");
+                    Log.d(TAG, "Add paired " + entry.getValue().getMacAddress() + " into mapUuidDevices");
                 mapMacDevices.put(entry.getValue().getMacAddress(), entry.getValue());
             }
         }
@@ -280,8 +283,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     private void processMsgReceived(MessageAdHoc message) throws IOException {
-        if (v) Log.d(TAG, "Message rcvd " + message.toString());
-
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
