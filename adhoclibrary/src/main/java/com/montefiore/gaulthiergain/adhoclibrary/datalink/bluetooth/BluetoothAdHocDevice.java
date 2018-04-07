@@ -146,4 +146,17 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
     UUID getUUID() {
         return uuid.getUuid();
     }
+
+    @Override
+    public String toString() {
+        return "BluetoothAdHocDevice{" +
+                "uuidString='" + uuidString + '\'' +
+                ", uuid=" + uuid +
+                ", rssi=" + rssi +
+                ", label='" + label + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", macAddress='" + macAddress + '\'' +
+                ", type=" + type +
+                '}';
+    }
 }

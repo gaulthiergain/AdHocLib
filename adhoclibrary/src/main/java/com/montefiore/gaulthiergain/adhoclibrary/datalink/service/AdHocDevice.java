@@ -46,15 +46,18 @@ public class AdHocDevice {
                 "label='" + label + '\'' +
                 ", deviceName='" + deviceName + '\'' +
                 ", macAddress='" + macAddress + '\'' +
-                ", type=" + type +
+                ", type=" + display(type) +
                 '}';
     }
 
     private String display(int type) {
-        if (type == Service.BLUETOOTH) {
-            return "Bluetooth";
+        switch (type) {
+            case Service.BLUETOOTH:
+                return "Bluetooth";
+            case Service.WIFI:
+                return "Wifi";
+            default:
+                return "UNKNOWN";
         }
-
-        return "Wifi";
     }
 }
