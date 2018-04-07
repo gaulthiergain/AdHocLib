@@ -9,8 +9,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -115,7 +115,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         }
     }
 
-    void receivedPeerMsg(SHeader header, SocketManager socketManager) {
+    void receivedPeerMsg(Header header, SocketManager socketManager) {
 
         AdHocDevice device = new AdHocDevice(header.getLabel(), header.getMac(),
                 header.getName(), type);

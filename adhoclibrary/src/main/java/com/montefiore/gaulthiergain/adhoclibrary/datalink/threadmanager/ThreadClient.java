@@ -31,8 +31,14 @@ class ThreadClient extends Thread {
             try {
                 socketDevice = listSocketDevice.getSocketDevice();
                 network = listSocketDevice.getActiveConnection().get(socketDevice.getRemoteSocketAddress());
+                MessageAdHoc messageAdHoc;
                 while (true) {
-                    processRequest(network.receiveMessage());
+                    messageAdHoc = network.receiveMessage();
+                    if(messageAdHoc == null){
+                        handler.obtainMessage(Service.CATH_EXCEPTION, new Exception("NULL message")).sendToTarget();//TODO
+                    }else{
+                        processRequest(messageAdHoc);
+                    }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

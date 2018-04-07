@@ -16,7 +16,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownT
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class AodvManager {
             public void processMsgReceived(MessageAdHoc message) {
                 try {
                     processAodvMsgReceived(message);
-                } catch (IOException | AodvAbstractException | NoConnectionException e) {
+                } catch (IOException | AodvAbstractException e) {
                     listenerApp.processMsgException(e);
                 }
             }
@@ -120,7 +120,7 @@ public class AodvManager {
     public void sendMessageTo(Object pdu, String address) throws IOException {
 
         // Create MessageAdHoc object
-        SHeader header = new SHeader(TypeAodv.DATA.getType(), ownMac, ownAddress, ownName);
+        Header header = new Header(TypeAodv.DATA.getType(), ownMac, ownAddress, ownName);
 
         MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
 
@@ -450,7 +450,7 @@ public class AodvManager {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message)");
             if (listenerApp != null) {
 
-                SHeader header = (SHeader) message.getHeader();
+                Header header = message.getHeader();
                 AdHocDevice adHocDevice = new AdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), 0);//TODO
 
@@ -676,7 +676,7 @@ public class AodvManager {
      * @throws AodvUnknownDestException Signals that an AodvUnknownDestException has occurred.
      */
     private void processAodvMsgReceived(MessageAdHoc message) throws IOException,
-            AodvUnknownTypeException, AodvUnknownDestException, NoConnectionException {
+            AodvUnknownTypeException, AodvUnknownDestException {
 
         switch (message.getHeader().getType()) {
             case Constants.RREQ:

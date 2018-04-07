@@ -20,8 +20,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -272,7 +272,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+                        new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
             }
         });
 
@@ -285,14 +285,12 @@ public class WrapperWifi extends WrapperConnOriented {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                // Get Messsage Header
-                final SHeader header = (SHeader) message.getHeader();
-
-                final SocketManager socketManager = serviceServer.getActiveConnections().get(header.getAddress());
+                final SocketManager socketManager = serviceServer.getActiveConnections().get(
+                        message.getHeader().getAddress());
                 if (socketManager != null) {
 
                     // Add mapping IP - MAC
-                    mapAddrMac.put(header.getAddress(), header.getMac());
+                    mapAddrMac.put(message.getHeader().getAddress(), message.getHeader().getMac());
 
                     // If ownIP address is not known, request it by event
                     if (ownIpAddress == null) {
@@ -304,9 +302,9 @@ public class WrapperWifi extends WrapperConnOriented {
                                 try {
                                     // Send CONNECT message to establish the pairing
                                     socketManager.sendMessage(new MessageAdHoc(
-                                            new SHeader(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
+                                            new Header(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
 
-                                    receivedPeerMsg(header, socketManager);
+                                    receivedPeerMsg(message.getHeader(), socketManager);
                                 } catch (IOException e) {
                                     listenerApp.onConnectionFailed(e);
                                 }
@@ -315,32 +313,29 @@ public class WrapperWifi extends WrapperConnOriented {
                     } else {
                         // Send CONNECT message to establish the pairing
                         socketManager.sendMessage(new MessageAdHoc(
-                                new SHeader(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
+                                new Header(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
 
-                        receivedPeerMsg(header, socketManager);
+                        receivedPeerMsg(message.getHeader(), socketManager);
                     }
                 }
                 break;
             }
             case CONNECT_CLIENT: {
 
-                // Get Messsage Header
-                SHeader header = (SHeader) message.getHeader();
-
                 // Get socketManager from IP
-                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
+                SocketManager socketManager = mapAddrNetwork.get(message.getHeader().getAddress());
                 if (socketManager != null) {
 
                     // Add mapping IP - MAC
-                    mapAddrMac.put(header.getAddress(), header.getMac());
+                    mapAddrMac.put(message.getHeader().getAddress(), message.getHeader().getMac());
 
-                    receivedPeerMsg(header, socketManager);
+                    receivedPeerMsg(message.getHeader(), socketManager);
                 }
                 break;
             }
             case BROADCAST: {
                 // Get Messsage Header
-                SHeader header = (SHeader) message.getHeader();
+                Header header = message.getHeader();
 
                 listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), type), message.getPdu());

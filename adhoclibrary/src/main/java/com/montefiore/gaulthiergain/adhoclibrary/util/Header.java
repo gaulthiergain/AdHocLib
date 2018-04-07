@@ -14,12 +14,30 @@ public class Header implements Serializable {
     protected String label;
     protected String name;
 
+    private String address;
+    private String mac;
+
     public Header() {
 
     }
 
     public Header(int type, String label, String name) {
         this.type = type;
+        this.label = label;
+        this.name = name;
+    }
+
+    public Header(int type, String mac, String label, String name) {
+        this.type = type;
+        this.mac = mac;
+        this.label = label;
+        this.name = name;
+    }
+
+    public Header(int type, String address, String mac, String label, String name) {
+        this.type = type;
+        this.address = address;
+        this.mac = mac;
         this.label = label;
         this.name = name;
     }
@@ -36,24 +54,22 @@ public class Header implements Serializable {
         return name;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getMac() {
+        return mac;
     }
 
     @Override
     public String toString() {
-        return "SHeader{" +
+        return "Header{" +
                 "type=" + type +
                 ", label='" + label + '\'' +
                 ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", mac='" + mac + '\'' +
                 '}';
     }
 }

@@ -23,8 +23,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -270,7 +270,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
-                        new SHeader(CONNECT_SERVER, ownStringUUID, ownMac, label, ownName)));
+                        new Header(CONNECT_SERVER, ownStringUUID, ownMac, label, ownName)));
 
             }
         });
@@ -283,30 +283,25 @@ public class WrapperBluetooth extends WrapperConnOriented {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                // Get Messsage Header
-                SHeader header = (SHeader) message.getHeader();
-
                 // Get socket manager to send message
-                SocketManager socketManager = serviceServer.getActiveConnections().get(header.getMac());
+                SocketManager socketManager = serviceServer.getActiveConnections().get(
+                        message.getHeader().getMac());
                 if (socketManager != null) {
 
                     // Send new message
                     socketManager.sendMessage(new MessageAdHoc(
-                            new SHeader(CONNECT_CLIENT, ownStringUUID, ownMac, label, ownName)));
+                            new Header(CONNECT_CLIENT, ownStringUUID, ownMac, label, ownName)));
 
-                    receivedPeerMsg(header, socketManager);
+                    receivedPeerMsg(message.getHeader(), socketManager);
                 }
 
                 break;
             }
             case CONNECT_CLIENT: {
 
-                // Get Messsage Header
-                SHeader header = (SHeader) message.getHeader();
-
-                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
+                SocketManager socketManager = mapAddrNetwork.get(message.getHeader().getAddress());
                 if (socketManager != null) {
-                    receivedPeerMsg(header, socketManager);
+                    receivedPeerMsg(message.getHeader(), socketManager);
                 }
 
                 break;
@@ -314,7 +309,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
             case BROADCAST: {
 
                 // Get Messsage Header
-                SHeader header = (SHeader) message.getHeader();
+                Header header = message.getHeader();
 
                 listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), type), message.getPdu());

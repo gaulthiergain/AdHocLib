@@ -44,9 +44,13 @@ class ListenServiceThread extends Thread {
 
         while (true) {
             try {
-                MessageAdHoc messageAdHoc = network.receiveMessage();
                 // Get MessageAdHoc
-                handler.obtainMessage(Service.MESSAGE_READ, messageAdHoc).sendToTarget();
+                MessageAdHoc messageAdHoc = network.receiveMessage();
+                if (messageAdHoc == null) {
+                    handler.obtainMessage(Service.CATH_EXCEPTION, new Exception("NULL message")).sendToTarget();//Todo Message exception
+                } else {
+                    handler.obtainMessage(Service.MESSAGE_READ, messageAdHoc).sendToTarget();
+                }
             } catch (IOException e) {
                 if (network.getISocket() != null) {
                     processDisconnect();

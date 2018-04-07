@@ -1,5 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -42,6 +44,7 @@ public class SocketManager {
 
     public void sendMessage(MessageAdHoc msg) throws IOException {
 
+
         if (json) {
             PrintWriter pw = new PrintWriter(oos);
             pw.println(mapper.writeValueAsString(msg));
@@ -50,9 +53,12 @@ public class SocketManager {
             byte[] byteArray = serialize(msg);
             if (byteArray != null) {
                 oos.writeInt(byteArray.length);
+                Log.d("[AdHoc]", "Length " + byteArray.length);
                 oos.write(byteArray);
             }
         }
+
+        Log.d("[AdHoc]", "Send " + msg.toString());
     }
 
     public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException {
@@ -62,15 +68,18 @@ public class SocketManager {
             MessageAdHoc msg;
             try {
                 msg = mapper.readValue(in.readLine(), MessageAdHoc.class);
+                Log.d("[AdHoc]", "Rcv " + msg.toString());
             } catch (NullPointerException e) {
                 throw new IOException("Closed remote socket");
             }
             return msg;
         } else {
             int length = ois.readInt();
+            Log.d("[AdHoc]", "Length " + length);
             if (length > 0) {
                 byte[] message = new byte[length];
                 ois.readFully(message, 0, message.length);
+                Log.d("[AdHoc]", "Rcv " + deserialize(message).toString());
                 return deserialize(message);
             }
             return null;
