@@ -11,26 +11,21 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpMsg;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpHeader;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.WifiUdpDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -53,13 +48,13 @@ public class WrapperWifiUdp extends AbstractWrapper {
     private HashSet<String> ackSet;
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, Long> helloMessages;
-    private HashMap<String, WifiUdpDevice> neighbors;
+    private HashMap<String, AdHocDevice> neighbors;
 
 
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config.getName(), config.isJson(), config.getLabel(),
+        super(verbose, context, config.isJson(), config.getLabel(),
                 mapAddressDevice, listenerAodv, listenerDataLink);
 
         try {
@@ -79,7 +74,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void connect(AdHocDevice device) {
-        wifiAdHocManager.connect(device.getDeviceAddress());
+        wifiAdHocManager.connect(device.getMacAddress());
     }
 
     @Override
@@ -107,24 +102,25 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
-                if (v) Log.d(TAG, "onDiscoveryCompleted");
 
-                // Add devices into hashmap
-                for (Map.Entry<String, AdHocDevice> entry : mapNameDevice.entrySet()) {
+                mapMacDevices.clear(); //todo refactor this
 
-                    WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();
-                    if (!mapMacDevice.containsKey(wifiDevice.getDeviceAddress())) {
-                        if (v) Log.d(TAG, "Add " + wifiDevice.getDeviceName() + " into peers");
-                        mapMacDevice.put(wifiDevice.getDeviceAddress(), wifiDevice);
+                // Add device into mapMacDevices
+                for (AdHocDevice device : mapNameDevice.values()) {
+                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                        if (v)
+                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                        mapMacDevices.put(device.getMacAddress(), device);
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
 
+                // Stop and unregister to the discovery process
                 wifiAdHocManager.unregisterDiscovery();
             }
         });
@@ -187,9 +183,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
     @Override
     public void sendMessage(MessageAdHoc msg, String label) {
 
-        WifiUdpDevice wifiUdpDevice = neighbors.get(label);
-        if (wifiUdpDevice != null) {
-            _sendMessage(msg, wifiUdpDevice.getIpAddress());
+        WifiAdHocDevice wifiDevice = (WifiAdHocDevice) neighbors.get(label);
+        if (wifiDevice != null) {
+            _sendMessage(msg, wifiDevice.getIpAddress());
         }
     }
 
@@ -217,9 +213,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     @Override
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) {
-        for (Map.Entry<String, WifiUdpDevice> entry : neighbors.entrySet()) {
+        for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
             if (!entry.getKey().equals(excludedAddress)) {
-                _sendMessage(message, entry.getValue().getIpAddress());
+                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue();
+                _sendMessage(message, wifiAdHocDevice.getIpAddress());
             }
         }
     }
@@ -285,8 +282,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         // Used to avoid updating views in other threads than the main thread
         public void handleMessage(Message msg) {
             // Used handler to avoid updating views in other threads than the main thread
-            String[] couple = (String[]) msg.obj;
-            listenerApp.onConnectionClosed(couple[0], couple[1]);
+            listenerApp.onConnectionClosed((AdHocDevice) msg.obj);
         }
     };
 
@@ -300,7 +296,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                broadcast(new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName), ""));
+                broadcast(new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)));
                 timerHello(time);
             }
         }, time);
@@ -349,12 +345,10 @@ public class WrapperWifiUdp extends AbstractWrapper {
         listenerDataLink.brokenLink(label);
 
         // Callback via handler
-        WifiUdpDevice wifiUdpDevice = neighbors.get(label);
-        if (wifiUdpDevice != null) {
+        WifiAdHocDevice wifiDevice = (WifiAdHocDevice) neighbors.get(label);
+        if (wifiDevice != null) {
             // Used handler to avoid using runOnUiThread in main app
-            mHandler.obtainMessage(1,
-                    new String[]{label, wifiUdpDevice.getName()})
-                    .sendToTarget();
+            mHandler.obtainMessage(1, wifiDevice).sendToTarget();
 
             // Remove the remote device from a neighbors
             neighbors.remove(label);
@@ -367,61 +361,61 @@ public class WrapperWifiUdp extends AbstractWrapper {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                // Receive UDP message from remote host
-                UdpMsg udpmsg = (UdpMsg) message.getPdu();
+                // Receive UDP header from remote host
+                UdpHeader header = (UdpHeader) message.getPdu();
 
                 // If ownIpAddress is unknown, init the field
                 if (ownIpAddress == null) {
-                    ownIpAddress = udpmsg.getDestinationAddress();
+                    ownIpAddress = header.getDestinationAddress();
                 }
 
                 // Send message to remote host with own info
-                _sendMessage(new MessageAdHoc(new Header(CONNECT_CLIENT, label, ownName),
-                                new UdpMsg(ownMac, ownIpAddress, udpmsg.getSourceAddress())),
-                        udpmsg.getSourceAddress());
+                _sendMessage(new MessageAdHoc(new UdpHeader(CONNECT_CLIENT, ownIpAddress,
+                        ownMac, label, ownName, header.getDestinationAddress())), header.getDestinationAddress());
 
-                if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
-                    // Callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName(), 0);
-                }
+                WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), type, header.getAddress());
 
                 // Add remote host to neighbors
-                neighbors.put(message.getHeader().getSenderAddr(),
-                        new WifiUdpDevice(message.getHeader().getSenderName(),
-                                udpmsg.getSourceAddress()));
+                neighbors.put(header.getLabel(), device);
+
+                // Callback connection
+                listenerApp.onConnection(device);
+
                 break;
             }
             case CONNECT_CLIENT: {
 
-                // Receive UDP message from remote host
-                UdpMsg udpmsg = (UdpMsg) message.getPdu();
+                // Receive UDP header from remote host
+                UdpHeader header = (UdpHeader) message.getPdu();
 
                 // Update the ackSet for reliable transmission
-                if (ackSet.contains(udpmsg.getSourceAddress())) {
-                    ackSet.remove(udpmsg.getSourceAddress());
+                if (ackSet.contains(header.getAddress())) {
+                    ackSet.remove(header.getAddress());
                 }
 
-                if (!neighbors.containsKey(message.getHeader().getSenderAddr())) {
-                    // Callback connection
-                    listenerApp.onConnection(message.getHeader().getSenderAddr(),
-                            message.getHeader().getSenderName(), 0);
-                }
+                WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), type, header.getAddress());
 
                 // Add remote host to neighbors
-                neighbors.put(message.getHeader().getSenderAddr(),
-                        new WifiUdpDevice(message.getHeader().getSenderName(),
-                                udpmsg.getSourceAddress()));
+                neighbors.put(header.getLabel(), device);
+
+                // Callback connection
+                listenerApp.onConnection(device);
+
                 break;
             }
             case BROADCAST: {
-                listenerApp.onReceivedData(message.getHeader().getSenderName(),
-                        message.getHeader().getSenderAddr(), message.getPdu());
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
+
+                listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), type), message.getPdu());
                 break;
             }
             case Constants.HELLO: {
                 // Add helloMessages messages to hashmap
-                helloMessages.put(message.getHeader().getSenderAddr(), System.currentTimeMillis());
+                helloMessages.put(message.getHeader().getLabel(), System.currentTimeMillis());
                 break;
             }
             default:
@@ -456,8 +450,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 if (v) Log.d(TAG, "onClient: " + ownIpAddress);
 
                 ackSet.add(groupOwnerAddress.getHostAddress());
-                timerConnectMessage(new MessageAdHoc(new Header(CONNECT_SERVER, label, ownName),
-                                new UdpMsg(ownMac, ownIpAddress, groupOwnerAddress.getHostAddress())),
+
+                timerConnectMessage(new MessageAdHoc(new UdpHeader(CONNECT_SERVER, ownIpAddress,
+                                ownMac, label, ownName, groupOwnerAddress.getHostAddress())),
                         groupOwnerAddress.getHostAddress(), TIMER_ACK);
             }
         };

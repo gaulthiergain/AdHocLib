@@ -1,46 +1,59 @@
 package com.montefiore.gaulthiergain.adhoclibrary.util;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import java.io.Serializable;
 
 /**
  * Created by gaulthiergain on 17/11/17.
  */
 
-public class Header implements IHeader, Serializable {
-    private final int type;
-    private final String senderAddr;
-    private final String senderName;
+@JsonTypeName("Header")
+public class Header implements Serializable {
+    protected int type;
+    protected String label;
+    protected String name;
 
     public Header() {
-        this.type = 0;
-        this.senderAddr = "";
-        this.senderName = "";
+
     }
 
-    public Header(int type, String senderAddr, String senderName) {
+    public Header(int type, String label, String name) {
         this.type = type;
-        this.senderAddr = senderAddr;
-        this.senderName = senderName;
+        this.label = label;
+        this.name = name;
     }
 
     public int getType() {
         return type;
     }
 
-    public String getSenderAddr() {
-        return senderAddr;
+    public String getLabel() {
+        return label;
     }
 
-    public String getSenderName() {
-        return senderName;
+    public String getName() {
+        return name;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return "Header{" +
-                "type='" + type + '\'' +
-                ", senderAddr='" + senderAddr + '\'' +
-                ", senderName='" + senderName + '\'' +
+        return "SHeader{" +
+                "type=" + type +
+                ", label='" + label + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 }

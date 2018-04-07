@@ -13,11 +13,13 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.WifiDiscoveryException;
@@ -25,6 +27,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -131,54 +134,94 @@ public class WifiAdHocManager {
         broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
+
+    public static final String KEY_SERVICE_INFO = "serviceinfo";
+
+
+    private static final String KEY_BUDDY_NAME = "NAME";
+    private static final String KEY_PORT_NUMBER = "PORT";
+    private static final String KEY_DEVICE_STATUS = "STATUS";
+    private static final String KEY_WIFI_IP = "IP";
+    private final String SERVICE_TYPE = "_localdash._tcp";
+    private final String SERVICE_INSTANCE = "serviceinfo";
+
+
     public void startRegistration() {
-        //  Create a string map containing information about your service.
-        Map<String,String> record = new HashMap<>();
-        record.put("buddyname", "John Doe" + (int) (Math.random() * 1000));
-        record.put("available", "visible");
+        Map<String, String> record = new HashMap<>();
+        record.put(KEY_PORT_NUMBER, String.valueOf(52000));
+        record.put(KEY_DEVICE_STATUS, "available");
 
-        // Service information.  Pass it an instance name, service type
-        // _protocol._transportlayer , and the map containing
-        // information other devices will want once they connect to this one.
-        WifiP2pDnsSdServiceInfo serviceInfo =
-                WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", record);
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
+                SERVICE_INSTANCE, SERVICE_TYPE, record);
+        wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
 
-        // Add the local service, sending the service info, network channel,
-        // and listener that will be used to indicate success or failure of
-        // the request.
-        wifiP2pManager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                // Command successful! Code isn't necessarily needed here,
-                // Unless you want to update the UI or add logging statements.
-                Log.d(TAG, "Success to add local Service");
+                Log.d(TAG, "Added Local Service");
             }
 
             @Override
-            public void onFailure(int arg0) {
-                // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
-                Log.d(TAG, "Error to add local Service");
+            public void onFailure(int error) {
+                Log.e(TAG, "ERRORCEPTION: Failed to add a service");
             }
         });
     }
 
 
     public void discoverService() {
-        final HashMap<String, String> buddies = new HashMap<String, String>();
-        WifiP2pManager.DnsSdTxtRecordListener txtListener = new WifiP2pManager.DnsSdTxtRecordListener() {
-            @Override
-            /* Callback includes:
-             * fullDomain: full domain name: e.g "printer._ipp._tcp.local."
-             * record: TXT record dta as a map of key/value pairs.
-             * device: The device running the advertised service.
-             */
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        wifiP2pManager.addServiceRequest(channel, serviceRequest,
+                new WifiP2pManager.ActionListener() {
 
-            public void onDnsSdTxtRecordAvailable(
-                    String fullDomain, Map record, WifiP2pDevice device) {
-                Log.d(TAG, "DnsSdTxtRecord available -" + record.toString());
-                buddies.put(device.deviceAddress, (String) record.get("buddyname"));
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "Added service discovery request");
+                    }
+
+                    @Override
+                    public void onFailure(int arg0) {
+                        Log.d(TAG, "ERRORCEPTION: Failed adding service discovery request");
+                    }
+                });
+        wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
+
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Service discovery initiated");
             }
-        };
+
+            @Override
+            public void onFailure(int arg0) {
+                Log.d(TAG, "Service discovery failed: " + arg0);
+            }
+        });
+
+        wifiP2pManager.setDnsSdResponseListeners(channel,
+                new WifiP2pManager.DnsSdServiceResponseListener() {
+
+                    @Override
+                    public void onDnsSdServiceAvailable(String instanceName,
+                                                        String registrationType, WifiP2pDevice srcDevice) {
+
+                        // A service has been discovered. Is this our app?
+                        if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
+                            Log.d(TAG, srcDevice.deviceName + " GO: " + srcDevice.isGroupOwner());
+                        } else {
+                            Log.d(TAG, srcDevice.deviceName + " NOT GO: " + srcDevice.isGroupOwner());
+                        }
+                    }
+                }, new WifiP2pManager.DnsSdTxtRecordListener() {
+
+                    @Override
+                    public void onDnsSdTxtRecordAvailable(
+                            String fullDomainName, Map<String, String> record,
+                            WifiP2pDevice device) {
+                        boolean isGroupOwner = device.isGroupOwner();
+                        int peerPort = Integer.parseInt(KEY_PORT_NUMBER);
+                        Log.d(TAG, "peer port " + peerPort);
+                        // further process
+                    }
+                });
     }
 
     public String getDeviceName() {
@@ -234,8 +277,8 @@ public class WifiAdHocManager {
                     WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
                             wifiP2pDevice.deviceName);
 
-                    if (!hashMapWifiDevices.containsKey(device.getDeviceAddress())) {
-                        hashMapWifiDevices.put(device.getDeviceAddress(), device);
+                    if (!hashMapWifiDevices.containsKey(device.getMacAddress())) {
+                        hashMapWifiDevices.put(device.getMacAddress(), device);
                         if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {
                         if (v) Log.d(TAG, "Device" + device.getDeviceName() + "already present");
@@ -277,7 +320,7 @@ public class WifiAdHocManager {
         if (config.groupOwnerIntent != -1) {
             config.groupOwnerIntent = valueGroupOwner;
         }
-        config.deviceAddress = device.getDeviceAddress();
+        config.deviceAddress = device.getMacAddress();
         config.wps.setup = WpsInfo.PBC;
 
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {

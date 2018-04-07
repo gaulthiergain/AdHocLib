@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,12 +28,18 @@ public class AutoTransferManager {
     private final ListenerAutoApp listenerAutoApp;
     private Timer timer;
 
+    //private WifiAdHocManager wifiAdHocManager;
+
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
         this.listenerAutoApp = listenerAutoApp;
         this.transferManager = new TransferManager(verbose, context, initListener());
         this.connectedDevices = new HashSet<>();
 
-        WifiAdHocManager wifiAdHocManager = new WifiAdHocManager(true, context, null);
+        /*try {
+            wifiAdHocManager = new WifiAdHocManager(true, context, null);
+        } catch (DeviceException e) {
+            e.printStackTrace();
+        }*/
     }
 
     public void cancel() throws IOException {
@@ -47,13 +54,8 @@ public class AutoTransferManager {
         }
     }
 
-
-    public void start() throws IOException {
-        //transferManager.start();
-
-
-
-        /*timer = new Timer();
+    private void runDiscovery(int time) {
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -84,11 +86,37 @@ public class AutoTransferManager {
                 try {
                     Log.d(TAG, "START NEW DISCOVERY");
                     transferManager.discovery();
+
+                    runDiscovery(waitRandomTime(20000, 30000));
                 } catch (DeviceException e) {
                     e.printStackTrace();
                 }
             }
-        }, 2000, 30000);*/
+        }, time);
+    }
+
+    private int waitRandomTime(int min, int max) {
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
+    }
+
+
+    public void start() throws IOException {
+        transferManager.start();
+
+
+        /*timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                wifiAdHocManager.discoverService();
+            }
+        }, 2000, 10000);*/
+
+
+        runDiscovery(waitRandomTime(2000, 5000));
+
+
     }
 
     public Config getConfig() {
@@ -114,20 +142,27 @@ public class AutoTransferManager {
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-                for (Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
-                    connect(entry.getValue());
+                for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
+                    if (entry.getValue().getDeviceName().contains(PREFIX)) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                connect(entry.getValue());
+                                try {
+                                    Thread.sleep(waitRandomTime(2000, 5000));
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
+                    }
                 }
             }
 
             @Override
-            public void onReceivedData(String senderName, String senderAddress, Object pdu) {
-                listenerAutoApp.onReceivedData(senderName, senderAddress, pdu);
-            }
-
-            @Override
-            public void onConnectionClosed(String remoteAddress, String remoteName) {
-                connectedDevices.remove(remoteName);
-                listenerAutoApp.onConnectionClosed(remoteAddress, remoteName);
+            public void onConnectionClosed(AdHocDevice adHocDevice) {
+                connectedDevices.remove(adHocDevice.getDeviceName());
+                listenerAutoApp.onConnectionClosed(adHocDevice);
             }
 
             @Override
@@ -141,9 +176,15 @@ public class AutoTransferManager {
             }
 
             @Override
-            public void onConnection(String remoteAddress, String remoteName, int hops) {
-                connectedDevices.add(remoteName);
-                listenerAutoApp.onConnection(remoteAddress, remoteName, hops);
+            public void onReceivedData(AdHocDevice adHocDevice, Object pdu) {
+                listenerAutoApp.onReceivedData(adHocDevice, pdu);
+            }
+
+            @Override
+            public void onConnection(AdHocDevice remoteDevice) {
+                Log.d(TAG, "ADD " + remoteDevice.getDeviceName() + "into set");
+                connectedDevices.add(remoteDevice.getDeviceName());
+                listenerAutoApp.onConnection(remoteDevice);
             }
 
             @Override
@@ -153,9 +194,10 @@ public class AutoTransferManager {
         };
     }
 
-    private void connect(AdHocDevice device) {
+    private void connect(final AdHocDevice device) {
 
-        if (device.getDeviceName().contains(PREFIX) && !connectedDevices.contains(device.getDeviceName())) {
+
+        if (!connectedDevices.contains(device.getDeviceName())) {
             try {
                 Log.d(TAG, "try to connect to " + device);
                 transferManager.connect(device);
@@ -167,17 +209,25 @@ public class AutoTransferManager {
         } else {
             Log.d(TAG, "Already connected to " + device.getDeviceName());
         }
+
     }
 
-    public void sendMessageTo(Object msg, String remoteDest) throws IOException {
-        transferManager.sendMessageTo(msg, remoteDest);
+    public void sendMessageTo(Object msg, AdHocDevice adHocDevice) throws IOException {
+        transferManager.sendMessageTo(msg, adHocDevice);
     }
 
     public void broadcast(Object msg) throws IOException {
+        //wifiAdHocManager.startRegistration();
+
         transferManager.broadcast(msg);
     }
 
-    public void broadcastExcept(Object msg, String excludedAddress) throws IOException {
-        transferManager.broadcastExcept(msg, excludedAddress);
+    public void broadcastExcept(Object msg, AdHocDevice adHocDevice) throws IOException {
+        transferManager.broadcastExcept(msg, adHocDevice);
+    }
+
+
+    public String getName() {
+        return transferManager.getOwnName();
     }
 }

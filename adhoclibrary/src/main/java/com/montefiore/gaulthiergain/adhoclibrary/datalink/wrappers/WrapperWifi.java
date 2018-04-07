@@ -16,18 +16,16 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Map;
 
 public class WrapperWifi extends WrapperConnOriented {
 
@@ -70,7 +68,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
     @Override
     public void connect(AdHocDevice device) {
-        wifiAdHocManager.connect(device.getDeviceAddress());
+        wifiAdHocManager.connect(device.getMacAddress());
     }
 
     @Override
@@ -98,24 +96,25 @@ public class WrapperWifi extends WrapperConnOriented {
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
-                if (v) Log.d(TAG, "onDiscoveryCompleted");
 
-                // Add devices into the peers
-                for (Map.Entry<String, AdHocDevice> entry : mapNameDevice.entrySet()) {
+                mapMacDevices.clear(); //todo refactor this
 
-                    WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();
-                    if (!mapMacDevice.containsKey(wifiDevice.getDeviceAddress())) {
-                        if (v) Log.d(TAG, "Add " + wifiDevice.getDeviceName() + " into peers");
-                        mapMacDevice.put(wifiDevice.getDeviceAddress(), wifiDevice);
+                // Add device into mapMacDevices
+                for (AdHocDevice device : mapNameDevice.values()) {
+                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                        if (v)
+                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                        mapMacDevices.put(device.getMacAddress(), device);
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
 
+                // Stop and unregister to the discovery process
                 wifiAdHocManager.unregisterDiscovery();
             }
         });
@@ -260,7 +259,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new Header(CONNECT_SERVER, label, ownName), ownIpAddress));
+                        new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
             }
         });
 
@@ -275,16 +274,11 @@ public class WrapperWifi extends WrapperConnOriented {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                final String remoteLabel = message.getHeader().getSenderAddr();
-                String ip = message.getPdu().toString();
+                // Get Messsage Header
+                final SHeader header = (SHeader) message.getHeader();
 
-                final SocketManager socketManager = serviceServer.getActiveConnections().get(ip);
+                final SocketManager socketManager = serviceServer.getActiveConnections().get(header.getAddress());
                 if (socketManager != null) {
-
-                    if (v) Log.d(TAG, "Add mapping: " + ip + " " + remoteLabel);
-
-                    // Add mapping MAC - label
-                    mapAddrLabel.put(ip, remoteLabel);
 
                     // If ownIP address is not known, request it by event
                     if (ownIpAddress == null) {
@@ -294,74 +288,49 @@ public class WrapperWifi extends WrapperConnOriented {
                                 ownIpAddress = address;
                                 wifiAdHocManager.unregisterGroupOwner();
                                 try {
-                                    sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
-                                            socketManager);
+                                    // Send CONNECT message to establish the pairing
+                                    socketManager.sendMessage(new MessageAdHoc(
+                                            new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+
+                                    receivedPeerMsg(header, socketManager);
                                 } catch (IOException e) {
                                     listenerApp.onConnectionFailed(e);
                                 }
                             }
                         });
                     } else {
-                        sendConnectClient(remoteLabel, message.getHeader().getSenderName(),
-                                socketManager);
+                        // Send CONNECT message to establish the pairing
+                        socketManager.sendMessage(new MessageAdHoc(
+                                new SHeader(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+
+                        receivedPeerMsg(header, socketManager);
                     }
                 }
                 break;
             }
             case CONNECT_CLIENT: {
 
-                String remoteLabel = message.getHeader().getSenderAddr();
-                String ip = message.getPdu().toString();
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
 
-                SocketManager socketManager = mapAddrNetwork.get(ip);
+                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
                 if (socketManager != null) {
-
-                    if (v) Log.d(TAG, "Add mapping: " + ip + " " + label);
-
-                    // Add mapping MAC - label
-                    mapAddrLabel.put(ip, remoteLabel);
-
-                    // Add mapping label - remoteConnection
-                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
-
-                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
-                        // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
-                    }
-
-                    // Add the active connection into the autoConnectionActives object
-                    neighbors.addNeighbors(remoteLabel, socketManager);
+                    receivedPeerMsg(header, socketManager);
                 }
                 break;
             }
             case BROADCAST: {
-                listenerApp.onReceivedData(message.getHeader().getSenderName(),
-                        message.getHeader().getSenderAddr(), message.getPdu());
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
+
+                listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), type), message.getPdu());
                 break;
             }
             default:
                 // Handle messages in protocol scope
                 listenerDataLink.processMsgReceived(message);
         }
-    }
-
-    private void sendConnectClient(String remoteLabel, String name, SocketManager socketManager) throws IOException {
-
-        // Send CONNECT message to establish the pairing
-        socketManager.sendMessage(new MessageAdHoc(new Header(CONNECT_CLIENT, label, ownName),
-                ownIpAddress));
-
-        // Add mapping label - remoteConnection
-        mapLabelRemoteName.put(remoteLabel, name);
-
-        if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
-            // Callback connection
-            listenerApp.onConnection(remoteLabel, name, 0);
-        }
-
-        // Add the active connection into the autoConnectionActives object
-        neighbors.addNeighbors(remoteLabel, socketManager);
-
     }
 
     private ConnectionListener initConnectionListener() {

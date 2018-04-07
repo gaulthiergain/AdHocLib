@@ -6,6 +6,8 @@ import java.io.IOException;
 
 public interface ListenerDataLink {
 
+    void initInfos(String mac, String name);
+
     void brokenLink(String remoteNode) throws IOException;
 
     void processMsgReceived(MessageAdHoc message);

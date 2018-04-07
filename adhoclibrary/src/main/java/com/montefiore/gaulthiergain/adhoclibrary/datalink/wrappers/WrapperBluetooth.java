@@ -21,14 +21,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListene
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,11 +35,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     private static final String TAG = "[AdHoc][WrapperBt]";
 
-    private UUID ownUUID;
     private boolean secure;
+    private String ownStringUUID;
     private BluetoothManager bluetoothManager;
-
-    private HashMap<String, BluetoothAdHocDevice> mapUuidDevices;
 
     public WrapperBluetooth(boolean verbose, Context context, Config config,
                             HashMap<String, AdHocDevice> mapAddressDevice,
@@ -70,23 +64,19 @@ public class WrapperBluetooth extends WrapperConnOriented {
     public void init(Config config) throws IOException {
         this.secure = config.isSecure();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
-        this.ownUUID = UUID.fromString(macToUUID(ownMac));
-        this.mapUuidDevices = new HashMap<>();
+        this.ownStringUUID = BluetoothUtil.UUID + ownMac.replace(":", "").toLowerCase();
         this.listenServer();
     }
 
     @Override
     public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
-        String uuid = macToUUID(device.getDeviceAddress());
-        BluetoothAdHocDevice btDevice = mapUuidDevices.get(uuid);
-        if (btDevice != null) {
-            if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
-                _connect(btDevice);
-            } else {
-                throw new DeviceAlreadyConnectedException(btDevice.getUuid()
-                        + " is already connected");
-            }
+        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) device;
+        if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
+            _connect(btDevice);
+        } else {
+            throw new DeviceAlreadyConnectedException(btDevice.getUuid()
+                    + " is already connected");
         }
     }
 
@@ -114,24 +104,21 @@ public class WrapperBluetooth extends WrapperConnOriented {
             }
 
             @Override
-            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> hashMapBluetoothDevice) {
+            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                mapMacDevice.clear();
-                mapUuidDevices.clear();
+                mapMacDevices.clear(); //todo refactor this
 
-                // Add no paired devices into the mapUuidDevices
-                for (Map.Entry<String, AdHocDevice> entry : hashMapBluetoothDevice.entrySet()) {
-                    BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) entry.getValue();
-                    if (!mapUuidDevices.containsKey(btDevice.getUuid())) {
-                        mapUuidDevices.put(btDevice.getUuid(), btDevice);
+                // Add device into mapMacDevices
+                for (AdHocDevice device : mapNameDevice.values()) {
+                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
                         if (v)
-                            Log.d(TAG, "Add no paired " + btDevice.getUuid() + " into mapUuidDevices");
-                        mapMacDevice.put(btDevice.getDeviceAddress(), btDevice);
+                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                        mapMacDevices.put(device.getMacAddress(), device);
                     }
                 }
 
                 if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevice);
+                    listenerApp.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
@@ -147,21 +134,19 @@ public class WrapperBluetooth extends WrapperConnOriented {
     public HashMap<String, AdHocDevice> getPaired() {
 
         // Clear the discovered device
-        mapMacDevice.clear();
-        mapUuidDevices.clear();
+        mapMacDevices.clear();
 
         // Add paired devices into the mapUuidDevices
         for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
 
-            if (!mapUuidDevices.containsKey(entry.getValue().getUuid())) {
-                mapUuidDevices.put(entry.getValue().getUuid(), entry.getValue());
+            if (!mapMacDevices.containsKey(entry.getValue().getUuid())) {
                 if (v)
                     Log.d(TAG, "Add paired " + entry.getValue().getUuid() + " into mapUuidDevices");
-                mapMacDevice.put(entry.getValue().getDeviceAddress(), entry.getValue());
+                mapMacDevices.put(entry.getValue().getMacAddress(), entry.getValue());
             }
         }
 
-        return mapMacDevice;
+        return mapMacDevices;
     }
 
     @Override
@@ -237,7 +222,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
         });
 
         // Start the serviceServer listening process
-        serviceServer.listen(new ServiceConfig(nbThreads, secure, BluetoothAdapter.getDefaultAdapter(), ownUUID));
+        serviceServer.listen(new ServiceConfig(nbThreads, secure, BluetoothAdapter.getDefaultAdapter(),
+                UUID.fromString(ownStringUUID)));
     }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
@@ -284,7 +270,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
                 // Send CONNECT message to establish the pairing
                 bluetoothServiceClient.send(new MessageAdHoc(
-                        new Header(CONNECT_SERVER, label, ownName), ownMac));
+                        new SHeader(CONNECT_SERVER, ownStringUUID, ownMac, label, ownName)));
 
             }
         });
@@ -299,63 +285,39 @@ public class WrapperBluetooth extends WrapperConnOriented {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
-                String remoteMac = (String) message.getPdu();
-                String remoteUUID = macToUUID(remoteMac);
-                String remoteLabel = message.getHeader().getSenderAddr();
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
 
-                SocketManager socketManager = serviceServer.getActiveConnections().get(remoteMac);
+                // Get socket manager to send message
+                SocketManager socketManager = serviceServer.getActiveConnections().get(header.getMac());
                 if (socketManager != null) {
 
+                    // Send new message
                     socketManager.sendMessage(new MessageAdHoc(
-                            new Header(CONNECT_CLIENT, label, ownName), ownUUID.toString()));
+                            new SHeader(CONNECT_CLIENT, ownStringUUID, ownMac, label, ownName)));
 
-                    if (v) Log.d(TAG, "Add mapping: " + remoteUUID + " " + remoteLabel);
-
-                    // Add mapping MAC - label
-                    mapAddrLabel.put(remoteUUID, remoteLabel);
-
-                    // Add mapping label - remoteConnection
-                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
-
-                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
-                        // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
-                    }
-
-                    // Add the neighbor into the neighbors object
-                    neighbors.addNeighbors(remoteLabel, socketManager);
+                    receivedPeerMsg(header, socketManager);
                 }
                 break;
             }
             case CONNECT_CLIENT: {
 
-                String remoteUUID = (String) message.getPdu();
-                String remoteLabel = message.getHeader().getSenderAddr();
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
 
-                SocketManager socketManager = mapAddrNetwork.get(remoteUUID);
+                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
                 if (socketManager != null) {
-
-                    if (v) Log.d(TAG, "Add mapping: " + remoteUUID + " " + remoteLabel);
-
-                    // Add mapping UUID - label
-                    mapAddrLabel.put(remoteUUID, remoteLabel);
-
-                    // Add mapping label - remoteConnection
-                    mapLabelRemoteName.put(remoteLabel, message.getHeader().getSenderName());
-
-                    if (!neighbors.getNeighbors().containsKey(remoteLabel)) {
-                        // Callback connection
-                        listenerApp.onConnection(remoteLabel, message.getHeader().getSenderName(), 0);
-                    }
-
-                    // Add the active connection into the neighbors object
-                    neighbors.addNeighbors(remoteLabel, socketManager);
+                    receivedPeerMsg(header, socketManager);
                 }
                 break;
             }
             case BROADCAST: {
-                listenerApp.onReceivedData(message.getHeader().getSenderName(),
-                        message.getHeader().getSenderAddr(), message.getPdu());
+
+                // Get Messsage Header
+                SHeader header = (SHeader) message.getHeader();
+
+                listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), type), message.getPdu());
                 break;
             }
             default:
@@ -363,9 +325,4 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 listenerDataLink.processMsgReceived(message);
         }
     }
-
-    private String macToUUID(String mac) {
-        return BluetoothUtil.UUID + mac.replace(":", "").toLowerCase();
-    }
-
 }

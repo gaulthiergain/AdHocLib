@@ -16,6 +16,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownT
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ public class AodvManager {
     private final HashMap<String, Long> mapDestSequenceNumber;
 
     private String ownName;
+    private String ownMac;
+
     private String ownAddress;
     private long ownSequenceNum;
     private DataLinkManager dataLink;
@@ -65,6 +68,12 @@ public class AodvManager {
             this.initTimerDebugRIB();
         }
         this.listenerDataLink = new ListenerDataLink() {
+
+            @Override
+            public void initInfos(String mac, String name) {
+                ownMac = mac;
+                ownName = name;
+            }
 
             @Override
             public void brokenLink(String remoteNode) throws IOException {
@@ -96,7 +105,7 @@ public class AodvManager {
             throws IOException {
 
         this(verbose, listenerApp);
-        this.ownName = config.getName();
+
         this.ownAddress = config.getLabel();
         this.dataLink = new DataLinkManager(verbose, context, config, listenerApp, listenerDataLink);
     }
@@ -111,7 +120,8 @@ public class AodvManager {
     public void sendMessageTo(Object pdu, String address) throws IOException {
 
         // Create MessageAdHoc object
-        Header header = new Header(TypeAodv.DATA.getType(), ownAddress, ownName);
+        SHeader header = new SHeader(TypeAodv.DATA.getType(), ownMac, ownAddress, ownName);
+
         MessageAdHoc msg = new MessageAdHoc(header, new Data(address, pdu));
 
         send(msg, address);
@@ -210,7 +220,7 @@ public class AodvManager {
 
         // Get previous hop and previous source address
         int hop = rreq.getHopCount();
-        String originateAddr = message.getHeader().getSenderAddr();
+        String originateAddr = message.getHeader().getLabel();
 
         if (v) Log.d(TAG, "Received RREQ from " + originateAddr);
 
@@ -247,7 +257,7 @@ public class AodvManager {
             }
         } else if (aodvHelper.containsDest(rreq.getDestIpAddress())) {
             // Send RREP GRATUITOUS to destination
-            sendRREP_GRAT(message.getHeader().getSenderAddr(), rreq);
+            sendRREP_GRAT(message.getHeader().getLabel(), rreq);
         } else {
             // Broadcast RREQ
             if (rreq.getOriginIpAddress().equals(ownAddress)) {
@@ -289,7 +299,7 @@ public class AodvManager {
 
         // Get previous hop and previous source address
         int hopRcv = rrep.getHopCount();
-        String nextHop = message.getHeader().getSenderAddr();
+        String nextHop = message.getHeader().getLabel();
 
         if (v) Log.d(TAG, "Received RREP from " + nextHop);
 
@@ -350,7 +360,7 @@ public class AodvManager {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop RREP)");
 
             // Update routing table
-            aodvHelper.addEntryRoutingTable(rrep.getOriginIpAddress(), message.getHeader().getSenderAddr(),
+            aodvHelper.addEntryRoutingTable(rrep.getOriginIpAddress(), message.getHeader().getLabel(),
                     hopCount, rrep.getSequenceNum(), rrep.getLifetime(), null);
 
             // Add timer for reverse route
@@ -365,7 +375,7 @@ public class AodvManager {
 
 
                 // Update routing table
-                aodvHelper.addEntryRoutingTable(rrep.getOriginIpAddress(), message.getHeader().getSenderAddr(),
+                aodvHelper.addEntryRoutingTable(rrep.getOriginIpAddress(), message.getHeader().getLabel(),
                         hopCount, rrep.getSequenceNum(), rrep.getLifetime(), addPrecursors(destNext.getNext()));
 
                 // Add timer for reverse route
@@ -393,7 +403,7 @@ public class AodvManager {
         RERR rerr = (RERR) message.getPdu();
 
         // Get previous source address
-        String originateAddr = message.getHeader().getSenderAddr();
+        String originateAddr = message.getHeader().getLabel();
 
         if (v) Log.d(TAG, "Received RERR from " + originateAddr + " -> Node "
                 + rerr.getUnreachableDestIpAddress() + " is unreachable");
@@ -434,12 +444,18 @@ public class AodvManager {
         // Get the DATA message
         Data data = (Data) message.getPdu();
 
-        if (v) Log.d(TAG, "Data message received from: " + message.getHeader().getSenderAddr());
+        if (v) Log.d(TAG, "Data message received from: " + message.getHeader().getLabel());
 
         if (data.getDestIpAddress().equals(ownAddress)) {
-            if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message");
-            if (listenerApp != null) listenerApp.onReceivedData(message.getHeader().getSenderName(),
-                    message.getHeader().getSenderAddr(), data.getPayload());
+            if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message)");
+            if (listenerApp != null) {
+
+                SHeader header = (SHeader) message.getHeader();
+                AdHocDevice adHocDevice = new AdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), 0);//TODO
+
+                listenerApp.onReceivedData(adHocDevice, data.getPayload());
+            }
         } else {
             // Forward the DATA message to the destination by checking the routing table
             EntryRoutingTable destNext = aodvHelper.getNextfromDest(data.getDestIpAddress());

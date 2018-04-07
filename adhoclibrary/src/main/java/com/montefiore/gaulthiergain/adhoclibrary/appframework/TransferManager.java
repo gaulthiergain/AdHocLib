@@ -52,19 +52,20 @@ public class TransferManager {
     /*--------------------------------------Network methods---------------------------------------*/
 
 
-    public void sendMessageTo(Object msg, String remoteDest) throws IOException {
-        aodvManager.sendMessageTo(msg, remoteDest);
+    public void sendMessageTo(Object msg, AdHocDevice adHocDevice) throws IOException {
+        aodvManager.sendMessageTo(msg, adHocDevice.getLabel());
     }
 
     public void broadcast(Object msg) throws IOException {
+        //todo name
         dataLinkManager.broadcast(new MessageAdHoc(
-                new Header(AbstractWrapper.BROADCAST, config.getLabel(), config.getName()), msg));
+                new Header(AbstractWrapper.BROADCAST, config.getLabel(), "todo"), msg));
     }
 
-    public void broadcastExcept(Object msg, String excludedAddress) throws IOException {
+    public void broadcastExcept(Object msg, AdHocDevice ExcludedDevice) throws IOException {
         dataLinkManager.broadcastExcept(new MessageAdHoc(
-                        new Header(AbstractWrapper.BROADCAST, config.getLabel(), config.getName()), msg),
-                excludedAddress);
+                        new Header(AbstractWrapper.BROADCAST, config.getLabel(), "todo"), msg),
+                ExcludedDevice.getLabel());
     }
 
     /*-------------------------------------DataLink methods---------------------------------------*/
@@ -171,7 +172,7 @@ public class TransferManager {
     }
 
     public String getOwnName() {
-        return config.getName();
+        return "todo";//todo
     }
 
     public Config getConfig() {

@@ -19,7 +19,6 @@ public class Config {
     private static final int MIN_PORT = 1023;
     private static final int MAX_PORT = 65535;
 
-    private String name;
     private String label;
     private boolean json;
     private boolean secure;
@@ -39,13 +38,11 @@ public class Config {
         this.serverPort = 52000;
         this.background = true;
         this.reliableTransportWifi = true;
-        this.name = Utils.getDeviceName();
         this.label = String.valueOf(UUID.randomUUID());
     }
 
-    public Config(String name, String label, boolean json, boolean secure, int attemps, int serverPort,
+    public Config(String label, boolean json, boolean secure, int attemps, int serverPort,
                   short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi) {
-        this.name = name;
         this.label = label;
         this.json = json;
         this.secure = secure;
@@ -97,10 +94,6 @@ public class Config {
         return label;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public boolean isReliableTransportWifi() {
         return reliableTransportWifi;
     }
@@ -149,10 +142,6 @@ public class Config {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public void setReliableTransportWifi(boolean reliableTransportWifi) {

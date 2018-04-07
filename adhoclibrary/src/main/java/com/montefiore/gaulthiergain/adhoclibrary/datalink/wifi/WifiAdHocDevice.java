@@ -8,8 +8,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
 public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
 
+    private String ipAddress;
+
     WifiAdHocDevice(String deviceAddress, String deviceName) {
         super(deviceAddress, deviceName, Service.WIFI);
+    }
+
+    public WifiAdHocDevice(String label, String macAddress, String deviceName, int type, String ipAddress) {
+        super(label, macAddress, deviceName, type);
+        this.ipAddress = ipAddress;
     }
 
     private WifiAdHocDevice(Parcel in) {
@@ -23,9 +30,20 @@ public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(deviceAddress);
+        dest.writeString(label);
         dest.writeString(deviceName);
+        dest.writeString(macAddress);
         dest.writeInt(type);
+        dest.writeString(ipAddress);
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+
+    public String getIpAddress() {
+        return ipAddress;
     }
 
     /**

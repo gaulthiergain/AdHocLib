@@ -15,7 +15,7 @@ import java.io.Serializable;
 @JsonDeserialize(using = MessageDeserializer.class)
 public class MessageAdHoc implements Serializable {
     @JsonProperty("header")
-    private IHeader header;
+    private Header header;
 
     @JsonSerialize(using = Serializer.class)
     private Object pdu;
@@ -23,12 +23,16 @@ public class MessageAdHoc implements Serializable {
     public MessageAdHoc() {
     }
 
-    public MessageAdHoc(IHeader header, Object pdu) {
+    public MessageAdHoc(Header header) {
+        this.header = header;
+    }
+
+    public MessageAdHoc(Header header, Object pdu) {
         this.header = header;
         this.pdu = pdu;
     }
 
-    public IHeader getHeader() {
+    public Header getHeader() {
         return header;
     }
 

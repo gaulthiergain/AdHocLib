@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.SHeader;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,23 +22,21 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
     final short nbThreads;
     final boolean background;
     final Neighbors neighbors;
-    final HashMap<String, String> mapAddrLabel;
-    final HashMap<String, String> mapLabelRemoteName;
+    final HashMap<String, AdHocDevice> mapAddrDevices;
     final HashMap<String, SocketManager> mapAddrNetwork;
 
     ServiceServer serviceServer;
 
     WrapperConnOriented(boolean v, Context context, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, config.getName(), config.isJson(), config.getLabel(),
+        super(v, context, config.isJson(), config.getLabel(),
                 mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.attemps = config.getAttemps();
         this.nbThreads = nbThreads;
         this.background = config.isBackground();
-        this.mapAddrLabel = new HashMap<>();
+        this.mapAddrDevices = new HashMap<>();
         this.mapAddrNetwork = new HashMap<>();
-        this.mapLabelRemoteName = new HashMap<>();
     }
 
     public void disconnect(String remoteLabel) throws IOException {
@@ -91,26 +90,42 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
     }
 
     void connectionClosed(String remoteAddress) throws IOException, NoConnectionException {
-        //Get label from address
-        String remoteLabel = mapAddrLabel.get(remoteAddress);
-        if (remoteLabel != null) {
 
-            String remoteName = mapLabelRemoteName.get(remoteLabel);
-            neighbors.getNeighbors().remove(remoteLabel);
-            mapLabelRemoteName.remove(remoteLabel);
-            mapAddrLabel.remove(remoteAddress);
+        // Get adHocDevice from address
+        AdHocDevice adHocDevice = mapAddrDevices.get(remoteAddress);
+        if (adHocDevice != null) {
 
+            // Remove device from neighbors and devices hashmap
+            neighbors.getNeighbors().remove(adHocDevice.getLabel());
+            mapAddrDevices.remove(remoteAddress);
+
+            // Remove device from Network hashmap
             if (mapAddrNetwork.containsKey(remoteAddress)) {
                 mapAddrNetwork.remove(remoteAddress);
             }
 
+            // Callback broken link (network)
+            listenerDataLink.brokenLink(adHocDevice.getLabel());
 
-                listenerDataLink.brokenLink(remoteLabel);
-
-
-            listenerApp.onConnectionClosed(remoteLabel, remoteName);
+            // Callback connection closed
+            listenerApp.onConnectionClosed(adHocDevice);
         } else {
             throw new NoConnectionException("Error while closing connection");
         }
+    }
+
+    void receivedPeerMsg(SHeader header, SocketManager socketManager) {
+
+        AdHocDevice device = new AdHocDevice(header.getLabel(), header.getMac(),
+                header.getName(), type);
+
+        // Add mapping address (UUID) - AdHoc device
+        mapAddrDevices.put(header.getAddress(), device);
+
+        // Add the active connection into the neighbors object
+        neighbors.addNeighbors(header.getLabel(), socketManager);
+
+        // Callback connection
+        listenerApp.onConnection(device);
     }
 }

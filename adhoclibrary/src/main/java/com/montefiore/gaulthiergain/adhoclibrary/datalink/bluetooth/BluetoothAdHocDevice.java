@@ -2,11 +2,14 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+
+import java.util.UUID;
 
 /**
  * <p>This class represents a remote Bluetooth device and is really just a thin wrapper for a
@@ -18,6 +21,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
 
     private final String uuidString;
+    private final ParcelUuid uuid;
     private final int rssi;
     private final BluetoothDevice device;
 
@@ -29,6 +33,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
     BluetoothAdHocDevice(BluetoothDevice device) {
         super(device.getAddress(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
+        this.uuid = ParcelUuid.fromString(uuidString);
         this.rssi = -1;
         this.device = device;
     }
@@ -42,6 +47,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
     BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
         super(device.getAddress(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
+        this.uuid = ParcelUuid.fromString(uuidString);
         this.rssi = rssi;
         this.device = device;
     }
@@ -54,6 +60,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      */
     private BluetoothAdHocDevice(Parcel in) {
         super(in.readString(), in.readString(), in.readInt());
+        this.uuid = in.readParcelable(ParcelUuid.class.getClassLoader());
         this.uuidString = in.readString();
         this.rssi = in.readInt();
         this.device = in.readParcelable(BluetoothDevice.class.getClassLoader());
@@ -83,11 +90,13 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(deviceAddress);
+        dest.writeString(label);
         dest.writeString(deviceName);
+        dest.writeString(macAddress);
         dest.writeInt(type);
         dest.writeString(uuidString);
         dest.writeInt(rssi);
+        dest.writeParcelable(uuid, flags);
         dest.writeParcelable(device, flags);
     }
 
@@ -132,5 +141,9 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      */
     BluetoothDevice getDevice() {
         return device;
+    }
+
+    UUID getUUID() {
+        return uuid.getUuid();
     }
 }

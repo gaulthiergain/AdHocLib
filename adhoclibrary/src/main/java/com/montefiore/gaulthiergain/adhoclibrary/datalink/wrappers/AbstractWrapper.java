@@ -6,7 +6,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
@@ -14,7 +13,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlread
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public abstract class AbstractWrapper {
@@ -26,32 +24,31 @@ public abstract class AbstractWrapper {
     int type;
     final boolean v;
     final boolean json;
-    final String ownName;
     final Context context;
 
     final ListenerApp listenerApp;
     final ListenerDataLink listenerDataLink;
-    final HashMap<String, AdHocDevice> mapMacDevice;
+    final HashMap<String, AdHocDevice> mapMacDevices;
 
     String label;
     String ownMac;
+    String ownName;
     boolean enabled;
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
-    AbstractWrapper(boolean v, Context context, String ownName, boolean json, String label,
-                    HashMap<String, AdHocDevice> mapMacDevice,
+    AbstractWrapper(boolean v, Context context, boolean json, String label,
+                    HashMap<String, AdHocDevice> mapMacDevices,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
         this.json = json;
         this.enabled = true;
-        this.ownName = ownName;
         this.context = context;
         this.label = label;
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
-        this.mapMacDevice = mapMacDevice;
+        this.mapMacDevices = mapMacDevices;
         this.listenerDataLink = listenerDataLink;
     }
 

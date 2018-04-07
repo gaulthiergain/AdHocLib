@@ -1,21 +1,35 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
+public class AdHocDevice {
 
-public abstract class AdHocDevice {
-
-    protected final String deviceAddress;
+    protected String label;
     protected final String deviceName;
+    protected final String macAddress;
     protected int type;
 
-    protected AdHocDevice(String deviceAddress, String deviceName, int type) {
-        this.deviceAddress = deviceAddress;
+    public AdHocDevice(String macAddress, String deviceName, int type) {
+        this.macAddress = macAddress;
         this.deviceName = deviceName;
         this.type = type;
     }
 
-    public String getDeviceAddress() {
-        return deviceAddress;
+    public AdHocDevice(String label, String macAddress, String deviceName, int type) {
+        this.label = label;
+        this.macAddress = macAddress;
+        this.deviceName = deviceName;
+        this.type = type;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getMacAddress() {
+        return macAddress;
     }
 
     public String getDeviceName() {
@@ -29,9 +43,10 @@ public abstract class AdHocDevice {
     @Override
     public String toString() {
         return "AdHocDevice{" +
-                "deviceAddress='" + deviceAddress + '\'' +
+                "label='" + label + '\'' +
                 ", deviceName='" + deviceName + '\'' +
-                ", type=" + display(type) +
+                ", macAddress='" + macAddress + '\'' +
+                ", type=" + type +
                 '}';
     }
 
