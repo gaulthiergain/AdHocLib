@@ -35,6 +35,7 @@ public class WrapperWifi extends WrapperConnOriented {
     private String ownIpAddress;
     private String groupOwnerAddr;
     private WifiAdHocManager wifiAdHocManager;
+    private HashMap<String, String> mapAddrMac;
 
     public WrapperWifi(boolean verbose, Context context, Config config,
                        HashMap<String, AdHocDevice> mapAddressDevice,
@@ -61,10 +62,12 @@ public class WrapperWifi extends WrapperConnOriented {
 
     @Override
     public void init(Config config) throws IOException {
+        this.mapAddrMac = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
         this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
             @Override
             public void getDeviceName(String name) {
+                Log.d(TAG, "name + " + name);
                 listenerDataLink.initInfos(ownMac, ownName);
             }
         });
@@ -198,7 +201,9 @@ public class WrapperWifi extends WrapperConnOriented {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
-                    connectionClosed(remoteAddress);
+                    // Get MAC address from IP address
+                    connectionClosed(mapAddrMac.get(remoteAddress));
+                    mapAddrMac.remove(remoteAddress);
                 } catch (IOException | NoConnectionException e) {
                     listenerApp.onConnectionClosedFailed(e);
                 }
@@ -226,7 +231,9 @@ public class WrapperWifi extends WrapperConnOriented {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
-                    connectionClosed(remoteAddress);
+                    // Get MAC address from IP address
+                    connectionClosed(mapAddrMac.get(remoteAddress));
+                    mapAddrMac.remove(remoteAddress);
                 } catch (IOException | NoConnectionException e) {
                     listenerApp.onConnectionClosedFailed(e);
                 }
@@ -275,8 +282,6 @@ public class WrapperWifi extends WrapperConnOriented {
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException {
 
-        if (v) Log.d(TAG, "Message rcvd " + message.toString());
-
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
@@ -285,6 +290,9 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 final SocketManager socketManager = serviceServer.getActiveConnections().get(header.getAddress());
                 if (socketManager != null) {
+
+                    // Add mapping IP - MAC
+                    mapAddrMac.put(header.getAddress(), header.getMac());
 
                     // If ownIP address is not known, request it by event
                     if (ownIpAddress == null) {
@@ -319,8 +327,13 @@ public class WrapperWifi extends WrapperConnOriented {
                 // Get Messsage Header
                 SHeader header = (SHeader) message.getHeader();
 
-                SocketManager socketManager = mapAddrNetwork.get(header.getMac());
+                // Get socketManager from IP
+                SocketManager socketManager = mapAddrNetwork.get(header.getAddress());
                 if (socketManager != null) {
+
+                    // Add mapping IP - MAC
+                    mapAddrMac.put(header.getAddress(), header.getMac());
+
                     receivedPeerMsg(header, socketManager);
                 }
                 break;
