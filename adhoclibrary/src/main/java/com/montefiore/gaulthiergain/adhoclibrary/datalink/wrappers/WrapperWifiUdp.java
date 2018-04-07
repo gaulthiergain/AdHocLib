@@ -244,6 +244,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 processMsgReceived(message);
             }
         });
+
         //Run timers for HELLO messages
         timerHello(Constants.HELLO_PACKET_INTERVAL);
         timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
@@ -361,7 +362,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     private void processMsgReceived(final MessageAdHoc message) {
 
-        if (v) Log.d(TAG, "Message rcvd " + message.toString());
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
@@ -377,7 +377,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
                 // Send message to remote host with own info
                 _sendMessage(new MessageAdHoc(new Header(CONNECT_CLIENT, ownIpAddress,
-                        ownMac, label, ownName)), destAddress);
+                        ownMac, label, ownName)), header.getAddress());
 
                 WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), type, header.getAddress());
