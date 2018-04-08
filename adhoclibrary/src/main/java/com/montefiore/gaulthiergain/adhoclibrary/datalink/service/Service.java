@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -87,7 +88,7 @@ public abstract class Service {
     }
 
     @SuppressLint("HandlerLeak")
-    protected final android.os.Handler handler = new android.os.Handler() {
+    protected final android.os.Handler handler = new android.os.Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
 
