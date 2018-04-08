@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
@@ -98,7 +99,7 @@ public class DataLinkManager {
 
     private void bothDiscovery() {
 
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
             // Used handler to avoid updating views in other threads than the main thread
             public void handleMessage(Message msg) {
                 listenerApp.onDiscoveryCompleted(mapAddressDevice);

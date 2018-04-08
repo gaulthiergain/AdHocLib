@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -25,7 +26,7 @@ public class UdpPeers extends Thread {
     @SuppressLint("HandlerLeak")
     public UdpPeers(boolean verbose, int serverPort, boolean background, final MessageMainListener messageListener) {
         this.v = verbose;
-        this.handler = new Handler() {
+        this.handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {

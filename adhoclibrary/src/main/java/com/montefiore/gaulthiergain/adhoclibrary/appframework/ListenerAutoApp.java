@@ -16,7 +16,7 @@ public interface ListenerAutoApp {
 
     void onConnectionFailed(Exception e);
 
-    void onConnectionClosed(AdHocDevice remoteDevice);
+    void onConnectionClosed(AdHocDevice adHocDevice);
 
     void onConnectionClosedFailed(Exception e);
 

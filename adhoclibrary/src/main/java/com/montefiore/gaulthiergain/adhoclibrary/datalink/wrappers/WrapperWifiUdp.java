@@ -3,6 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -95,6 +96,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
             @Override
             public void onDeviceDiscovered(AdHocDevice device) {
+
+                //todo refactor this
+
                 if (!mapMacDevices.containsKey(device.getMacAddress())) {
                     if (v)
                         Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
@@ -289,7 +293,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
         // Used to avoid updating views in other threads than the main thread
         public void handleMessage(Message msg) {
             // Used handler to avoid updating views in other threads than the main thread

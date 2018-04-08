@@ -15,6 +15,7 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -542,7 +543,7 @@ public class WifiAdHocManager {
 
     public void onEnableWifi(final ListenerAdapter listenerAdapter) {
 
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
             // Used handler to avoid updating views in other threads than the main thread
             public void handleMessage(Message msg) {
                 listenerAdapter.onEnableWifi((boolean) msg.obj);
