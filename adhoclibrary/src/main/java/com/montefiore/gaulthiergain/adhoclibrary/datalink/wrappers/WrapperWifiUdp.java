@@ -166,6 +166,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
             @Override
             public void getDeviceName(String name) {
+                ownName = name;
                 listenerDataLink.initInfos(ownMac, ownName);
             }
         });
