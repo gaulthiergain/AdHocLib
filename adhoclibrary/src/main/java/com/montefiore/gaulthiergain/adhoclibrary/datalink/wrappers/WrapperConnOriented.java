@@ -123,10 +123,12 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         // Add mapping address (UUID) - AdHoc device
         mapAddrDevices.put(header.getMac(), device);
 
+        if (!neighbors.getNeighbors().containsKey(header.getLabel())) {
+            // Callback connection
+            listenerApp.onConnection(device);
+        }
+
         // Add the active connection into the neighbors object
         neighbors.addNeighbors(header.getLabel(), socketManager);
-
-        // Callback connection
-        listenerApp.onConnection(device);
     }
 }
