@@ -35,8 +35,8 @@ public interface Constants {
     int LIFE_TIME = EXPIRED_TIME;
 
     //the time of hello packets
-    int HELLO_PACKET_INTERVAL_SND = 30000;
-    int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 2;
+    int HELLO_PACKET_INTERVAL_SND = 15000;
+    int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 3;
 
     // Constants for displaying the routing table
     int DELAY = 60000;
