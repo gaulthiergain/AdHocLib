@@ -215,6 +215,7 @@ public class AutoTransferManager extends TransferManager {
             public void onConnection(AdHocDevice adHocDevice) {
                 Log.d(TAG, "ADD " + adHocDevice.getMacAddress() + "into set");
                 connectedDevices.add(adHocDevice.getMacAddress());
+
                 listenerAutoApp.onConnection(adHocDevice);
             }
 
@@ -223,5 +224,18 @@ public class AutoTransferManager extends TransferManager {
                 listenerAutoApp.onConnectionFailed(e);
             }
         };
+    }
+
+    public String getOwnName() {
+
+        if (isWifiEnable()) {
+            return getWifiAdapterName();
+        }
+
+        if (isBluetoothEnable()) {
+            return getWifiAdapterName();
+        }
+
+        return null;
     }
 }

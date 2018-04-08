@@ -183,10 +183,6 @@ public class TransferManager {
         return config.getLabel();
     }
 
-    public String getOwnName() {
-        return "todo";//todo
-    }
-
     public Config getConfig() {
         return config;
     }
