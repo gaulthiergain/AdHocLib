@@ -88,7 +88,6 @@ public class WifiAdHocManager {
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
-            this.getAdapterName(null);
             this.hashMapWifiDevices = new HashMap<>();
             if (connectionListener != null) {
                 this.connectionListener = connectionListener;

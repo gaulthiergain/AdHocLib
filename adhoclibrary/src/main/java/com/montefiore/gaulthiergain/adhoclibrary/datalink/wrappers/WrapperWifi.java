@@ -63,11 +63,11 @@ public class WrapperWifi extends WrapperConnOriented {
     @Override
     public void init(Config config) throws IOException {
         this.mapAddrMac = new HashMap<>();
-        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.ownMac = wifiAdHocManager.getOwnMACAddress();
         this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
             @Override
             public void getDeviceName(String name) {
-                Log.d(TAG, "name + " + name);
+                ownName = name;
                 listenerDataLink.initInfos(ownMac, ownName);
             }
         });
