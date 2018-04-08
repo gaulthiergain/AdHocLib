@@ -450,8 +450,8 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
             @Override
             public void onConnectionFailed(Exception e) {
-                listenerApp.onConnectionFailed(e);
                 wifiAdHocManager.cancelConnection();
+                listenerApp.onConnectionFailed(e);
             }
 
             @Override

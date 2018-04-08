@@ -142,6 +142,10 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public HashMap<String, AdHocDevice> getPaired() {
 
+        if (!bluetoothManager.isEnabled()) {
+            return null;
+        }
+
         // Add paired devices into the mapUuidDevices
         for (Map.Entry<String, AdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
 
