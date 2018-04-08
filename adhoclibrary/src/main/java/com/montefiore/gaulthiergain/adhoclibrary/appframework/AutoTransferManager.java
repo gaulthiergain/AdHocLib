@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
@@ -18,35 +19,32 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AutoTransferManager {
+public class AutoTransferManager extends TransferManager {
 
     private static final String TAG = "[AdHoc][AutoTransfer]";
     public static final String PREFIX = "[PEER]";
 
     private final Set<String> connectedDevices;
-    private final TransferManager transferManager;
     private final ListenerAutoApp listenerAutoApp;
     private Timer timer;
 
-    //private WifiAdHocManager wifiAdHocManager;
-
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
+        super(verbose, context);
+        setListenerApp(initListener());
+
         this.listenerAutoApp = listenerAutoApp;
-        this.transferManager = new TransferManager(verbose, context, initListener());
         this.connectedDevices = new HashSet<>();
-
-        /*try {
-            wifiAdHocManager = new WifiAdHocManager(true, context, null);
-        } catch (DeviceException e) {
-            e.printStackTrace();
-        }*/
     }
 
-    public void cancel() throws IOException {
-        transferManager.stopListening();
+    public AutoTransferManager(boolean verbose, Context context, Config config, ListenerAutoApp listenerAutoApp) {
+        super(verbose, context, config);
+        setListenerApp(initListener());
+
+        this.listenerAutoApp = listenerAutoApp;
+        this.connectedDevices = new HashSet<>();
     }
 
-    public void stopDiscovery() throws IOException {
+    public void stopDiscovery() {
 
         if (timer != null) {
             timer.cancel();
@@ -60,24 +58,37 @@ public class AutoTransferManager {
             @Override
             public void run() {
 
-                String name = transferManager.getBluetoothAdapterName();
-                if (name != null && !name.contains(PREFIX)) {
-                    try {
-                        transferManager.updateBluetoothAdapterName(PREFIX + name);
-                        for (AdHocDevice device : transferManager.getPairedDevices().values()) {
-                            Log.d(TAG, "PAIRED: " + String.valueOf(device));
-                            connect(device);
+                String name = getBluetoothAdapterName();
+                if (name != null) {
+
+                    for (AdHocDevice adHocDevice : getPairedDevices().values()) {
+                        Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
+                        if (!connectedDevices.contains(adHocDevice.getMacAddress())
+                                && adHocDevice.getDeviceName().contains(PREFIX)) {
+                            try {
+                                connect(adHocDevice);
+                            } catch (DeviceException e) {
+                                e.printStackTrace();
+                            } catch (DeviceAlreadyConnectedException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    } catch (DeviceException e) {
-                        e.printStackTrace();
+                    }
+
+                    if (!name.contains(PREFIX)) {
+                        try {
+                            updateBluetoothAdapterName(PREFIX + name);
+                        } catch (DeviceException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
                 //update Adapter Name
-                name = transferManager.getWifiAdapterName();
+                name = getWifiAdapterName();
                 if (name != null && !name.contains(PREFIX)) {
                     try {
-                        transferManager.updateWifiAdapterName(PREFIX + name);
+                        updateWifiAdapterName(PREFIX + name);
                     } catch (DeviceException e) {
                         e.printStackTrace();
                     }
@@ -85,7 +96,7 @@ public class AutoTransferManager {
 
                 try {
                     Log.d(TAG, "START NEW DISCOVERY");
-                    transferManager.discovery();
+                    discovery();
 
                     runDiscovery(waitRandomTime(20000, 30000));
                 } catch (DeviceException e) {
@@ -102,7 +113,7 @@ public class AutoTransferManager {
 
 
     public void start() throws IOException {
-        transferManager.start();
+        super.start();
 
 
         /*timer = new Timer();
@@ -119,15 +130,24 @@ public class AutoTransferManager {
 
     }
 
-    public Config getConfig() {
-        return transferManager.getConfig();
-    }
 
     private ListenerApp initListener() {
         return new ListenerApp() {
             @Override
-            public void onDeviceDiscovered(AdHocDevice device) {
-                //ignored
+            public void onDeviceDiscovered(AdHocDevice adHocDevice) {
+                Log.d(TAG, "ADhoc found " + adHocDevice.toString());
+                if (adHocDevice.getType() == Service.BLUETOOTH &&
+                        !connectedDevices.contains(adHocDevice.getMacAddress())
+                        && adHocDevice.getDeviceName().contains(PREFIX)) {
+                    try {
+                        Log.d(TAG, "try to connect to " + adHocDevice);
+                        connect(adHocDevice);
+                    } catch (DeviceException e) {
+                        e.printStackTrace();
+                    } catch (DeviceAlreadyConnectedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
@@ -143,14 +163,25 @@ public class AutoTransferManager {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
                 for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
-                    if (entry.getValue().getDeviceName().contains(PREFIX)) {
+                    AdHocDevice device = entry.getValue();
+                    if (device.getType() == Service.WIFI &&
+                            !connectedDevices.contains(device.getMacAddress())
+                            && device.getDeviceName().contains(PREFIX)) {
+
+                        Log.d(TAG, "try to connect to " + device);
+                        try {
+                            Thread.sleep(waitRandomTime(2000, 5000));
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                connect(entry.getValue());
                                 try {
-                                    Thread.sleep(waitRandomTime(2000, 5000));
-                                } catch (InterruptedException e) {
+                                    connect(entry.getValue());
+                                } catch (DeviceAlreadyConnectedException e) {
+                                    e.printStackTrace();
+                                } catch (DeviceException e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -161,7 +192,7 @@ public class AutoTransferManager {
 
             @Override
             public void onConnectionClosed(AdHocDevice adHocDevice) {
-                connectedDevices.remove(adHocDevice.getDeviceName());
+                connectedDevices.remove(adHocDevice.getMacAddress());
                 listenerAutoApp.onConnectionClosed(adHocDevice);
             }
 
@@ -181,10 +212,10 @@ public class AutoTransferManager {
             }
 
             @Override
-            public void onConnection(AdHocDevice remoteDevice) {
-                Log.d(TAG, "ADD " + remoteDevice.getDeviceName() + "into set");
-                connectedDevices.add(remoteDevice.getDeviceName());
-                listenerAutoApp.onConnection(remoteDevice);
+            public void onConnection(AdHocDevice adHocDevice) {
+                Log.d(TAG, "ADD " + adHocDevice.getMacAddress() + "into set");
+                connectedDevices.add(adHocDevice.getMacAddress());
+                listenerAutoApp.onConnection(adHocDevice);
             }
 
             @Override
@@ -192,42 +223,5 @@ public class AutoTransferManager {
                 listenerAutoApp.onConnectionFailed(e);
             }
         };
-    }
-
-    private void connect(final AdHocDevice device) {
-
-
-        if (!connectedDevices.contains(device.getDeviceName())) {
-            try {
-                Log.d(TAG, "try to connect to " + device);
-                transferManager.connect(device);
-            } catch (DeviceException e) {
-                e.printStackTrace();
-            } catch (DeviceAlreadyConnectedException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Log.d(TAG, "Already connected to " + device.getDeviceName());
-        }
-
-    }
-
-    public void sendMessageTo(Object msg, AdHocDevice adHocDevice) throws IOException {
-        transferManager.sendMessageTo(msg, adHocDevice);
-    }
-
-    public void broadcast(Object msg) throws IOException {
-        //wifiAdHocManager.startRegistration();
-
-        transferManager.broadcast(msg);
-    }
-
-    public void broadcastExcept(Object msg, AdHocDevice adHocDevice) throws IOException {
-        transferManager.broadcastExcept(msg, adHocDevice);
-    }
-
-
-    public String getName() {
-        return transferManager.getOwnName();
     }
 }

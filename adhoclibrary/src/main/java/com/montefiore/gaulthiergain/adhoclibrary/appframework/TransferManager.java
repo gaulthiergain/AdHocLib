@@ -19,10 +19,10 @@ import java.util.HashMap;
 
 public class TransferManager {
 
-    private final boolean v;
-    private final Context context;
+    protected final boolean v;
+    protected final Context context;
 
-    private Config config;
+    protected Config config;
     private AodvManager aodvManager;
     private ListenerApp listenerApp;
     private DataLinkManager dataLinkManager;
@@ -47,6 +47,18 @@ public class TransferManager {
     public void start() throws IOException {
         aodvManager = new AodvManager(v, context, config, listenerApp);
         dataLinkManager = aodvManager.getDataLink();
+    }
+
+    TransferManager(boolean verbose, Context context) {
+        this(verbose, context, null, new Config());
+    }
+
+    TransferManager(boolean verbose, Context context, Config config) {
+        this(verbose, context, null, config);
+    }
+
+    void setListenerApp(ListenerApp listenerApp) {
+        this.listenerApp = listenerApp;
     }
 
     /*--------------------------------------Network methods---------------------------------------*/
