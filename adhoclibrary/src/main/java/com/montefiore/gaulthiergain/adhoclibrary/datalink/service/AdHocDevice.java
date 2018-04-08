@@ -9,15 +9,23 @@ public class AdHocDevice {
 
     public AdHocDevice(String macAddress, String deviceName, int type) {
         this.macAddress = macAddress;
-        this.deviceName = deviceName;
+        this.deviceName = checkName(deviceName);
         this.type = type;
     }
 
     public AdHocDevice(String label, String macAddress, String deviceName, int type) {
         this.label = label;
         this.macAddress = macAddress;
-        this.deviceName = deviceName;
+        this.deviceName = checkName(deviceName);
         this.type = type;
+    }
+
+    private String checkName(String deviceName) {
+        if (deviceName == null) {
+            return "";
+        }
+
+        return deviceName;
     }
 
     public void setLabel(String label) {
