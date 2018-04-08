@@ -24,9 +24,15 @@ public class AutoTransferManager extends TransferManager {
     private static final String TAG = "[AdHoc][AutoTransfer]";
     public static final String PREFIX = "[PEER]";
 
+    private static final int MIN_DELAY_TIME = 2000;
+    private static final int MAX_DELAY_TIME = 5000;
+
     private final Set<String> connectedDevices;
     private final ListenerAutoApp listenerAutoApp;
     private Timer timer;
+
+    private int elapseTimeMax;
+    private int elapseTimeMin;
 
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
         super(verbose, context);
@@ -95,10 +101,10 @@ public class AutoTransferManager extends TransferManager {
                 }
 
                 try {
-                    Log.d(TAG, "START NEW DISCOVERY");
+                    if (v) Log.d(TAG, "START new discovery");
                     discovery();
 
-                    runDiscovery(waitRandomTime(20000, 30000));
+                    runDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
                 } catch (DeviceException e) {
                     e.printStackTrace();
                 }
@@ -111,23 +117,22 @@ public class AutoTransferManager extends TransferManager {
         return random.nextInt(max - min + 1) + min;
     }
 
-
-    public void start() throws IOException {
+    public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws IOException {
         super.start();
 
+        this.elapseTimeMin = elapseTimeMin;
+        this.elapseTimeMax = elapseTimeMax;
 
-        /*timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                wifiAdHocManager.discoverService();
-            }
-        }, 2000, 10000);*/
+        runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
+    }
 
+    public void startDiscovery() throws IOException {
+        super.start();
 
-        runDiscovery(waitRandomTime(2000, 5000));
+        this.elapseTimeMin = 20000;
+        this.elapseTimeMax = 30000;
 
-
+        runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
     }
 
 
@@ -135,12 +140,12 @@ public class AutoTransferManager extends TransferManager {
         return new ListenerApp() {
             @Override
             public void onDeviceDiscovered(AdHocDevice adHocDevice) {
-                Log.d(TAG, "ADhoc found " + adHocDevice.toString());
+                if (v) Log.d(TAG, "AdHoc device found " + adHocDevice.toString());
                 if (adHocDevice.getType() == Service.BLUETOOTH &&
                         !connectedDevices.contains(adHocDevice.getMacAddress())
                         && adHocDevice.getDeviceName().contains(PREFIX)) {
                     try {
-                        Log.d(TAG, "try to connect to " + adHocDevice);
+                        if (v) Log.d(TAG, "try to connect to " + adHocDevice);
                         connect(adHocDevice);
                     } catch (DeviceException e) {
                         e.printStackTrace();
@@ -152,12 +157,12 @@ public class AutoTransferManager extends TransferManager {
 
             @Override
             public void onDiscoveryStarted() {
-                Log.d(TAG, "onDiscoveryStarted");
+                if (v) Log.d(TAG, "onDiscoveryStarted");
             }
 
             @Override
             public void onDiscoveryFailed(Exception e) {
-                Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
+                if (v) Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
             }
 
             @Override
@@ -168,9 +173,9 @@ public class AutoTransferManager extends TransferManager {
                             !connectedDevices.contains(device.getMacAddress())
                             && device.getDeviceName().contains(PREFIX)) {
 
-                        Log.d(TAG, "try to connect to " + device);
+                        if (v) Log.d(TAG, "Try to connect to " + device);
                         try {
-                            Thread.sleep(waitRandomTime(2000, 5000));
+                            Thread.sleep(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -192,6 +197,8 @@ public class AutoTransferManager extends TransferManager {
 
             @Override
             public void onConnectionClosed(AdHocDevice adHocDevice) {
+                if (v)
+                    Log.d(TAG, "Remove " + adHocDevice.getMacAddress() + " from connectedDevices set");
                 connectedDevices.remove(adHocDevice.getMacAddress());
                 listenerAutoApp.onConnectionClosed(adHocDevice);
             }
@@ -213,7 +220,8 @@ public class AutoTransferManager extends TransferManager {
 
             @Override
             public void onConnection(AdHocDevice adHocDevice) {
-                Log.d(TAG, "ADD " + adHocDevice.getMacAddress() + "into set");
+                if (v)
+                    Log.d(TAG, "Add " + adHocDevice.getMacAddress() + " into connectedDevices set");
                 connectedDevices.add(adHocDevice.getMacAddress());
 
                 listenerAutoApp.onConnection(adHocDevice);
