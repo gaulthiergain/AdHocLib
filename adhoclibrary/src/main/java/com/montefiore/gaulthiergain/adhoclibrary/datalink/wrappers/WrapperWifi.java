@@ -100,6 +100,12 @@ public class WrapperWifi extends WrapperConnOriented {
 
             @Override
             public void onDeviceDiscovered(AdHocDevice device) {
+                if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                    if (v)
+                        Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                    mapMacDevices.put(device.getMacAddress(), device);
+                }
+
                 listenerApp.onDeviceDiscovered(device);
             }
 
