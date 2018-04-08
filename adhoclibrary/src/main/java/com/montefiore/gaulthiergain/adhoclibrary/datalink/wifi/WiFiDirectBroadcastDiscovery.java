@@ -44,7 +44,6 @@ public class WiFiDirectBroadcastDiscovery extends BroadcastReceiver {
             if (manager != null) {
                 // Update the list of peers
                 manager.requestPeers(channel, peerListListener);
-                if (v) Log.d(TAG, "P2P peers changed");
             }
 
         }

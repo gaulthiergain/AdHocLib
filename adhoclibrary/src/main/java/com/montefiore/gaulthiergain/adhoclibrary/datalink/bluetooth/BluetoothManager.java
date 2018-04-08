@@ -200,17 +200,16 @@ public class BluetoothManager {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
                 // Get the BluetoothDevice object and its info from the Intent.
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                BluetoothAdHocDevice btDevice = new BluetoothAdHocDevice(
+                        (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE),
+                        intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE));
 
                 // Add devices into the hashMap
-                if (!hashMapBluetoothDevice.containsKey(device.getAddress())) {
-                    if (v) Log.d(TAG, "DeviceName: " + device.getName() +
-                            " - DeviceHardwareAddress: " + device.getAddress());
+                if (!hashMapBluetoothDevice.containsKey(btDevice.getMacAddress())) {
+                    if (v) Log.d(TAG, "DeviceName: " + btDevice.getDeviceName() +
+                            " - DeviceHardwareAddress: " + btDevice.getMacAddress());
 
-                    BluetoothAdHocDevice btDevice = new BluetoothAdHocDevice(device,
-                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE));
-
-                    hashMapBluetoothDevice.put(device.getAddress(), btDevice);
+                    hashMapBluetoothDevice.put(btDevice.getMacAddress(), btDevice);
 
                     // Listener onDeviceDiscovered
                     discoveryListener.onDeviceDiscovered(btDevice);

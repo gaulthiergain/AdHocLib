@@ -162,7 +162,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public void init(Config config) {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
-        this.ownMac = wifiAdHocManager.getOwnMACAddress().toLowerCase();
+        this.ownMac = wifiAdHocManager.getOwnMACAddress();
         this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
             @Override
             public void getDeviceName(String name) {

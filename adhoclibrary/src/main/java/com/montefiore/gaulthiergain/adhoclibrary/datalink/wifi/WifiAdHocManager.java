@@ -12,23 +12,17 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.WifiDiscoveryException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +37,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static android.net.wifi.p2p.WifiP2pManager.BUSY;
 import static android.net.wifi.p2p.WifiP2pManager.ERROR;
@@ -103,6 +96,8 @@ public class WifiAdHocManager {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         // Indicates the state of Wi-Fi P2P connectivity has changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
             @Override
@@ -132,96 +127,6 @@ public class WifiAdHocManager {
         };
 
         broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
-    }
-
-
-    public static final String KEY_SERVICE_INFO = "serviceinfo";
-
-
-    private static final String KEY_BUDDY_NAME = "NAME";
-    private static final String KEY_PORT_NUMBER = "PORT";
-    private static final String KEY_DEVICE_STATUS = "STATUS";
-    private static final String KEY_WIFI_IP = "IP";
-    private final String SERVICE_TYPE = "_localdash._tcp";
-    private final String SERVICE_INSTANCE = "serviceinfo";
-
-
-    public void startRegistration() {
-        Map<String, String> record = new HashMap<>();
-        record.put(KEY_PORT_NUMBER, String.valueOf(52000));
-        record.put(KEY_DEVICE_STATUS, "available");
-
-        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
-                SERVICE_INSTANCE, SERVICE_TYPE, record);
-        wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Added Local Service");
-            }
-
-            @Override
-            public void onFailure(int error) {
-                Log.e(TAG, "ERRORCEPTION: Failed to add a service");
-            }
-        });
-    }
-
-
-    public void discoverService() {
-        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        wifiP2pManager.addServiceRequest(channel, serviceRequest,
-                new WifiP2pManager.ActionListener() {
-
-                    @Override
-                    public void onSuccess() {
-                        Log.d(TAG, "Added service discovery request");
-                    }
-
-                    @Override
-                    public void onFailure(int arg0) {
-                        Log.d(TAG, "ERRORCEPTION: Failed adding service discovery request");
-                    }
-                });
-        wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Service discovery initiated");
-            }
-
-            @Override
-            public void onFailure(int arg0) {
-                Log.d(TAG, "Service discovery failed: " + arg0);
-            }
-        });
-
-        wifiP2pManager.setDnsSdResponseListeners(channel,
-                new WifiP2pManager.DnsSdServiceResponseListener() {
-
-                    @Override
-                    public void onDnsSdServiceAvailable(String instanceName,
-                                                        String registrationType, WifiP2pDevice srcDevice) {
-
-                        // A service has been discovered. Is this our app?
-                        if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
-                            Log.d(TAG, srcDevice.deviceName + " GO: " + srcDevice.isGroupOwner());
-                        } else {
-                            Log.d(TAG, srcDevice.deviceName + " NOT GO: " + srcDevice.isGroupOwner());
-                        }
-                    }
-                }, new WifiP2pManager.DnsSdTxtRecordListener() {
-
-                    @Override
-                    public void onDnsSdTxtRecordAvailable(
-                            String fullDomainName, Map<String, String> record,
-                            WifiP2pDevice device) {
-                        boolean isGroupOwner = device.isGroupOwner();
-                        int peerPort = Integer.parseInt(KEY_PORT_NUMBER);
-                        Log.d(TAG, "peer port " + peerPort);
-                        // further process
-                    }
-                });
     }
 
     public String getDeviceName() {
@@ -277,14 +182,14 @@ public class WifiAdHocManager {
 
                 for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
 
-                    WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress,
+                    WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress.toUpperCase(),
                             wifiP2pDevice.deviceName);
 
                     if (!hashMapWifiDevices.containsKey(device.getMacAddress())) {
                         hashMapWifiDevices.put(device.getMacAddress(), device);
                         if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {
-                        if (v) Log.d(TAG, "Device" + device.getDeviceName() + "already present");
+                        if (v) Log.d(TAG, "Device " + device.getDeviceName() + " already present");
                     }
 
                     // Listener onDiscoveryStarted
@@ -314,7 +219,7 @@ public class WifiAdHocManager {
      * @param address a String value which represents the address of the remote wifi
      *                Direct peer.
      */
-    public void connect(String address) {
+    public void connect(final String address) {
 
         // Get The device from its address
         final WifiAdHocDevice device = (WifiAdHocDevice) hashMapWifiDevices.get(address);
@@ -329,11 +234,13 @@ public class WifiAdHocManager {
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
+                if (v) Log.d(TAG, "Start connecting Wifi Direct (onSuccess)");
                 connectionListener.onConnectionStarted();
             }
 
             @Override
             public void onFailure(int reasonCode) {
+                if (v) Log.e(TAG, "Error during connecting Wifi Direct (onFailure): " + reasonCode);
                 switch (reasonCode) {
                     case ERROR:
                         connectionListener.onConnectionFailed(new NoConnectionException("Internal Error"));
@@ -354,12 +261,13 @@ public class WifiAdHocManager {
             wifiP2pManager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
-                    if (v) Log.d(TAG, "onSuccess cancelConnect");
+                    if (v) Log.d(TAG, "Cancel connecting Wifi Direct (onSuccess)");
                 }
 
                 @Override
-                public void onFailure(int reason) {
-                    if (v) Log.d(TAG, "onFailure cancelConnect: " + reason);
+                public void onFailure(int reasonCode) {
+                    if (v) Log.e(TAG, "Error during canceling connection Wifi Direct " +
+                            "(onFailure): " + reasonCode);
                 }
             });
         }
@@ -398,7 +306,6 @@ public class WifiAdHocManager {
      * Method allowing to unregister the connection broadcast.
      */
     public void unregisterConnection() {
-        if (v) Log.d(TAG, "unregisterConnection()");
         broadcastWifi.unregisterConnection();
     }
 
@@ -406,18 +313,15 @@ public class WifiAdHocManager {
      * Method allowing to unregister the discovery broadcast.
      */
     public void unregisterDiscovery() {
-        if (v) Log.d(TAG, "unregisterDiscovery()");
         broadcastWifi.unregisterDiscovery();
     }
 
     private void unregisterInitName() {
-        if (v) Log.d(TAG, "unregisterName()");
         broadcastWifi.unregisterInitName();
 
     }
 
     public void unregisterGroupOwner() {
-        if (v) Log.d(TAG, "unregisterGroupOwner()");
         broadcastWifi.unregisterGroupOwner();
     }
 
@@ -560,7 +464,7 @@ public class WifiAdHocManager {
                         Thread.sleep(1000);
                     }
 
-                    // Used handler to avoid using runOnUiThread in main app
+                    // Use handler to avoid using runOnUiThread in main app
                     mHandler.obtainMessage(1, true).sendToTarget();
                 } catch (InterruptedException e) {
                     mHandler.obtainMessage(1, false).sendToTarget();
@@ -665,6 +569,7 @@ public class WifiAdHocManager {
 
         void unregisterConnection() {
             if (connectionRegistered) {
+                if (v) Log.d(TAG, "unregisterConnection()");
                 context.unregisterReceiver(wifiDirectBroadcastConnection);
                 connectionRegistered = false;
             }
@@ -672,6 +577,7 @@ public class WifiAdHocManager {
 
         void unregisterDiscovery() {
             if (discoveryRegistered) {
+                if (v) Log.d(TAG, "unregisterDiscovery()");
                 context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
                 discoveryRegistered = false;
             }
@@ -679,6 +585,7 @@ public class WifiAdHocManager {
 
         void unregisterInitName() {
             if (nameRegistered) {
+                if (v) Log.d(TAG, "unregisterName()");
                 context.unregisterReceiver(wifiDirectBroadcastName);
                 nameRegistered = false;
             }
@@ -686,6 +593,7 @@ public class WifiAdHocManager {
 
         void unregisterGroupOwner() {
             if (groupOwnerRegistered) {
+                if (v) Log.d(TAG, "unregisterGroupOwner()");
                 context.unregisterReceiver(wifiDirectBroadcastGroupOwner);
                 groupOwnerRegistered = false;
             }

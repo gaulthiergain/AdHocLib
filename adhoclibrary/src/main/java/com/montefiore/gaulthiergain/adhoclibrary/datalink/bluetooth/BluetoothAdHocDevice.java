@@ -31,7 +31,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
      */
     BluetoothAdHocDevice(BluetoothDevice device) {
-        super(device.getAddress(), device.getName(), Service.BLUETOOTH);
+        super(device.getAddress().toUpperCase(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.uuid = ParcelUuid.fromString(uuidString);
         this.rssi = -1;
@@ -45,7 +45,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      * @param rssi   an integer value which represents the rssi of the remote Bluetooth device.
      */
     BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
-        super(device.getAddress(), device.getName(), Service.BLUETOOTH);
+        super(device.getAddress().toUpperCase(), device.getName(), Service.BLUETOOTH);
         this.uuidString = BluetoothUtil.UUID + device.getAddress().replace(":", "").toLowerCase();
         this.uuid = ParcelUuid.fromString(uuidString);
         this.rssi = rssi;
@@ -59,7 +59,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      *           references) that can be sent through an IBinder.
      */
     private BluetoothAdHocDevice(Parcel in) {
-        super(in.readString(), in.readString(), in.readInt());
+        super(in.readString().toUpperCase(), in.readString(), in.readInt());
         this.uuid = in.readParcelable(ParcelUuid.class.getClassLoader());
         this.uuidString = in.readString();
         this.rssi = in.readInt();
