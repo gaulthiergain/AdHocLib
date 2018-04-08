@@ -11,6 +11,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +28,10 @@ public class AutoTransferManager extends TransferManager {
     private static final int MIN_DELAY_TIME = 2000;
     private static final int MAX_DELAY_TIME = 5000;
 
+    private static final short INIT_STATE = 0;
+    private static final short DISCOVERY_STATE = 1;
+    private static final short CONNECT_STATE = 2;
+
     private final Set<String> connectedDevices;
     private final ListenerAutoApp listenerAutoApp;
     private Timer timer;
@@ -34,12 +39,19 @@ public class AutoTransferManager extends TransferManager {
     private int elapseTimeMax;
     private int elapseTimeMin;
 
+    private ArrayList<AdHocDevice> arrayList;
+
+    private short state;
+    private AdHocDevice currentDevice = null;
+
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
         super(verbose, context);
         setListenerApp(initListener());
 
         this.listenerAutoApp = listenerAutoApp;
         this.connectedDevices = new HashSet<>();
+        this.arrayList = new ArrayList<>();
+        this.state = INIT_STATE;
     }
 
     public AutoTransferManager(boolean verbose, Context context, Config config, ListenerAutoApp listenerAutoApp) {
@@ -48,6 +60,8 @@ public class AutoTransferManager extends TransferManager {
 
         this.listenerAutoApp = listenerAutoApp;
         this.connectedDevices = new HashSet<>();
+        this.arrayList = new ArrayList<>();
+        this.state = INIT_STATE;
     }
 
     public void stopDiscovery() {
@@ -59,54 +73,25 @@ public class AutoTransferManager extends TransferManager {
     }
 
     private void runDiscovery(int time) {
+
+
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
 
-                String name = getBluetoothAdapterName();
-                if (name != null) {
+                if (state == INIT_STATE) {
 
-                    for (AdHocDevice adHocDevice : getPairedDevices().values()) {
-                        Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
-                        if (!connectedDevices.contains(adHocDevice.getMacAddress())
-                                && adHocDevice.getDeviceName().contains(PREFIX)) {
-                            try {
-                                connect(adHocDevice);
-                            } catch (DeviceException e) {
-                                e.printStackTrace();
-                            } catch (DeviceAlreadyConnectedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                    if (!name.contains(PREFIX)) {
-                        try {
-                            updateBluetoothAdapterName(PREFIX + name);
-                        } catch (DeviceException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                //update Adapter Name
-                name = getWifiAdapterName();
-                if (name != null && !name.contains(PREFIX)) {
                     try {
-                        updateWifiAdapterName(PREFIX + name);
+                        if (v) Log.d(TAG, "START new discovery");
+                        discovery();
+                        runDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
                     } catch (DeviceException e) {
                         e.printStackTrace();
                     }
-                }
-
-                try {
-                    if (v) Log.d(TAG, "START new discovery");
-                    discovery();
-
+                } else {
+                    Log.d(TAG, "Unable to discovery " + getStateString());
                     runDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
-                } catch (DeviceException e) {
-                    e.printStackTrace();
                 }
             }
         }, time);
@@ -120,8 +105,40 @@ public class AutoTransferManager extends TransferManager {
     public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws IOException {
         super.start();
 
+        String name = getBluetoothAdapterName();
+        if (name != null) {
+            if (!name.contains(PREFIX)) {
+                try {
+                    updateBluetoothAdapterName(PREFIX + name);
+                } catch (DeviceException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //update Adapter Name
+        name = getWifiAdapterName();
+        if (name != null && !name.contains(PREFIX)) {
+            try {
+                updateWifiAdapterName(PREFIX + name);
+            } catch (DeviceException e) {
+                e.printStackTrace();
+            }
+        }
+
         this.elapseTimeMin = elapseTimeMin;
         this.elapseTimeMax = elapseTimeMax;
+
+        HashMap<String, AdHocDevice> paired = getPairedDevices();
+        if (paired != null) {
+            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
+                Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
+                if (!connectedDevices.contains(adHocDevice.getMacAddress())
+                        && adHocDevice.getDeviceName().contains(PREFIX)) {
+                    arrayList.add(adHocDevice);
+                }
+            }
+        }
 
         runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
     }
@@ -132,7 +149,41 @@ public class AutoTransferManager extends TransferManager {
         this.elapseTimeMin = 20000;
         this.elapseTimeMax = 30000;
 
+        String name = getBluetoothAdapterName();
+        if (name != null) {
+            if (!name.contains(PREFIX)) {
+                try {
+                    updateBluetoothAdapterName(PREFIX + name);
+                } catch (DeviceException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //update Adapter Name
+        name = getWifiAdapterName();
+        if (name != null && !name.contains(PREFIX)) {
+            try {
+                updateWifiAdapterName(PREFIX + name);
+            } catch (DeviceException e) {
+                e.printStackTrace();
+            }
+        }
+
+        HashMap<String, AdHocDevice> paired = getPairedDevices();
+        if (paired != null) {
+            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
+                Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
+                if (!connectedDevices.contains(adHocDevice.getMacAddress())
+                        && adHocDevice.getDeviceName().contains(PREFIX)) {
+                    arrayList.add(adHocDevice);
+                }
+            }
+        }
+
         runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
+
+        timerConnect();
     }
 
 
@@ -140,59 +191,37 @@ public class AutoTransferManager extends TransferManager {
         return new ListenerApp() {
             @Override
             public void onDeviceDiscovered(AdHocDevice adHocDevice) {
-                if (v) Log.d(TAG, "AdHoc device found " + adHocDevice.toString());
-                if (adHocDevice.getType() == Service.BLUETOOTH &&
-                        !connectedDevices.contains(adHocDevice.getMacAddress())
-                        && adHocDevice.getDeviceName().contains(PREFIX)) {
-                    try {
-                        if (v) Log.d(TAG, "try to connect to " + adHocDevice);
-                        connect(adHocDevice);
-                    } catch (DeviceException e) {
-                        e.printStackTrace();
-                    } catch (DeviceAlreadyConnectedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                //Ignored
             }
 
             @Override
             public void onDiscoveryStarted() {
                 if (v) Log.d(TAG, "onDiscoveryStarted");
+                state = DISCOVERY_STATE;
             }
 
             @Override
             public void onDiscoveryFailed(Exception e) {
                 if (v) Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
+                state = INIT_STATE;
             }
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-                for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
-                    AdHocDevice device = entry.getValue();
-                    if (device.getType() == Service.WIFI &&
-                            !connectedDevices.contains(device.getMacAddress())
-                            && device.getDeviceName().contains(PREFIX)) {
 
-                        if (v) Log.d(TAG, "Try to connect to " + device);
-                        try {
-                            Thread.sleep(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    connect(entry.getValue());
-                                } catch (DeviceAlreadyConnectedException e) {
-                                    e.printStackTrace();
-                                } catch (DeviceException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }).start();
+                for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
+                    AdHocDevice adHocDevice = entry.getValue();
+
+                    if (adHocDevice.getDeviceName().contains(PREFIX)
+                            && !connectedDevices.contains(adHocDevice.getMacAddress())) {
+
+                        if (v) Log.d(TAG, "Add device " + adHocDevice.toString());
+                        arrayList.add(adHocDevice);
+                    } else{
+                        if (v) Log.d(TAG, "Found device " + adHocDevice.toString());
                     }
                 }
+                state = INIT_STATE;
             }
 
             @Override
@@ -220,18 +249,57 @@ public class AutoTransferManager extends TransferManager {
 
             @Override
             public void onConnection(AdHocDevice adHocDevice) {
+
                 if (v)
                     Log.d(TAG, "Add " + adHocDevice.getMacAddress() + " into connectedDevices set");
+
                 connectedDevices.add(adHocDevice.getMacAddress());
 
                 listenerAutoApp.onConnection(adHocDevice);
+
+                arrayList.remove(adHocDevice);
+
+                state = INIT_STATE;
             }
 
             @Override
             public void onConnectionFailed(Exception e) {
                 listenerAutoApp.onConnectionFailed(e);
+
+                arrayList.remove(currentDevice);
+
+                state = INIT_STATE;
             }
         };
+    }
+
+    private void timerConnect() {
+        Timer timerConnect = new Timer();
+        timerConnect.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                for (AdHocDevice device : arrayList) {
+                    if (state == INIT_STATE) {
+                        try {
+                            currentDevice = device;
+                            Log.d(TAG, "Try to connect to " + device.toString());
+                            state = CONNECT_STATE;
+                            connect(device);
+                        } catch (DeviceException e) {
+                            e.printStackTrace();
+                            state = INIT_STATE;
+                            arrayList.remove(device);
+                        } catch (DeviceAlreadyConnectedException e) {
+                            e.printStackTrace();
+                            state = INIT_STATE;
+                            arrayList.remove(device);
+                        }
+                    } else {
+                        Log.d(TAG, "Unable to connect " + getStateString());
+                    }
+                }
+            }
+        }, 2000, 5000);
     }
 
     public String getOwnName() {
@@ -245,5 +313,18 @@ public class AutoTransferManager extends TransferManager {
         }
 
         return null;
+    }
+
+    private String getStateString() {
+        switch (state) {
+            case DISCOVERY_STATE:
+                return "DISCOVERY";
+            case CONNECT_STATE:
+                return "CONNECTING";
+            case INIT_STATE:
+            default:
+                return "INIT";
+
+        }
     }
 }
