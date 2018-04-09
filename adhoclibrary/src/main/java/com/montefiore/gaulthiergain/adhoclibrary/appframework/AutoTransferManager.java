@@ -1,16 +1,12 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,7 +70,7 @@ public class AutoTransferManager extends TransferManager {
         }
     }
 
-    private void runDiscovery(int time) {
+    private void timerDiscovery(int time) {
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -86,13 +82,13 @@ public class AutoTransferManager extends TransferManager {
                     try {
                         if (v) Log.d(TAG, "START new discovery");
                         discovery();
-                        runDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
+                        timerDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
                     } catch (DeviceException e) {
                         e.printStackTrace();
                     }
                 } else {
                     Log.d(TAG, "Unable to discovery " + getStateString());
-                    runDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
+                    timerDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
                 }
             }
         }, time);
@@ -103,8 +99,7 @@ public class AutoTransferManager extends TransferManager {
         return random.nextInt(max - min + 1) + min;
     }
 
-    public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws IOException {
-
+    private void updateAdapterName() {
         String name = getBluetoothAdapterName();
         if (name != null) {
             if (!name.contains(PREFIX)) {
@@ -125,66 +120,46 @@ public class AutoTransferManager extends TransferManager {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void connectPairedDevices() {
+        HashMap<String, AdHocDevice> paired = getPairedDevices();
+        if (paired != null) {
+            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
+                if (v) Log.d(TAG, "Paired devices: " + String.valueOf(adHocDevice));
+                if (!connectedDevices.contains(adHocDevice.getMacAddress())
+                        && adHocDevice.getDeviceName().contains(PREFIX)) {
+                    arrayList.add(adHocDevice);
+                }
+            }
+        }
+    }
+
+    private void _startDiscovery(int elapseTimeMin, int elapseTimeMax) {
 
         this.elapseTimeMin = elapseTimeMin;
         this.elapseTimeMax = elapseTimeMax;
 
-        HashMap<String, AdHocDevice> paired = getPairedDevices();
-        if (paired != null) {
-            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
-                Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
-                if (!connectedDevices.contains(adHocDevice.getMacAddress())
-                        && adHocDevice.getDeviceName().contains(PREFIX)) {
-                    arrayList.add(adHocDevice);
-                }
-            }
-        }
+        // Update adapter name if necessary
+        updateAdapterName();
 
-        runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
-    }
+        // Get all paired devices (bluetooth only)
+        connectPairedDevices();
 
-    public void startDiscovery() throws IOException {
+        // Run discovery process
+        timerDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
 
-        this.elapseTimeMin = 50000;
-        this.elapseTimeMax = 60000;
-
-        String name = getBluetoothAdapterName();
-        if (name != null) {
-            if (!name.contains(PREFIX)) {
-                try {
-                    updateBluetoothAdapterName(PREFIX + name);
-                } catch (DeviceException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        //update Adapter Name
-        name = getWifiAdapterName();
-        if (name != null && !name.contains(PREFIX)) {
-            try {
-                updateWifiAdapterName(PREFIX + name);
-            } catch (DeviceException e) {
-                e.printStackTrace();
-            }
-        }
-
-        HashMap<String, AdHocDevice> paired = getPairedDevices();
-        if (paired != null) {
-            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
-                Log.d(TAG, "PAIRED: " + String.valueOf(adHocDevice));
-                if (!connectedDevices.contains(adHocDevice.getMacAddress())
-                        && adHocDevice.getDeviceName().contains(PREFIX)) {
-                    arrayList.add(adHocDevice);
-                }
-            }
-        }
-
-        runDiscovery(waitRandomTime(MIN_DELAY_TIME, MAX_DELAY_TIME));
-
+        // Run connection process
         timerConnect();
     }
 
+    public void startDiscovery(int elapseTimeMin, int elapseTimeMax) {
+        _startDiscovery(elapseTimeMin, elapseTimeMax);
+    }
+
+    public void startDiscovery() {
+        _startDiscovery(50000, 60000);
+    }
 
     private ListenerApp initListener() {
         return new ListenerApp() {
@@ -280,8 +255,8 @@ public class AutoTransferManager extends TransferManager {
                 for (AdHocDevice device : arrayList) {
                     if (state == INIT_STATE) {
                         try {
+                            if (v) Log.d(TAG, "Try to connect to " + device.toString());
                             currentDevice = device;
-                            Log.d(TAG, "Try to connect to " + device.toString());
                             state = CONNECT_STATE;
                             connect(device);
                         } catch (DeviceException e) {
@@ -294,11 +269,11 @@ public class AutoTransferManager extends TransferManager {
                             arrayList.remove(device);
                         }
                     } else {
-                        Log.d(TAG, "Unable to connect " + getStateString());
+                        if (v) Log.d(TAG, "Unable to connect " + getStateString());
                     }
                 }
             }
-        }, 2000, 5000);
+        }, MIN_DELAY_TIME, MAX_DELAY_TIME);
     }
 
     public String getOwnName() {
