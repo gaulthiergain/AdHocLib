@@ -45,7 +45,12 @@ import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager {
 
+
     public static String TAG = "[AdHoc][WifiManager]";
+
+    private static final int DISCOVERY_TIME = 10000;
+    private static final byte DISCOVERY_COMPLETED = 0;
+    private static final byte DISCOVERY_FAILED = 1;
 
     private boolean v;
     private Context context;
@@ -55,9 +60,8 @@ public class WifiAdHocManager {
     private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
-    private HashMap<String, AdHocDevice> hashMapWifiDevices;
+    private HashMap<String, AdHocDevice> mapMacDevices;
 
-    private static final int DISCOVERY_TIME = 10000;
     private int valueGroupOwner = -1;
 
     /**
@@ -81,7 +85,7 @@ public class WifiAdHocManager {
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
             this.broadcastWifi = new BroadcastWifi();
-            this.hashMapWifiDevices = new HashMap<>();
+            this.mapMacDevices = new HashMap<>();
             if (connectionListener != null) {
                 this.connectionListener = connectionListener;
                 this.registerConnection();
@@ -156,7 +160,7 @@ public class WifiAdHocManager {
     }
 
     /**
-     * Method allowing to discovery other wifi Direct hashMapWifiDevices.
+     * Method allowing to discovery other wifi Direct mapMacDevices.
      *
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */
@@ -164,9 +168,7 @@ public class WifiAdHocManager {
 
         final IntentFilter intentFilter = new IntentFilter();
 
-        //  Indicates a change in the Wi-Fi P2P status.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        //  Indicates a change in the list of available hashMapWifiDevices.
+        //  Indicates a change in the list of available mapMacDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
 
         // Listener onDiscoveryStarted
@@ -185,8 +187,8 @@ public class WifiAdHocManager {
                     WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress.toUpperCase(),
                             wifiP2pDevice.deviceName);
 
-                    if (!hashMapWifiDevices.containsKey(device.getMacAddress())) {
-                        hashMapWifiDevices.put(device.getMacAddress(), device);
+                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                        mapMacDevices.put(device.getMacAddress(), device);
                         if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
                     } else {
                         if (v) Log.d(TAG, "Device " + device.getDeviceName() + " already present");
@@ -198,15 +200,29 @@ public class WifiAdHocManager {
             }
         };
 
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
+            // Used handler to avoid updating views in other threads than the main thread
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case DISCOVERY_COMPLETED:
+                        discoveryListener.onDiscoveryCompleted(mapMacDevices);
+                        break;
+                    case DISCOVERY_FAILED:
+                        discoveryListener.onDiscoveryFailed((Exception) msg.obj);
+                        break;
+                }
+            }
+        };
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(DISCOVERY_TIME);
+                    mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
                 } catch (InterruptedException e) {
-                    discoveryListener.onDiscoveryFailed(e);
+                    mHandler.obtainMessage(DISCOVERY_FAILED, e).sendToTarget();
                 }
-                discoveryListener.onDiscoveryCompleted(hashMapWifiDevices);
             }
         }).start();
 
@@ -222,7 +238,7 @@ public class WifiAdHocManager {
     public void connect(final String address) {
 
         // Get The device from its address
-        final WifiAdHocDevice device = (WifiAdHocDevice) hashMapWifiDevices.get(address);
+        final WifiAdHocDevice device = (WifiAdHocDevice) mapMacDevices.get(address);
         final WifiP2pConfig config = new WifiP2pConfig();
 
         if (config.groupOwnerIntent != -1) {
