@@ -20,6 +20,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -196,11 +197,17 @@ public class ThreadServer extends Thread {
      */
     public void cancel() throws IOException {
         if (v) Log.d(TAG, "cancel() thread server");
-        for (ThreadClient threadClient : arrayThreadClients) {
+
+        // Use iterator to
+        Iterator iterator = arrayThreadClients.iterator();
+        while(iterator.hasNext()) {
+            ThreadClient threadClient = (ThreadClient) iterator.next();
             // Stop all threads client
             if (v) Log.d(TAG, "STOP thread " + threadClient.getNameThread());
             threadClient.interrupt();
         }
+
+        arrayThreadClients.clear();
 
         // Close the server socket to throw an exception and thus stop the server thread
         serverSocket.close();
