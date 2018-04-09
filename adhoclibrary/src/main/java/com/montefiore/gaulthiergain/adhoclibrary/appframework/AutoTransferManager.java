@@ -283,7 +283,7 @@ public class AutoTransferManager extends TransferManager {
         }
 
         if (isBluetoothEnable()) {
-            return getWifiAdapterName();
+            return getBluetoothAdapterName();
         }
 
         return null;
