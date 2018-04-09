@@ -385,7 +385,7 @@ public class DataLinkManager {
             case Service.WIFI:
                 return "WiFi";
             default:
-                return "Unknwon";
+                return "Unknown";
         }
     }
 
