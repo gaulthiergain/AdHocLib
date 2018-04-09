@@ -228,7 +228,7 @@ public class WifiAdHocManager {
         if (config.groupOwnerIntent != -1) {
             config.groupOwnerIntent = valueGroupOwner;
         }
-        config.deviceAddress = device.getMacAddress();
+        config.deviceAddress = device.getMacAddress().toLowerCase();
         config.wps.setup = WpsInfo.PBC;
 
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
@@ -240,18 +240,10 @@ public class WifiAdHocManager {
 
             @Override
             public void onFailure(int reasonCode) {
-                if (v) Log.e(TAG, "Error during connecting Wifi Direct (onFailure): " + reasonCode);
-                switch (reasonCode) {
-                    case ERROR:
-                        connectionListener.onConnectionFailed(new NoConnectionException("Internal Error"));
-                        break;
-                    case P2P_UNSUPPORTED:
-                        connectionListener.onConnectionFailed(new NoConnectionException("P2P is not supported"));
-                        break;
-                    case BUSY:
-                        connectionListener.onConnectionFailed(new NoConnectionException("P2P is Busy"));
-                        break;
-                }
+                if (v)
+                    Log.e(TAG, "Error during connecting Wifi Direct (onFailure): " + errorCode(reasonCode));
+
+                connectionListener.onConnectionFailed(new NoConnectionException(errorCode(reasonCode)));
             }
         });
     }
@@ -488,6 +480,19 @@ public class WifiAdHocManager {
         void getGroupOwner(String address);
     }
 
+    private String errorCode(int reasonCode) {
+        switch (reasonCode) {
+            case ERROR:
+                return "P2P internal error";
+            case P2P_UNSUPPORTED:
+                return "P2P is not supported";
+            case BUSY:
+                return "P2P is busy";
+        }
+
+        return "Unknown error";
+    }
+
     class BroadcastWifi {
         private boolean discoveryRegistered = false;
         private boolean connectionRegistered = false;
@@ -530,20 +535,8 @@ public class WifiAdHocManager {
 
                 @Override
                 public void onFailure(int reasonCode) {
-                    switch (reasonCode) {
-                        case ERROR:
-                            discoveryListener.onDiscoveryFailed(
-                                    new WifiDiscoveryException("Internal Error"));
-                            break;
-                        case P2P_UNSUPPORTED:
-                            discoveryListener.onDiscoveryFailed(
-                                    new WifiDiscoveryException("P2P is not supported"));
-                            break;
-                        case BUSY:
-                            discoveryListener.onDiscoveryFailed(
-                                    new WifiDiscoveryException("P2P is Busy"));
-                            break;
-                    }
+                    discoveryListener.onDiscoveryFailed(
+                            new WifiDiscoveryException(errorCode(reasonCode)));
                 }
             });
         }
