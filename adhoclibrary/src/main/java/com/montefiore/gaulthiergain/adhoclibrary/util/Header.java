@@ -17,6 +17,8 @@ public class Header implements Serializable {
     private String address;
     private String mac;
 
+    private int deviceType;
+
     public Header() {
 
     }
@@ -42,6 +44,14 @@ public class Header implements Serializable {
         this.name = name;
     }
 
+    public Header(int type, String mac, String label, String name, int deviceType) {
+        this.type = type;
+        this.mac = mac;
+        this.label = label;
+        this.name = name;
+        this.deviceType = deviceType;
+    }
+
     public int getType() {
         return type;
     }
@@ -60,6 +70,10 @@ public class Header implements Serializable {
 
     public String getMac() {
         return mac;
+    }
+
+    public int getDeviceType() {
+        return deviceType;
     }
 
     @Override

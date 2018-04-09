@@ -18,6 +18,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBlueto
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUdp;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
@@ -210,6 +211,24 @@ public class DataLinkManager {
         return false;
     }
 
+    public void broadcast(MessageAdHoc message) throws IOException {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.broadcast(message);
+            }
+        }
+    }
+
+    public void broadcast(Object object) throws IOException {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                Header header = new Header(AbstractWrapper.BROADCAST, wrapper.getMac(),
+                        config.getLabel(), wrapper.getAdapterName(), wrapper.getType());
+                wrapper.broadcast(new MessageAdHoc(header, object));
+            }
+        }
+    }
+
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -218,10 +237,12 @@ public class DataLinkManager {
         }
     }
 
-    public void broadcast(MessageAdHoc message) throws IOException {
+    public void broadcastExcept(Object object, String excludedAddress) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
-                wrapper.broadcast(message);
+                Header header = new Header(AbstractWrapper.BROADCAST, wrapper.getMac(),
+                        config.getLabel(), wrapper.getAdapterName(), wrapper.getType());
+                wrapper.broadcastExcept(new MessageAdHoc(header, object), excludedAddress);
             }
         }
     }

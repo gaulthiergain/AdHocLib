@@ -68,16 +68,12 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, adHocDevice.getLabel());
     }
 
-    public void broadcast(Object msg) throws IOException {
-        //todo name
-        dataLinkManager.broadcast(new MessageAdHoc(
-                new Header(AbstractWrapper.BROADCAST, config.getLabel(), "todo"), msg));
+    public void broadcast(Object object) throws IOException {
+        dataLinkManager.broadcast(object);
     }
 
-    public void broadcastExcept(Object msg, AdHocDevice ExcludedDevice) throws IOException {
-        dataLinkManager.broadcastExcept(new MessageAdHoc(
-                        new Header(AbstractWrapper.BROADCAST, config.getLabel(), "todo"), msg),
-                ExcludedDevice.getLabel());
+    public void broadcastExcept(Object object, AdHocDevice excludedDevice) throws IOException {
+        dataLinkManager.broadcastExcept(object, excludedDevice.getLabel());
     }
 
     /*-------------------------------------DataLink methods---------------------------------------*/

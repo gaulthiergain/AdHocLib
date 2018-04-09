@@ -107,4 +107,8 @@ public abstract class AbstractWrapper {
     public int getType() {
         return type;
     }
+
+    public String getMac() {
+        return ownMac;
+    }
 }
