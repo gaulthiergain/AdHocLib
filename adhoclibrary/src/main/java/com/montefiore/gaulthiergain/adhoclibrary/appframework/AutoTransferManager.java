@@ -46,6 +46,7 @@ public class AutoTransferManager extends TransferManager {
 
     public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
         super(verbose, context);
+        this.config.setAttemps(1);
         setListenerApp(initListener());
 
         this.listenerAutoApp = listenerAutoApp;
@@ -56,6 +57,7 @@ public class AutoTransferManager extends TransferManager {
 
     public AutoTransferManager(boolean verbose, Context context, Config config, ListenerAutoApp listenerAutoApp) {
         super(verbose, context, config);
+        this.config.setAttemps(1);
         setListenerApp(initListener());
 
         this.listenerAutoApp = listenerAutoApp;
@@ -73,7 +75,6 @@ public class AutoTransferManager extends TransferManager {
     }
 
     private void runDiscovery(int time) {
-
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -103,7 +104,6 @@ public class AutoTransferManager extends TransferManager {
     }
 
     public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws IOException {
-        super.start();
 
         String name = getBluetoothAdapterName();
         if (name != null) {
@@ -144,10 +144,9 @@ public class AutoTransferManager extends TransferManager {
     }
 
     public void startDiscovery() throws IOException {
-        super.start();
 
-        this.elapseTimeMin = 20000;
-        this.elapseTimeMax = 30000;
+        this.elapseTimeMin = 50000;
+        this.elapseTimeMax = 60000;
 
         String name = getBluetoothAdapterName();
         if (name != null) {
@@ -217,7 +216,7 @@ public class AutoTransferManager extends TransferManager {
 
                         if (v) Log.d(TAG, "Add device " + adHocDevice.toString());
                         arrayList.add(adHocDevice);
-                    } else{
+                    } else {
                         if (v) Log.d(TAG, "Found device " + adHocDevice.toString());
                     }
                 }
