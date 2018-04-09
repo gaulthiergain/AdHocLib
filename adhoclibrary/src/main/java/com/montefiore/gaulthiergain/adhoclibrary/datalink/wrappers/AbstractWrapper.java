@@ -14,17 +14,23 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractWrapper {
 
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
-    public final static byte BROADCAST = 12;
+    final static byte CONNECT_BROADCAST = 12;
+    final static byte DISCONNECT_BROADCAST = 13;
+
+    public final static byte BROADCAST = 14;
 
     int type;
     final boolean v;
     final boolean json;
     final Context context;
+    final boolean connectionFlooding;
 
     final ListenerApp listenerApp;
     final ListenerDataLink listenerDataLink;
@@ -37,15 +43,21 @@ public abstract class AbstractWrapper {
     boolean discoveryCompleted;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
-    AbstractWrapper(boolean v, Context context, boolean json, String label,
-                    HashMap<String, AdHocDevice> mapMacDevices,
+    Set<String> setFloodEvents;
+
+    AbstractWrapper(boolean v, Context context, Config config, HashMap<String, AdHocDevice> mapMacDevices,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
-        this.json = json;
+        this.json = config.isJson();
         this.enabled = true;
+        this.connectionFlooding = config.isConnectionFlooding();
+        if (connectionFlooding) {
+            // Use set only if connectionFlooding option is enabled
+            this.setFloodEvents = new HashSet<>();
+        }
         this.context = context;
-        this.label = label;
+        this.label = config.getLabel();
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
         this.mapMacDevices = mapMacDevices;
@@ -72,22 +84,6 @@ public abstract class AbstractWrapper {
 
     public abstract void init(Config config) throws IOException;
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean isDiscoveryCompleted() {
-        return discoveryCompleted;
-    }
-
-    public void resetDiscoveryFlag() {
-        this.discoveryCompleted = false;
-    }
-
-    public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
-        this.discoveryListener = discoveryListener;
-    }
-
     public abstract void unregisterAdapter();
 
     public abstract void sendMessage(MessageAdHoc message, String address) throws IOException;
@@ -104,11 +100,41 @@ public abstract class AbstractWrapper {
 
     public abstract String getAdapterName();
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public boolean isDiscoveryCompleted() {
+        return discoveryCompleted;
+    }
+
+    public void resetDiscoveryFlag() {
+        this.discoveryCompleted = false;
+    }
+
+    public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
+        this.discoveryListener = discoveryListener;
+    }
+
     public int getType() {
         return type;
     }
 
     public String getMac() {
         return ownMac;
+    }
+
+    boolean checkFloodEvent(MessageAdHoc message) throws IOException {
+
+        String id = (String) message.getPdu();
+
+        if (!setFloodEvents.contains(id)) {
+            setFloodEvents.add(id);
+            broadcastExcept(message, message.getHeader().getLabel());
+
+            return true;
+        }
+
+        return false;
     }
 }

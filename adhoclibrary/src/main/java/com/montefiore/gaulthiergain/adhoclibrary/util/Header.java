@@ -86,4 +86,8 @@ public class Header implements Serializable {
                 ", mac='" + mac + '\'' +
                 '}';
     }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 }

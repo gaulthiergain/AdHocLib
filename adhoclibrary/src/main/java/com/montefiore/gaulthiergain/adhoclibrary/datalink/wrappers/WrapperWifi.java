@@ -339,6 +339,31 @@ public class WrapperWifi extends WrapperConnOriented {
                 }
                 break;
             }
+            case CONNECT_BROADCAST: {
+                if (checkFloodEvent(message)) {
+
+                    // Get Messsage Header
+                    Header header = message.getHeader();
+
+                    // Remote connection happens in other node
+                    listenerApp.onConnection(new AdHocDevice(header.getLabel(), header.getMac(),
+                            header.getName(), type, false));
+                }
+
+                break;
+            }
+            case DISCONNECT_BROADCAST: {
+                if (checkFloodEvent(message)) {
+
+                    // Get Messsage Header
+                    Header header = message.getHeader();
+
+                    // Remote connection is closed in other node
+                    listenerApp.onConnectionClosed(new AdHocDevice(header.getLabel(), header.getMac(),
+                            header.getName(), type, false));
+                }
+                break;
+            }
             case BROADCAST: {
                 // Get Messsage Header
                 Header header = message.getHeader();

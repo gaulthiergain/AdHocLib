@@ -53,8 +53,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config.isJson(), config.getLabel(),
-                mapAddressDevice, listenerApp, listenerDataLink);
+        super(verbose, context, config, mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             this.type = Service.WIFI;
@@ -252,7 +251,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
         udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
-                processMsgReceived(message);
+                try {
+                    processMsgReceived(message);
+                } catch (IOException e) {
+                    listenerApp.processMsgException(e);
+                }
             }
         });
 
@@ -298,7 +301,19 @@ public class WrapperWifiUdp extends AbstractWrapper {
         // Used to avoid updating views in other threads than the main thread
         public void handleMessage(Message msg) {
             // Used handler to avoid updating views in other threads than the main thread
-            listenerApp.onConnectionClosed((AdHocDevice) msg.obj);
+            AdHocDevice adHocDevice = (AdHocDevice) msg.obj;
+
+            listenerApp.onConnectionClosed(adHocDevice);
+
+            // If connectionFlooding option is enable, flood disconnect events
+            if (connectionFlooding) {
+                String id = adHocDevice.getLabel() + System.currentTimeMillis();
+                setFloodEvents.add(id);
+                Header header = new Header(AbstractWrapper.DISCONNECT_BROADCAST,
+                        adHocDevice.getMacAddress(), adHocDevice.getLabel(), adHocDevice.getDeviceName(),
+                        adHocDevice.getType());
+                broadcastExcept(new MessageAdHoc(header, id), adHocDevice.getLabel());
+            }
         }
     };
 
@@ -371,7 +386,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
         }
     }
 
-    private void processMsgReceived(final MessageAdHoc message) {
+    private void processMsgReceived(final MessageAdHoc message) throws IOException {
 
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
@@ -399,6 +414,14 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 // Callback connection
                 listenerApp.onConnection(device);
 
+                // If connectionFlooding option is enable, flood connect events
+                if (connectionFlooding) {
+                    String id = header.getLabel() + System.currentTimeMillis();
+                    setFloodEvents.add(id);
+                    header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                    broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                }
+
                 break;
             }
             case CONNECT_CLIENT: {
@@ -420,6 +443,39 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 // Callback connection
                 listenerApp.onConnection(device);
 
+                // If connectionFlooding option is enable, flood connect events
+                if (connectionFlooding) {
+                    String id = header.getLabel() + System.currentTimeMillis();
+                    setFloodEvents.add(id);
+                    header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                    broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                }
+
+                break;
+            }
+            case CONNECT_BROADCAST: {
+                if (checkFloodEvent(message)) {
+
+                    // Get Messsage Header
+                    Header header = message.getHeader();
+
+                    // Remote connection happens in other node
+                    listenerApp.onConnection(new AdHocDevice(header.getLabel(), header.getMac(),
+                            header.getName(), type, false));
+                }
+
+                break;
+            }
+            case DISCONNECT_BROADCAST: {
+                if (checkFloodEvent(message)) {
+
+                    // Get Messsage Header
+                    Header header = message.getHeader();
+
+                    // Remote connection is closed in other node
+                    listenerApp.onConnectionClosed(new AdHocDevice(header.getLabel(), header.getMac(),
+                            header.getName(), type, false));
+                }
                 break;
             }
             case BROADCAST: {

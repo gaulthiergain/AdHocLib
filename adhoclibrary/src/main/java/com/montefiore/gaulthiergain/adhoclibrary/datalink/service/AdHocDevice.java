@@ -5,12 +5,15 @@ public class AdHocDevice {
     protected String label;
     protected final String deviceName;
     protected final String macAddress;
-    protected int type;
+    protected final int type;
+
+    private final boolean directedConnected;
 
     public AdHocDevice(String macAddress, String deviceName, int type) {
         this.macAddress = macAddress;
         this.deviceName = checkName(deviceName);
         this.type = type;
+        this.directedConnected = true;
     }
 
     public AdHocDevice(String label, String macAddress, String deviceName, int type) {
@@ -18,6 +21,16 @@ public class AdHocDevice {
         this.macAddress = macAddress;
         this.deviceName = checkName(deviceName);
         this.type = type;
+        this.directedConnected = true;
+    }
+
+    public AdHocDevice(String label, String macAddress, String deviceName, int type,
+                       boolean directedConnected) {
+        this.label = label;
+        this.macAddress = macAddress;
+        this.deviceName = checkName(deviceName);
+        this.type = type;
+        this.directedConnected = directedConnected;
     }
 
     private String checkName(String deviceName) {
@@ -46,6 +59,10 @@ public class AdHocDevice {
 
     public int getType() {
         return type;
+    }
+
+    public boolean isDirectedConnected() {
+        return directedConnected;
     }
 
     @Override

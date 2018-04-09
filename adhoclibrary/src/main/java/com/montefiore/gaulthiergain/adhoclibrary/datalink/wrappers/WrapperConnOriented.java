@@ -30,8 +30,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
     WrapperConnOriented(boolean v, Context context, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, config.isJson(), config.getLabel(),
-                mapAddressDevice, listenerApp, listenerDataLink);
+        super(v, context, config, mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.attemps = config.getAttemps();
         this.nbThreads = nbThreads;
@@ -110,12 +109,22 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
             // Callback connection closed
             listenerApp.onConnectionClosed(adHocDevice);
+
+            // If connectionFlooding option is enable, flood disconnect events
+            if (connectionFlooding) {
+                String id = adHocDevice.getLabel() + System.currentTimeMillis();
+                setFloodEvents.add(id);
+                Header header = new Header(AbstractWrapper.DISCONNECT_BROADCAST,
+                        adHocDevice.getMacAddress(), adHocDevice.getLabel(), adHocDevice.getDeviceName(),
+                        adHocDevice.getType());
+                broadcastExcept(new MessageAdHoc(header, id), adHocDevice.getLabel());
+            }
         } else {
             throw new NoConnectionException("Error while closing connection");
         }
     }
 
-    void receivedPeerMsg(Header header, SocketManager socketManager) {
+    void receivedPeerMsg(Header header, SocketManager socketManager) throws IOException {
 
         AdHocDevice device = new AdHocDevice(header.getLabel(), header.getMac(),
                 header.getName(), type);
@@ -130,5 +139,13 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
         // Add the active connection into the neighbors object
         neighbors.addNeighbors(header.getLabel(), socketManager);
+
+        // If connectionFlooding option is enable, flood connect events
+        if (connectionFlooding) {
+            String id = header.getLabel() + System.currentTimeMillis();
+            setFloodEvents.add(id);
+            header.setType(AbstractWrapper.CONNECT_BROADCAST);
+            broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+        }
     }
 }

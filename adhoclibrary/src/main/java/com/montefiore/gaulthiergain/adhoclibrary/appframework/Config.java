@@ -1,11 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import android.content.Context;
-
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.BadServerPortException;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.MaxThreadReachedException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.util.UUID;
 
@@ -27,6 +23,7 @@ public class Config {
     private short nbThreadBt;
     private short nbThreadWifi;
     private boolean background;
+    private boolean connectionFlooding;
     private boolean reliableTransportWifi;
 
     public Config() {
@@ -37,12 +34,14 @@ public class Config {
         this.attemps = 3;
         this.serverPort = 52000;
         this.background = true;
+        this.connectionFlooding = false;
         this.reliableTransportWifi = true;
         this.label = String.valueOf(UUID.randomUUID());
     }
 
     public Config(String label, boolean json, boolean secure, int attemps, int serverPort,
-                  short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi) {
+                  short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi,
+                  boolean connectionFlooding) {
         this.label = label;
         this.json = json;
         this.secure = secure;
@@ -51,6 +50,7 @@ public class Config {
         this.nbThreadBt = nbThreadBt;
         this.nbThreadWifi = nbThreadWifi;
         this.background = background;
+        this.connectionFlooding = connectionFlooding;
         this.reliableTransportWifi = reliableTransportWifi;
     }
 
@@ -92,6 +92,10 @@ public class Config {
 
     public String getLabel() {
         return label;
+    }
+
+    public boolean isConnectionFlooding() {
+        return connectionFlooding;
     }
 
     public boolean isReliableTransportWifi() {
@@ -156,4 +160,7 @@ public class Config {
         this.background = background;
     }
 
+    public void setConnectionFlooding(boolean connectionFlooding) {
+        this.connectionFlooding = connectionFlooding;
+    }
 }
