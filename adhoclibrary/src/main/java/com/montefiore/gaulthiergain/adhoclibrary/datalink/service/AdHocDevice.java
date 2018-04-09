@@ -61,6 +61,10 @@ public class AdHocDevice {
         return type;
     }
 
+    public String getStringType() {
+        return display(type);
+    }
+
     public boolean isDirectedConnected() {
         return directedConnected;
     }
@@ -75,7 +79,7 @@ public class AdHocDevice {
                 '}';
     }
 
-    private String display(int type) {
+    protected String display(int type) {
         switch (type) {
             case Service.BLUETOOTH:
                 return "Bluetooth";
