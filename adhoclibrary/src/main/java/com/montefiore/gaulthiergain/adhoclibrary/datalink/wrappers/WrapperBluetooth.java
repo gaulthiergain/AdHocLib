@@ -41,9 +41,9 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     public WrapperBluetooth(boolean verbose, Context context, Config config,
                             HashMap<String, AdHocDevice> mapAddressDevice,
-                            ListenerApp listenerAodv, ListenerDataLink listenerDataLink) throws IOException {
+                            ListenerApp listenerApp, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerAodv, listenerDataLink);
+        super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             this.type = Service.BLUETOOTH;

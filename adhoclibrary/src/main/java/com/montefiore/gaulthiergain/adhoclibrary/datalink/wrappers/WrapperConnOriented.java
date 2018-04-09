@@ -120,7 +120,7 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
         AdHocDevice device = new AdHocDevice(header.getLabel(), header.getMac(),
                 header.getName(), type);
 
-        // Add mapping address (UUID) - AdHoc device
+        // Add mapping address (UUID/IP) - AdHoc device
         mapAddrDevices.put(header.getMac(), device);
 
         if (!neighbors.getNeighbors().containsKey(header.getLabel())) {

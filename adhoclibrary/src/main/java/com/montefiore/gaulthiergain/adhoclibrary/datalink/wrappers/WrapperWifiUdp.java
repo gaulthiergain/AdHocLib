@@ -52,9 +52,9 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
-                          final ListenerApp listenerAodv, final ListenerDataLink listenerDataLink) {
+                          final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
         super(verbose, context, config.isJson(), config.getLabel(),
-                mapAddressDevice, listenerAodv, listenerDataLink);
+                mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             this.type = Service.WIFI;
