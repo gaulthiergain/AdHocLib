@@ -30,10 +30,11 @@ public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
 
-    private final ListenerApp listenerApp;
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
+
     private Config config;
+    private ListenerApp listenerApp;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
@@ -346,6 +347,13 @@ public class DataLinkManager {
             return wrappers[type].getAdapterName();
         }
         return null;
+    }
+
+    public void updateListener(ListenerApp listenerApp) {
+        this.listenerApp = listenerApp;
+        for (AbstractWrapper wrapper : wrappers) {
+            wrapper.updateListener(listenerApp);
+        }
     }
 
     public interface ListenerDiscovery {

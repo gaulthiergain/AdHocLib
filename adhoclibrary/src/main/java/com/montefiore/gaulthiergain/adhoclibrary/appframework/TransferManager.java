@@ -6,14 +6,12 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBa
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -57,7 +55,12 @@ public class TransferManager {
         this(verbose, context, null, config);
     }
 
-    void setListenerApp(ListenerApp listenerApp) {
+    public void updateListenerApp(ListenerApp listenerApp) {
+        this.listenerApp = listenerApp;
+        this.aodvManager.updateListener(listenerApp);
+    }
+
+    protected void setListenerApp(ListenerApp listenerApp) {
         this.listenerApp = listenerApp;
     }
 
@@ -177,6 +180,19 @@ public class TransferManager {
 
     public String getOwnAddress() {
         return config.getLabel();
+    }
+
+    public String getOwnName() {
+
+        if (isWifiEnable()) {
+            return getWifiAdapterName();
+        }
+
+        if (isBluetoothEnable()) {
+            return getBluetoothAdapterName();
+        }
+
+        return null;
     }
 
     public Config getConfig() {

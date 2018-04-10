@@ -35,14 +35,13 @@ public class AodvManager {
 
     private final boolean v;
     private final AodvHelper aodvHelper;
-    private final ListenerApp listenerApp;
     private final HashMap<String, Long> mapDestSequenceNumber;
 
     private String ownName;
     private String ownMac;
-
     private String ownAddress;
     private long ownSequenceNum;
+    private ListenerApp listenerApp;
     private DataLinkManager dataLink;
     private MessageAdHoc dataMessage;
     private ListenerDataLink listenerDataLink;
@@ -795,5 +794,10 @@ public class AodvManager {
 
     public DataLinkManager getDataLink() {
         return dataLink;
+    }
+
+    public void updateListener(ListenerApp listenerApp) {
+        this.listenerApp = listenerApp;
+        this.dataLink.updateListener(listenerApp);
     }
 }

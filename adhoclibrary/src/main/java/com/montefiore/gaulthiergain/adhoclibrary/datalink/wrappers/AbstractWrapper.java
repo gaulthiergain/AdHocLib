@@ -32,7 +32,6 @@ public abstract class AbstractWrapper {
     final Context context;
     final boolean connectionFlooding;
 
-    final ListenerApp listenerApp;
     final ListenerDataLink listenerDataLink;
     final HashMap<String, AdHocDevice> mapMacDevices;
 
@@ -41,6 +40,7 @@ public abstract class AbstractWrapper {
     String ownName;
     boolean enabled;
     boolean discoveryCompleted;
+    ListenerApp listenerApp;
     DataLinkManager.ListenerDiscovery discoveryListener;
 
     Set<String> setFloodEvents;
@@ -136,5 +136,9 @@ public abstract class AbstractWrapper {
         }
 
         return false;
+    }
+
+    public void updateListener(ListenerApp listenerApp) {
+        this.listenerApp = listenerApp;
     }
 }

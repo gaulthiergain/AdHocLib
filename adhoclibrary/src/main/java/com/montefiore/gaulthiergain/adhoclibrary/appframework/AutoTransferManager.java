@@ -276,19 +276,6 @@ public class AutoTransferManager extends TransferManager {
         }, MIN_DELAY_TIME, MAX_DELAY_TIME);
     }
 
-    public String getOwnName() {
-
-        if (isWifiEnable()) {
-            return getWifiAdapterName();
-        }
-
-        if (isBluetoothEnable()) {
-            return getBluetoothAdapterName();
-        }
-
-        return null;
-    }
-
     private String getStateString() {
         switch (state) {
             case DISCOVERY_STATE:
