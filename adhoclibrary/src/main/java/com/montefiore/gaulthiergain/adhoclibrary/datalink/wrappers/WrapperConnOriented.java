@@ -126,19 +126,26 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
     void receivedPeerMsg(Header header, SocketManager socketManager) throws IOException {
 
+        boolean event = false;
+
         AdHocDevice device = new AdHocDevice(header.getLabel(), header.getMac(),
                 header.getName(), type);
 
         // Add mapping address (UUID/IP) - AdHoc device
         mapAddrDevices.put(header.getMac(), device);
 
+        // Check if the device is already in neighbors
         if (!neighbors.getNeighbors().containsKey(header.getLabel())) {
-            // Callback connection
-            listenerApp.onConnection(device);
+            event = true;
         }
 
         // Add the active connection into the neighbors object
         neighbors.addNeighbors(header.getLabel(), socketManager);
+
+        // Callback connection
+        if (event) {
+            listenerApp.onConnection(device);
+        }
 
         // If connectionFlooding option is enable, flood connect events
         if (connectionFlooding) {

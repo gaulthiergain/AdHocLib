@@ -3,11 +3,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.ParcelUuid;
-import android.os.Parcelable;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.util.UUID;
 
@@ -18,7 +16,7 @@ import java.util.UUID;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
+public class BluetoothAdHocDevice extends AdHocDevice {
 
     private final String uuidString;
     private final ParcelUuid uuid;
@@ -59,7 +57,7 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      *           references) that can be sent through an IBinder.
      */
     private BluetoothAdHocDevice(Parcel in) {
-        super(in.readString().toUpperCase(), in.readString(), in.readInt());
+        super(in.readString(), in.readString(), in.readString(), in.readInt(), in.readByte() != 0);
         this.uuid = in.readParcelable(ParcelUuid.class.getClassLoader());
         this.uuidString = in.readString();
         this.rssi = in.readInt();
@@ -90,13 +88,10 @@ public class BluetoothAdHocDevice extends AdHocDevice implements Parcelable {
      */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(label);
-        dest.writeString(deviceName);
-        dest.writeString(macAddress);
-        dest.writeInt(type);
+        super.writeToParcel(dest, flags);
+        dest.writeParcelable(uuid, flags);
         dest.writeString(uuidString);
         dest.writeInt(rssi);
-        dest.writeParcelable(uuid, flags);
         dest.writeParcelable(device, flags);
     }
 

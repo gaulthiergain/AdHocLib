@@ -172,8 +172,8 @@ public class TransferManager {
         dataLinkManager.disconnectAll();
     }
 
-    public void disconnect(String remoteDest) throws IOException {
-        dataLinkManager.disconnect(remoteDest);
+    public void disconnect(AdHocDevice adHocDevice) throws IOException {
+        dataLinkManager.disconnect(adHocDevice.getLabel());
     }
 
     /*-----------------------------------------Getters--------------------------------------------*/

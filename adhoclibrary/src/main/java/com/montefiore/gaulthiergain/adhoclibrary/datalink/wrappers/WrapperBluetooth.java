@@ -73,14 +73,20 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
-        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress()); //todo exceptsion if null
 
-        if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
-            _connect(btDevice);
+        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress()); //todo exceptsion if null
+        if (btDevice != null) {
+            if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
+                _connect(btDevice);
+            } else {
+                throw new DeviceAlreadyConnectedException(btDevice.getUuid()
+                        + " is already connected");
+            }
         } else {
-            throw new DeviceAlreadyConnectedException(btDevice.getUuid()
-                    + " is already connected");
+            BluetoothAdHocDevice btDevice1 = (BluetoothAdHocDevice) device;
+            Log.d(TAG, btDevice1.toString());
         }
+
     }
 
     @Override
@@ -147,7 +153,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
         }
 
         // Add paired devices into the mapUuidDevices
-        for (Map.Entry<String, AdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
 
             if (!mapMacDevices.containsKey(entry.getValue().getMacAddress())) {
                 if (v)

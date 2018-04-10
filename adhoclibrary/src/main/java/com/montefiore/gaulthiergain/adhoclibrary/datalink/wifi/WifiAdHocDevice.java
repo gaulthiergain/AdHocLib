@@ -1,12 +1,11 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
-public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
+public class WifiAdHocDevice extends AdHocDevice {
 
     private String ipAddress;
 
@@ -20,7 +19,8 @@ public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
     }
 
     private WifiAdHocDevice(Parcel in) {
-        super(in.readString(), in.readString(), in.readInt());
+        super(in.readString(), in.readString(), in.readString(), in.readInt(), in.readByte() != 0);
+        this.ipAddress = in.readString();
     }
 
     @Override
@@ -30,10 +30,7 @@ public class WifiAdHocDevice extends AdHocDevice implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(label);
-        dest.writeString(deviceName);
-        dest.writeString(macAddress);
-        dest.writeInt(type);
+        super.writeToParcel(dest, flags);
         dest.writeString(ipAddress);
     }
 

@@ -1,13 +1,24 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-public class AdHocDevice {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class AdHocDevice implements Parcelable {
 
     protected String label;
     protected final String deviceName;
     protected final String macAddress;
     protected final int type;
 
-    private final boolean directedConnected;
+    private boolean directedConnected;
+
+    public AdHocDevice() {
+        this.deviceName = null;
+        this.macAddress = null;
+        this.type = 0;
+    }
 
     public AdHocDevice(String macAddress, String deviceName, int type) {
         this.macAddress = macAddress;
@@ -26,10 +37,7 @@ public class AdHocDevice {
 
     public AdHocDevice(String label, String macAddress, String deviceName, int type,
                        boolean directedConnected) {
-        this.label = label;
-        this.macAddress = macAddress;
-        this.deviceName = checkName(deviceName);
-        this.type = type;
+        this(label, macAddress, deviceName, type);
         this.directedConnected = directedConnected;
     }
 
@@ -61,6 +69,7 @@ public class AdHocDevice {
         return type;
     }
 
+    @JsonIgnore
     public String getStringType() {
         return display(type);
     }
@@ -89,4 +98,34 @@ public class AdHocDevice {
                 return "UNKNOWN";
         }
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(label);
+        dest.writeString(macAddress);
+        dest.writeString(deviceName);
+        dest.writeInt(type);
+        dest.writeByte((byte) (directedConnected ? 1 : 0));
+    }
+
+    private AdHocDevice(Parcel in) {
+        this(in.readString(), in.readString(), in.readString(), in.readInt(), in.readByte() != 0);
+    }
+
+    protected static final Creator<AdHocDevice> CREATOR = new Creator<AdHocDevice>() {
+        @Override
+        public AdHocDevice createFromParcel(Parcel in) {
+            return new AdHocDevice(in);
+        }
+
+        @Override
+        public AdHocDevice[] newArray(int size) {
+            return new AdHocDevice[size];
+        }
+    };
 }

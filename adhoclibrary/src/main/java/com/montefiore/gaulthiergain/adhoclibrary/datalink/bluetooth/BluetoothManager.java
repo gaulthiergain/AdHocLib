@@ -14,7 +14,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -84,11 +83,11 @@ public class BluetoothManager {
      * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
      * BluetoothAdHocDevice object.
      */
-    public HashMap<String, AdHocDevice> getPairedDevices() {
+    public HashMap<String, BluetoothAdHocDevice> getPairedDevices() {
         if (v) Log.d(TAG, "getPairedDevices()");
 
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        HashMap<String, AdHocDevice> hashMapBluetoothPairedDevice = new HashMap<>();
+        HashMap<String, BluetoothAdHocDevice> hashMapBluetoothPairedDevice = new HashMap<>();
 
         if (pairedDevices.size() > 0) {
             // Add each paired device into a hashMap
