@@ -8,7 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
@@ -37,7 +37,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     private boolean secure;
     private String ownStringUUID;
-    private BluetoothManager bluetoothManager;
+    private BluetoothAdHocManager bluetoothAdHocManager;
 
     public WrapperBluetooth(boolean verbose, Context context, Config config,
                             HashMap<String, AdHocDevice> mapAddressDevice,
@@ -47,8 +47,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
         try {
             this.type = Service.BLUETOOTH;
-            this.bluetoothManager = new BluetoothManager(v, context);
-            if (bluetoothManager.isEnabled()) {
+            this.bluetoothAdHocManager = new BluetoothAdHocManager(v, context);
+            if (bluetoothAdHocManager.isEnabled()) {
                 init(config);
             } else {
                 enabled = false;
@@ -73,8 +73,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
-
-        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress()); //todo exceptsion if null
+        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
         if (btDevice != null) {
             if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
                 _connect(btDevice);
@@ -82,10 +81,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 throw new DeviceAlreadyConnectedException(btDevice.getUuid()
                         + " is already connected");
             }
-        } else {
-            BluetoothAdHocDevice btDevice1 = (BluetoothAdHocDevice) device;
-            Log.d(TAG, btDevice1.toString());
-        }
+        }//todo exceptsion if null
 
     }
 
@@ -96,7 +92,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     public void discovery() {
-        bluetoothManager.discovery(new DiscoveryListener() {
+        bluetoothAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
                 listenerApp.onDiscoveryStarted();
@@ -139,7 +135,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 discoveryCompleted = true;
 
                 // Stop and unregister to the discovery process
-                bluetoothManager.unregisterDiscovery();
+                bluetoothAdHocManager.unregisterDiscovery();
             }
 
         });
@@ -148,12 +144,12 @@ public class WrapperBluetooth extends WrapperConnOriented {
     @Override
     public HashMap<String, AdHocDevice> getPaired() {
 
-        if (!bluetoothManager.isEnabled()) {
+        if (!bluetoothAdHocManager.isEnabled()) {
             return null;
         }
 
         // Add paired devices into the mapUuidDevices
-        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothManager.getPairedDevices().entrySet()) {
+        for (Map.Entry<String, BluetoothAdHocDevice> entry : bluetoothAdHocManager.getPairedDevices().entrySet()) {
 
             if (!mapMacDevices.containsKey(entry.getValue().getMacAddress())) {
                 if (v)
@@ -172,36 +168,36 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     public void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
-        bluetoothManager.enableDiscovery(duration);
-        bluetoothManager.onEnableBluetooth(listenerAdapter);
+        bluetoothAdHocManager.enableDiscovery(duration);
+        bluetoothAdHocManager.onEnableBluetooth(listenerAdapter);
         enabled = true;
     }
 
     @Override
     public void disable() {
-        bluetoothManager.disable();
+        bluetoothAdHocManager.disable();
         enabled = false;
     }
 
 
     @Override
     public void unregisterAdapter() {
-        bluetoothManager.unregisterEnableAdapter();
+        bluetoothAdHocManager.unregisterEnableAdapter();
     }
 
     @Override
     public void resetDeviceName() {
-        bluetoothManager.resetDeviceName();
+        bluetoothAdHocManager.resetDeviceName();
     }
 
     @Override
     public boolean updateDeviceName(String name) {
-        return bluetoothManager.updateDeviceName(name);
+        return bluetoothAdHocManager.updateDeviceName(name);
     }
 
     @Override
     public String getAdapterName() {
-        return bluetoothManager.getAdapterName();
+        return bluetoothAdHocManager.getAdapterName();
     }
 
     /*--------------------------------------Private methods---------------------------------------*/

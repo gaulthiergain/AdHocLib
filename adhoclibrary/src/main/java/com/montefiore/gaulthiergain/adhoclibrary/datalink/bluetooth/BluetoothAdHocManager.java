@@ -15,6 +15,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ import java.util.Set;
  * Manage the Bluetooth discovery and the peering with other bluetooth devices.
  */
 
-public class BluetoothManager {
+public class BluetoothAdHocManager {
 
     private final boolean v;
     private final Context context;
@@ -45,7 +47,7 @@ public class BluetoothManager {
      * @throws DeviceException Signals that a Bluetooth Device Exception exception
      *                         has occurred.
      */
-    public BluetoothManager(boolean verbose, Context context)
+    public BluetoothAdHocManager(boolean verbose, Context context)
             throws DeviceException {
 
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -237,6 +239,12 @@ public class BluetoothManager {
             return bluetoothAdapter.getName();
         }
         return null;
+    }
+
+    public void unpairDevice(BluetoothDevice device) throws InvocationTargetException,
+            IllegalAccessException, NoSuchMethodException {
+        Method m = device.getClass().getMethod("removeBond", (Class[]) null);
+        m.invoke(device, (Object[]) null);
     }
 
     public void onEnableBluetooth(final ListenerAdapter listenerAdapter) {
