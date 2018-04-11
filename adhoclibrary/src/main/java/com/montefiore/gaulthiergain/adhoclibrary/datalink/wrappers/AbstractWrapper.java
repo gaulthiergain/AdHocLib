@@ -75,6 +75,8 @@ public abstract class AbstractWrapper {
 
     public abstract void disable();
 
+    public abstract void updateContext(Context context);
+
     public abstract void unregisterConnection();
 
     public abstract void resetDeviceName();

@@ -357,6 +357,14 @@ public class DataLinkManager {
         }
     }
 
+    public void updateContext(Context context) {
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                wrapper.updateContext(context);
+            }
+        }
+    }
+
     public interface ListenerDiscovery {
         void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }

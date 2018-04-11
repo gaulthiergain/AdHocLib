@@ -159,6 +159,11 @@ public class WrapperWifi extends WrapperConnOriented {
         enabled = false;
     }
 
+    @Override
+    public void updateContext(Context context) {
+        wifiAdHocManager.updateContext(context);
+    }
+
 
     @Override
     public void unregisterAdapter() {

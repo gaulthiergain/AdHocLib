@@ -60,6 +60,10 @@ public class TransferManager {
         this.listenerApp = listenerApp;
     }
 
+    public void updateContext(Context context){
+        this.dataLinkManager.updateContext(context);
+    }
+
     /*--------------------------------------Network methods---------------------------------------*/
 
 

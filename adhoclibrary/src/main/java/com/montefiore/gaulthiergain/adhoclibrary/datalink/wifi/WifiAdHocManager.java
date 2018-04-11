@@ -488,6 +488,10 @@ public class WifiAdHocManager {
         return wifi != null && wifi.isWifiEnabled();
     }
 
+    public void updateContext(Context context) {
+        this.context = context;
+    }
+
     public interface ListenerWifiDeviceName {
         void getDeviceName(String name);
     }

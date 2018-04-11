@@ -153,6 +153,11 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
+    public void updateContext(Context context) {
+        wifiAdHocManager.updateContext(context);
+    }
+
+    @Override
     public void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }

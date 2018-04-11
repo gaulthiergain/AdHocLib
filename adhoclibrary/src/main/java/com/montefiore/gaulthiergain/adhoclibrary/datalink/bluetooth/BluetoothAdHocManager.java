@@ -28,11 +28,11 @@ import java.util.Set;
 public class BluetoothAdHocManager {
 
     private final boolean v;
-    private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
     private final String TAG = "[AdHoc][Blue.Manager]";
     private final HashMap<String, AdHocDevice> hashMapBluetoothDevice;
 
+    private Context context;
     private String initialName;
     private boolean registered = false;
     private BroadcastReceiver mReceiverAdapter;
@@ -278,5 +278,9 @@ public class BluetoothAdHocManager {
             context.unregisterReceiver(mReceiverAdapter);
             mReceiverAdapter = null;
         }
+    }
+
+    public void updateContext(Context context) {
+        this.context = context;
     }
 }

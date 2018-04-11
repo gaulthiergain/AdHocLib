@@ -179,6 +179,10 @@ public class WrapperBluetooth extends WrapperConnOriented {
         enabled = false;
     }
 
+    @Override
+    public void updateContext(Context context) {
+        bluetoothAdHocManager.updateContext(context);
+    }
 
     @Override
     public void unregisterAdapter() {

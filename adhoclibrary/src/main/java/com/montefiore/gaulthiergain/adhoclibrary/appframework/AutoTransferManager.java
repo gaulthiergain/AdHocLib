@@ -1,6 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
