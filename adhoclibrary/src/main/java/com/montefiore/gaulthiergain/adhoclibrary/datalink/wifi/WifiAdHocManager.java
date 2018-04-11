@@ -259,9 +259,17 @@ public class WifiAdHocManager {
     }
 
 
-    public void removeGroup(ListenerAction listenerAction) {
-        if (wifiP2pManager != null) {
-            wifiP2pManager.removeGroup(channel, listenerAction);
+    public void removeGroup(final ListenerAction listenerAction) {
+        if (wifiP2pManager != null && channel != null) {
+            wifiP2pManager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
+                @Override
+                public void onGroupInfoAvailable(WifiP2pGroup group) {
+                    if (group != null && wifiP2pManager != null && channel != null
+                            && group.isGroupOwner()) {
+                        wifiP2pManager.removeGroup(channel, listenerAction);
+                    }
+                }
+            });
         }
     }
 
@@ -354,6 +362,7 @@ public class WifiAdHocManager {
     public void setValueGroupOwner(int valueGroupOwner) {
         this.valueGroupOwner = valueGroupOwner;
     }
+
 
     public void leaveWifiP2PGroup() {
         if (wifiP2pManager != null && channel != null) {
