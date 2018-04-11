@@ -18,7 +18,7 @@ public interface ListenerApp extends ListenerAutoApp {
      */
     void onDiscoveryStarted();
 
-    void onDiscoveryFailed(Exception exception);
+    void onDiscoveryFailed(Exception e);
 
     /**
      * Callback when the discovery is completed.
