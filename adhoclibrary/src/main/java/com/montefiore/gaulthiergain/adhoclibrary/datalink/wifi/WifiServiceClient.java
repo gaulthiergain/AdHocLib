@@ -1,14 +1,13 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,8 +31,6 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * Constructor
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param context         a Context object which gives global information about an application
-     *                        environment.
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
@@ -43,11 +40,11 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * @param attempts        a short value which represents the number of attempts.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public WifiServiceClient(boolean verbose, Context context, boolean json, boolean background,
+    public WifiServiceClient(boolean verbose, boolean json, boolean background,
                              String remoteAddress, int port, int timeOut, short attempts,
                              MessageListener messageListener) {
 
-        super(verbose, context, attempts, json, background, messageListener);
+        super(verbose, attempts, json, background, messageListener);
         this.remoteAddress = remoteAddress;
         this.port = port;
         this.timeOut = timeOut;

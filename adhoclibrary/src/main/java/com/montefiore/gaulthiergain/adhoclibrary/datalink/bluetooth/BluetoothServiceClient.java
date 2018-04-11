@@ -1,15 +1,14 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -30,8 +29,6 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * Constructor
      *
      * @param verbose              a boolean value to set the debug/verbose mode.
-     * @param context              a Context object which gives global information about an application
-     *                             environment.
      * @param json                 a boolean value to use json or bytes in network transfer.
      * @param background           a boolean value which defines if the service must listen messages
      *                             to background.
@@ -41,10 +38,10 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      *                             device.
      * @param messageListener      a messageListener object which serves as callback functions.
      */
-    public BluetoothServiceClient(boolean verbose, Context context, boolean json, boolean background,
+    public BluetoothServiceClient(boolean verbose, boolean json, boolean background,
                                   boolean secure, short attempts,
                                   BluetoothAdHocDevice bluetoothAdHocDevice, MessageListener messageListener) {
-        super(verbose, context, attempts, json, background, messageListener);
+        super(verbose, attempts, json, background, messageListener);
         this.secure = secure;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }

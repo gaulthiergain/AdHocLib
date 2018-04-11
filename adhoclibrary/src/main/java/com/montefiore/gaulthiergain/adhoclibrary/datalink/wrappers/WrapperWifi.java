@@ -42,14 +42,14 @@ public class WrapperWifi extends WrapperConnOriented {
                        final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
             throws IOException {
 
-        super(verbose, context, config, config.getNbThreadWifi(), mapAddressDevice,
+        super(verbose, config, config.getNbThreadWifi(), mapAddressDevice,
                 listenerApp, listenerDataLink);
 
         try {
             this.type = Service.WIFI;
             this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
-                init(config);
+                init(config, context);
             } else {
                 enabled = false;
             }
@@ -61,7 +61,7 @@ public class WrapperWifi extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void init(Config config) throws IOException {
+    public void init(Config config, Context context) throws IOException {
         this.mapAddrMac = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress();
         this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
@@ -194,7 +194,7 @@ public class WrapperWifi extends WrapperConnOriented {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new WifiServiceServer(v, context, json, new MessageListener() {
+        serviceServer = new WifiServiceServer(v, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -237,7 +237,7 @@ public class WrapperWifi extends WrapperConnOriented {
     }
 
     private void _connect() {
-        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, context, json, background,
+        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json, background,
                 groupOwnerAddr, serverPort, 10000, attemps, new MessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {

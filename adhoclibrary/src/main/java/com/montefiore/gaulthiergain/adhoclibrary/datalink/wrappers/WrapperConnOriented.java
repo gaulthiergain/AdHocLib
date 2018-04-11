@@ -28,9 +28,9 @@ public abstract class WrapperConnOriented extends AbstractWrapper {
 
     ServiceServer serviceServer;
 
-    WrapperConnOriented(boolean v, Context context, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
+    WrapperConnOriented(boolean v, Config config, short nbThreads, HashMap<String, AdHocDevice> mapAddressDevice,
                         ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
-        super(v, context, config, mapAddressDevice, listenerApp, listenerDataLink);
+        super(v, config, mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.attemps = config.getAttemps();
         this.nbThreads = nbThreads;

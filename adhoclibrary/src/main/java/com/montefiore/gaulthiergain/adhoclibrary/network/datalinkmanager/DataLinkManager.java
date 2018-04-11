@@ -255,24 +255,25 @@ public class DataLinkManager {
         return null;
     }
 
-    public void enableAll(final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
+    public void enableAll(Context context, final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         for (AbstractWrapper wrapper : wrappers) {
-            enable(0, wrapper.getType(), listenerAdapter);
+            enable(0, context, wrapper.getType(), listenerAdapter);
         }
     }
 
-    public void enable(int duration, final int type, final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
+    public void enable(int duration, final Context context, final int type,
+                       final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
 
         if (!wrappers[type].isEnabled()) {
             wrappers[type].enable(duration, new ListenerAdapter() {
                 @Override
                 public void onEnableBluetooth(boolean success) {
-                    processListenerAdapter(type, success, listenerAdapter);
+                    processListenerAdapter(type, success, context, listenerAdapter);
                 }
 
                 @Override
                 public void onEnableWifi(boolean success) {
-                    processListenerAdapter(type, success, listenerAdapter);
+                    processListenerAdapter(type, success, context, listenerAdapter);
                 }
             });
         }
@@ -360,10 +361,11 @@ public class DataLinkManager {
         void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
 
-    private void processListenerAdapter(int type, boolean success, final ListenerAdapter listenerAdapter) {
+    private void processListenerAdapter(int type, boolean success, Context context,
+                                        final ListenerAdapter listenerAdapter) {
         if (success) {
             try {
-                wrappers[type].init(config);
+                wrappers[type].init(config, context);
                 wrappers[type].unregisterAdapter();
                 if (type == Service.BLUETOOTH) {
                     listenerAdapter.onEnableBluetooth(true);

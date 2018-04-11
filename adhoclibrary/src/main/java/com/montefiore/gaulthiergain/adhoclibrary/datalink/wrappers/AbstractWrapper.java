@@ -29,7 +29,6 @@ public abstract class AbstractWrapper {
     int type;
     final boolean v;
     final boolean json;
-    final Context context;
     final boolean connectionFlooding;
 
     final ListenerDataLink listenerDataLink;
@@ -45,7 +44,7 @@ public abstract class AbstractWrapper {
 
     Set<String> setFloodEvents;
 
-    AbstractWrapper(boolean v, Context context, Config config, HashMap<String, AdHocDevice> mapMacDevices,
+    AbstractWrapper(boolean v, Config config, HashMap<String, AdHocDevice> mapMacDevices,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
@@ -56,7 +55,7 @@ public abstract class AbstractWrapper {
             // Use set only if connectionFlooding option is enabled
             this.setFloodEvents = new HashSet<>();
         }
-        this.context = context;
+
         this.label = config.getLabel();
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
@@ -82,7 +81,7 @@ public abstract class AbstractWrapper {
 
     public abstract boolean updateDeviceName(String name);
 
-    public abstract void init(Config config) throws IOException;
+    public abstract void init(Config config, Context context) throws IOException;
 
     public abstract void unregisterAdapter();
 

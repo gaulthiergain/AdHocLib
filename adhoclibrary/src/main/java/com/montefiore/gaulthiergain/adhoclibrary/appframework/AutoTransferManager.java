@@ -40,8 +40,8 @@ public class AutoTransferManager extends TransferManager {
     private short state;
     private AdHocDevice currentDevice = null;
 
-    public AutoTransferManager(boolean verbose, Context context, ListenerAutoApp listenerAutoApp) {
-        super(verbose, context);
+    public AutoTransferManager(boolean verbose, ListenerAutoApp listenerAutoApp) {
+        super(verbose);
         this.config.setAttemps(1);
         setListenerApp(initListener());
 
@@ -51,8 +51,8 @@ public class AutoTransferManager extends TransferManager {
         this.state = INIT_STATE;
     }
 
-    public AutoTransferManager(boolean verbose, Context context, Config config, ListenerAutoApp listenerAutoApp) {
-        super(verbose, context, config);
+    public AutoTransferManager(boolean verbose, Config config, ListenerAutoApp listenerAutoApp) {
+        super(verbose, config);
         this.config.setAttemps(1);
         setListenerApp(initListener());
 

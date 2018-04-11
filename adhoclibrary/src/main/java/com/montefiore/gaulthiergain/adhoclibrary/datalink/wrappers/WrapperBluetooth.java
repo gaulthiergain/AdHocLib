@@ -43,13 +43,13 @@ public class WrapperBluetooth extends WrapperConnOriented {
                             HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerApp, ListenerDataLink listenerDataLink) throws IOException {
 
-        super(verbose, context, config, config.getNbThreadBt(), mapAddressDevice, listenerApp, listenerDataLink);
+        super(verbose, config, config.getNbThreadBt(), mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             this.type = Service.BLUETOOTH;
             this.bluetoothAdHocManager = new BluetoothAdHocManager(v, context);
             if (bluetoothAdHocManager.isEnabled()) {
-                init(config);
+                init(config, context);
             } else {
                 enabled = false;
             }
@@ -61,7 +61,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void init(Config config) throws IOException {
+    public void init(Config config, Context context) throws IOException {
         this.secure = config.isSecure();
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
@@ -203,7 +203,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new BluetoothServiceServer(v, context, json, new MessageListener() {
+        serviceServer = new BluetoothServiceServer(v, json, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -244,7 +244,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
-        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v, context,
+        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v,
                 json, background, secure, attemps, bluetoothAdHocDevice, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {

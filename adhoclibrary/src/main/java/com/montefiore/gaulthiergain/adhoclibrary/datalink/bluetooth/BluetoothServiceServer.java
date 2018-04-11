@@ -1,13 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 
-import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ListSocketDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 
@@ -25,14 +22,11 @@ public class BluetoothServiceServer extends ServiceServer {
      * Constructor
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param context         a Context object which gives global information about an application
-     *                        environment.
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public BluetoothServiceServer(boolean verbose, Context context, boolean json,
-                                  MessageListener messageListener) {
-        super(verbose, context, json, messageListener);
+    public BluetoothServiceServer(boolean verbose, boolean json, MessageListener messageListener) {
+        super(verbose, json, messageListener);
     }
 
     /**

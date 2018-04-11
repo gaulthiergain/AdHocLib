@@ -53,13 +53,13 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public WrapperWifiUdp(boolean verbose, Context context, Config config,
                           HashMap<String, AdHocDevice> mapAddressDevice,
                           final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
-        super(verbose, context, config, mapAddressDevice, listenerApp, listenerDataLink);
+        super(verbose, config, mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
             this.type = Service.WIFI;
             this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
-                init(config);
+                init(config, context);
             } else {
                 enabled = false;
             }
@@ -158,7 +158,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     }
 
     @Override
-    public void init(Config config) {
+    public void init(Config config, Context context) {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ownMac = wifiAdHocManager.getOwnMACAddress();

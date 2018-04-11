@@ -44,7 +44,6 @@ public abstract class Service {
     protected int state;
     protected final boolean v;
     protected final boolean json;
-    protected final Context context;
 
     private final MessageListener messageListener;
 
@@ -52,14 +51,11 @@ public abstract class Service {
      * Constructor
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param context         a Context object which gives global information about an application
-     *                        environment.
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    Service(boolean verbose, Context context, boolean json, MessageListener messageListener) {
+    Service(boolean verbose, boolean json, MessageListener messageListener) {
         this.v = verbose;
-        this.context = context;
         this.json = json;
         this.messageListener = messageListener;
     }

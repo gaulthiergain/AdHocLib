@@ -35,17 +35,15 @@ public abstract class ServiceClient extends Service {
      * Constructor
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param context         a Context object which gives global information about an application
-     *                        environment.
      * @param attempts        a short value which represents the number of attempts.
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
      * @param messageListener a messageListener object which serves as callback functions.
      */
-    public ServiceClient(boolean verbose, Context context, short attempts, boolean json,
+    public ServiceClient(boolean verbose, short attempts, boolean json,
                          boolean background, MessageListener messageListener) {
-        super(verbose, context, json, messageListener);
+        super(verbose, json, messageListener);
         this.attempts = attempts;
         this.background = background;
         this.backOffTime = (long) new Random().nextInt(HIGH - LOW) + LOW;

@@ -11,48 +11,44 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TransferManager {
 
     protected final boolean v;
-    protected final Context context;
 
     protected Config config;
     private AodvManager aodvManager;
     private ListenerApp listenerApp;
     private DataLinkManager dataLinkManager;
 
-    private TransferManager(boolean verbose, Context context, final ListenerApp listenerApp,
+    private TransferManager(boolean verbose, final ListenerApp listenerApp,
                             Config config) {
         this.v = verbose;
-        this.context = context;
         this.config = config;
         this.listenerApp = listenerApp;
     }
 
-    public TransferManager(boolean verbose, Context context, final ListenerApp listenerApp) {
-        this(verbose, context, listenerApp, new Config());
+    public TransferManager(boolean verbose, final ListenerApp listenerApp) {
+        this(verbose, listenerApp, new Config());
     }
 
-    public TransferManager(boolean verbose, Context context, Config config,
-                           final ListenerApp listenerApp) {
-        this(verbose, context, listenerApp, config);
+    public TransferManager(boolean verbose, Config config, final ListenerApp listenerApp) {
+        this(verbose, listenerApp, config);
     }
 
-    public void start() throws IOException {
+    public void start(Context context) throws IOException {
         aodvManager = new AodvManager(v, context, config, listenerApp);
         dataLinkManager = aodvManager.getDataLink();
     }
 
-    TransferManager(boolean verbose, Context context) {
-        this(verbose, context, null, new Config());
+    public TransferManager(boolean verbose) {
+        this(verbose, null, new Config());
     }
 
-    TransferManager(boolean verbose, Context context, Config config) {
-        this(verbose, context, null, config);
+    public TransferManager(boolean verbose, Config config) {
+        this(verbose, null, config);
     }
 
     public void updateListenerApp(ListenerApp listenerApp) {
@@ -101,23 +97,24 @@ public class TransferManager {
         return dataLinkManager.getPaired();
     }
 
-    public void enableAll(ListenerAdapter listenerAdapter) {
+    public void enableAll(Context context, ListenerAdapter listenerAdapter) {
         try {
-            dataLinkManager.enableAll(listenerAdapter);
+            dataLinkManager.enableAll(context, listenerAdapter);
         } catch (BluetoothBadDuration ignored) {
         }
     }
 
-    public void enableWifi(ListenerAdapter listenerAdapter) {
+    public void enableWifi(Context context, ListenerAdapter listenerAdapter) {
         try {
-            dataLinkManager.enable(0, Service.WIFI, listenerAdapter);
+            dataLinkManager.enable(0, context, Service.WIFI, listenerAdapter);
         } catch (BluetoothBadDuration ignored) {
 
         }
     }
 
-    public void enableBluetooth(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
-        dataLinkManager.enable(duration, Service.BLUETOOTH, listenerAdapter);
+    public void enableBluetooth(int duration, Context context, ListenerAdapter listenerAdapter)
+            throws BluetoothBadDuration {
+        dataLinkManager.enable(duration, context, Service.BLUETOOTH, listenerAdapter);
     }
 
     public void disableAll() throws IOException {
