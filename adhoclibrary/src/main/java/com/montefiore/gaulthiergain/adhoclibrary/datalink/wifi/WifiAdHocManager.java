@@ -247,7 +247,7 @@ public class WifiAdHocManager {
         final WifiAdHocDevice device = (WifiAdHocDevice) mapMacDevices.get(address);
         final WifiP2pConfig config = new WifiP2pConfig();
 
-        if (config.groupOwnerIntent != -1) {
+        if (valueGroupOwner != -1) {
             config.groupOwnerIntent = valueGroupOwner;
         }
         config.deviceAddress = device.getMacAddress().toLowerCase();
