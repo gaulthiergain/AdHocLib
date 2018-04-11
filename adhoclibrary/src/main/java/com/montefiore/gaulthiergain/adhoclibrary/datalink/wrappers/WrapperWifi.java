@@ -190,7 +190,7 @@ public class WrapperWifi extends WrapperConnOriented {
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
         if (valueGroupOwner < 0 || valueGroupOwner > 15) {
-            throw new GroupOwnerBadValue("GroupOwner value must be ");
+            throw new GroupOwnerBadValue("GroupOwner value must be between 0 and 15");
         }
 
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);

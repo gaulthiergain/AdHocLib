@@ -11,6 +11,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
@@ -362,6 +363,13 @@ public class DataLinkManager {
             if (wrapper.isEnabled()) {
                 wrapper.updateContext(context);
             }
+        }
+    }
+
+    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
+        WrapperWifi wrapperWifi = (WrapperWifi) wrappers[Service.WIFI];
+        if (wrapperWifi.isEnabled()) {
+            wrapperWifi.setGroupOwnerValue(valueGroupOwner);
         }
     }
 

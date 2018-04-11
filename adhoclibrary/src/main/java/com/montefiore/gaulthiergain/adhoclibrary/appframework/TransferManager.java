@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
@@ -60,7 +61,7 @@ public class TransferManager {
         this.listenerApp = listenerApp;
     }
 
-    public void updateContext(Context context){
+    public void updateContext(Context context) {
         this.dataLinkManager.updateContext(context);
     }
 
@@ -157,6 +158,10 @@ public class TransferManager {
         dataLinkManager.resetAdapterName(Service.WIFI);
     }
 
+    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
+        dataLinkManager.setWifiGroupOwnerValue(valueGroupOwner);
+    }
+
     public ArrayList<String> getActifAdapterNames() {
         return dataLinkManager.getActifAdapterNames();
     }
@@ -181,19 +186,6 @@ public class TransferManager {
 
     public String getOwnAddress() {
         return config.getLabel();
-    }
-
-    public String getOwnName() {
-
-        if (isBluetoothEnable()) {
-            return getBluetoothAdapterName();
-        }
-
-        if (isWifiEnable()) {
-            return getWifiAdapterName();
-        }
-
-        return null;
     }
 
     public Config getConfig() {
