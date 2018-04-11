@@ -15,10 +15,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
@@ -89,16 +89,16 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    public void discovery() {
+    public void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-                listenerApp.onDiscoveryStarted();
+                discoveryListener.onDiscoveryStarted();
             }
 
             @Override
             public void onDiscoveryFailed(Exception exception) {
-                listenerApp.onDiscoveryFailed(exception);
+                discoveryListener.onDiscoveryFailed(exception);
             }
 
             @Override
@@ -112,7 +112,7 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                     mapMacDevices.put(device.getMacAddress(), device);
                 }
 
-                listenerApp.onDeviceDiscovered(device);
+                discoveryListener.onDeviceDiscovered(device);
             }
 
             @Override
@@ -129,8 +129,8 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                     }
                 }
 
-                if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevices);
+                if (listenerBothDiscovery != null) {
+                    listenerBothDiscovery.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
@@ -264,7 +264,7 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() {
-        udpPeers = new UdpPeers(true, serverPort, true, new MessageListener() {
+        udpPeers = new UdpPeers(true, serverPort, true, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -533,8 +533,8 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         }
     }
 
-    private ConnectionListener initConnectionListener() {
-        return new ConnectionListener() {
+    private ConnectionWifiListener initConnectionListener() {
+        return new ConnectionWifiListener() {
             @Override
             public void onConnectionStarted() {
                 if (v) Log.d(TAG, "Connection Started");

@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBluetooth;
@@ -36,12 +36,12 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      * @param attempts             a short value which represents the number of attempts.
      * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
      *                             device.
-     * @param messageListener      a messageListener object which serves as callback functions.
+     * @param serviceMessageListener      a serviceMessageListener object which serves as callback functions.
      */
     public BluetoothServiceClient(boolean verbose, boolean json, boolean background,
                                   boolean secure, short attempts,
-                                  BluetoothAdHocDevice bluetoothAdHocDevice, MessageListener messageListener) {
-        super(verbose, attempts, json, background, messageListener);
+                                  BluetoothAdHocDevice bluetoothAdHocDevice, ServiceMessageListener serviceMessageListener) {
+        super(verbose, attempts, json, background, serviceMessageListener);
         this.secure = secure;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }

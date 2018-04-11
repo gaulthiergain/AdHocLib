@@ -17,7 +17,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
@@ -91,16 +91,16 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void discovery() {
+    public void discovery(final DiscoveryListener discoveryListener) {
         bluetoothAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-                listenerApp.onDiscoveryStarted();
+                discoveryListener.onDiscoveryStarted();
             }
 
             @Override
             public void onDiscoveryFailed(Exception e) {
-                listenerApp.onDiscoveryFailed(e);
+                discoveryListener.onDiscoveryFailed(e);
             }
 
             @Override
@@ -111,13 +111,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
                     mapMacDevices.put(device.getMacAddress(), device);
                 }
 
-                listenerApp.onDeviceDiscovered(device);
+                discoveryListener.onDeviceDiscovered(device);
             }
 
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
-
-                //todo refactor this
 
                 // Add device into mapMacDevices
                 for (AdHocDevice device : mapNameDevice.values()) {
@@ -128,8 +126,8 @@ public class WrapperBluetooth extends WrapperConnOriented {
                     }
                 }
 
-                if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevices);
+                if (listenerBothDiscovery != null) {
+                    listenerBothDiscovery.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
@@ -137,7 +135,6 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 // Stop and unregister to the discovery process
                 bluetoothAdHocManager.unregisterDiscovery();
             }
-
         });
     }
 
@@ -207,7 +204,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new BluetoothServiceServer(v, json, new MessageListener() {
+        serviceServer = new BluetoothServiceServer(v, json, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -249,7 +246,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
 
     private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v,
-                json, background, secure, attemps, bluetoothAdHocDevice, new MessageListener() {
+                json, background, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {

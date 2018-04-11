@@ -6,7 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -20,7 +20,7 @@ public class UdpPeers extends Thread {
     private UdpServer udpServer;
 
     @SuppressLint("HandlerLeak")
-    public UdpPeers(boolean verbose, int serverPort, boolean background, final MessageListener messageListener) {
+    public UdpPeers(boolean verbose, int serverPort, boolean background, final ServiceMessageListener serviceMessageListener) {
         this.v = verbose;
         this.handler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -28,11 +28,11 @@ public class UdpPeers extends Thread {
                 switch (msg.what) {
                     case Service.MESSAGE_READ:
                         if (v) Log.d(TAG, "MESSAGE_READ");
-                        messageListener.onMessageReceived((MessageAdHoc) msg.obj);
+                        serviceMessageListener.onMessageReceived((MessageAdHoc) msg.obj);
                         break;
                     case Service.MESSAGE_EXCEPTION:
                         if (v) Log.e(TAG, "MESSAGE_EXCEPTION");
-                        messageListener.onMsgException((Exception) msg.obj);
+                        serviceMessageListener.onMsgException((Exception) msg.obj);
                         break;
                     case Service.LOG_EXCEPTION:
                         if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());

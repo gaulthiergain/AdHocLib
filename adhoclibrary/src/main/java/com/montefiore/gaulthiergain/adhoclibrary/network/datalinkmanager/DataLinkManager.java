@@ -14,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBa
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.IWrapperWifi;
@@ -37,14 +38,12 @@ public class DataLinkManager {
     private final HashMap<String, AdHocDevice> mapAddressDevice;
 
     private Config config;
-    private ListenerApp listenerApp;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
-                           ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
+                           final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
 
         this.config = config;
-        this.listenerApp = listenerApp;
         this.mapAddressDevice = new HashMap<>();
         this.wrappers = new AbstractWrapper[2];
 
@@ -76,7 +75,7 @@ public class DataLinkManager {
         return enabled;
     }
 
-    public void discovery() throws DeviceException {
+    public void discovery(final DiscoveryListener discovery) throws DeviceException {
 
         int enabled = checkState();
         if (enabled == 0) {
@@ -85,34 +84,34 @@ public class DataLinkManager {
 
         if (enabled == wrappers.length) {
             // Both data link communications are enabled
-            bothDiscovery();
+            bothDiscovery(discovery);
         } else {
             // Discovery one by one depending their status
             for (AbstractWrapper wrapper : wrappers) {
                 if (wrapper.isEnabled()) {
-                    wrapper.discovery();
-                    wrapper.setDiscoveryListener(new ListenerDiscovery() {
+                    wrapper.setDiscoveryListener(new ListenerBothDiscovery() {
                         @Override
                         public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-                            listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                            discovery.onDiscoveryCompleted(mapAddressDevice);
                         }
                     });
+                    wrapper.discovery(discovery);
                 }
             }
         }
     }
 
-    private void bothDiscovery() {
+    private void bothDiscovery(final DiscoveryListener discovery) {
 
         @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
             // Used handler to avoid updating views in other threads than the main thread
             public void handleMessage(Message msg) {
-                listenerApp.onDiscoveryCompleted(mapAddressDevice);
+                discovery.onDiscoveryCompleted(mapAddressDevice);
             }
         };
 
         for (AbstractWrapper wrapper : wrappers) {
-            wrapper.discovery();
+            wrapper.discovery(discovery);
         }
 
         new Thread(new Runnable() {
@@ -353,13 +352,6 @@ public class DataLinkManager {
         return null;
     }
 
-    public void updateListener(ListenerApp listenerApp) {
-        this.listenerApp = listenerApp;
-        for (AbstractWrapper wrapper : wrappers) {
-            wrapper.updateListener(listenerApp);
-        }
-    }
-
     public void updateContext(Context context) {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -389,7 +381,13 @@ public class DataLinkManager {
         }
     }
 
-    public interface ListenerDiscovery {
+    public void updateListener(ListenerApp listenerApp) {
+        for (AbstractWrapper wrapper : wrappers) {
+            wrapper.updateListener(listenerApp);
+        }
+    }
+
+    public interface ListenerBothDiscovery {
         void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
 

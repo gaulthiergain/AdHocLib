@@ -6,6 +6,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBa
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
@@ -94,8 +95,8 @@ public class TransferManager {
         dataLinkManager.stopListening();
     }
 
-    public void discovery() throws DeviceException {
-        dataLinkManager.discovery();
+    public void discovery(DiscoveryListener discoveryListener) throws DeviceException {
+        dataLinkManager.discovery(discoveryListener);
     }
 
     public HashMap<String, AdHocDevice> getPairedDevices() {

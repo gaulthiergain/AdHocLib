@@ -9,7 +9,7 @@ import java.net.InetAddress;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public interface ConnectionListener {
+public interface ConnectionWifiListener {
     /**
      * Callback when the connection is started.
      */

@@ -8,7 +8,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public interface MessageListener {
+public interface ServiceMessageListener {
 
     /**
      * Callback when message is received.

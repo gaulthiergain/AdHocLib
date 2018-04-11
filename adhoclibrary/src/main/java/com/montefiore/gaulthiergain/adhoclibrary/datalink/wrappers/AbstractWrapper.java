@@ -7,6 +7,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
@@ -40,7 +41,7 @@ public abstract class AbstractWrapper {
     boolean enabled;
     boolean discoveryCompleted;
     ListenerApp listenerApp;
-    DataLinkManager.ListenerDiscovery discoveryListener;
+    DataLinkManager.ListenerBothDiscovery listenerBothDiscovery;
 
     Set<String> setFloodEvents;
 
@@ -67,7 +68,7 @@ public abstract class AbstractWrapper {
 
     public abstract void stopListening() throws IOException;
 
-    public abstract void discovery();
+    public abstract void discovery(DiscoveryListener discoveryListener);
 
     public abstract HashMap<String, AdHocDevice> getPaired();
 
@@ -113,8 +114,8 @@ public abstract class AbstractWrapper {
         this.discoveryCompleted = false;
     }
 
-    public void setDiscoveryListener(DataLinkManager.ListenerDiscovery discoveryListener) {
-        this.discoveryListener = discoveryListener;
+    public void setDiscoveryListener(DataLinkManager.ListenerBothDiscovery listenerBothDiscovery) {
+        this.listenerBothDiscovery = listenerBothDiscovery;
     }
 
     public int getType() {

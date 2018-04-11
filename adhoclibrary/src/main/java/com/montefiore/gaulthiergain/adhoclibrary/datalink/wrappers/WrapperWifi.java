@@ -12,11 +12,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerB
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
@@ -87,16 +87,16 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     @Override
-    public void discovery() {
+    public void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
-                listenerApp.onDiscoveryStarted();
+                discoveryListener.onDiscoveryStarted();
             }
 
             @Override
             public void onDiscoveryFailed(Exception e) {
-                listenerApp.onDiscoveryFailed(e);
+                discoveryListener.onDiscoveryFailed(e);
             }
 
             @Override
@@ -107,7 +107,7 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                     mapMacDevices.put(device.getMacAddress(), device);
                 }
 
-                listenerApp.onDeviceDiscovered(device);
+                discoveryListener.onDeviceDiscovered(device);
             }
 
             @Override
@@ -124,8 +124,8 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                     }
                 }
 
-                if (discoveryListener != null) {
-                    listenerApp.onDiscoveryCompleted(mapMacDevices);
+                if (listenerBothDiscovery != null) {
+                    discoveryListener.onDiscoveryCompleted(mapMacDevices);
                 }
 
                 discoveryCompleted = true;
@@ -211,7 +211,7 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new WifiServiceServer(v, json, new MessageListener() {
+        serviceServer = new WifiServiceServer(v, json, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -255,7 +255,7 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json, background,
-                groupOwnerAddr, serverPort, 10000, attemps, new MessageListener() {
+                groupOwnerAddr, serverPort, 10000, attemps, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
@@ -397,8 +397,8 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         }
     }
 
-    private ConnectionListener initConnectionListener() {
-        return new ConnectionListener() {
+    private ConnectionWifiListener initConnectionListener() {
+        return new ConnectionWifiListener() {
             @Override
             public void onConnectionStarted() {
                 if (v) Log.d(TAG, "Connection Started");

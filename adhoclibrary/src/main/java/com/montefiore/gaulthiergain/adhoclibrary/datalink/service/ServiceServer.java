@@ -1,15 +1,11 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
 
 import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -30,10 +26,10 @@ public abstract class ServiceServer extends Service {
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param json            a boolean value to use json or bytes in network transfer.
-     * @param messageListener a messageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public ServiceServer(boolean verbose, boolean json, MessageListener messageListener) {
-        super(verbose, json, messageListener);
+    public ServiceServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
+        super(verbose, json, serviceMessageListener);
     }
 
     /**

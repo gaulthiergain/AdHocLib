@@ -3,7 +3,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
@@ -38,13 +38,13 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * @param port
      * @param timeOut         an integer value which represents the timeout of a connection.
      * @param attempts        a short value which represents the number of attempts.
-     * @param messageListener a messageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
     public WifiServiceClient(boolean verbose, boolean json, boolean background,
                              String remoteAddress, int port, int timeOut, short attempts,
-                             MessageListener messageListener) {
+                             ServiceMessageListener serviceMessageListener) {
 
-        super(verbose, attempts, json, background, messageListener);
+        super(verbose, attempts, json, background, serviceMessageListener);
         this.remoteAddress = remoteAddress;
         this.port = port;
         this.timeOut = timeOut;

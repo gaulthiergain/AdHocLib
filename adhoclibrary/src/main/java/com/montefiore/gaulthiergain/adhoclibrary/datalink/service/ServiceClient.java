@@ -1,6 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -39,11 +38,11 @@ public abstract class ServiceClient extends Service {
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param background      a boolean value which defines if the service must listen messages
      *                        to background.
-     * @param messageListener a messageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
     public ServiceClient(boolean verbose, short attempts, boolean json,
-                         boolean background, MessageListener messageListener) {
-        super(verbose, json, messageListener);
+                         boolean background, ServiceMessageListener serviceMessageListener) {
+        super(verbose, json, serviceMessageListener);
         this.attempts = attempts;
         this.background = background;
         this.backOffTime = (long) new Random().nextInt(HIGH - LOW) + LOW;

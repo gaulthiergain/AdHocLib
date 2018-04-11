@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class AutoTransferManager extends TransferManager {
     private static final short CONNECT_STATE = 2;
 
     private final Set<String> connectedDevices;
-    private final ListenerAutoApp listenerAutoApp;
+    private final ListenerApp listenerApp;
     private Timer timer;
 
     private int elapseTimeMax;
@@ -39,23 +40,23 @@ public class AutoTransferManager extends TransferManager {
     private short state;
     private AdHocDevice currentDevice = null;
 
-    public AutoTransferManager(boolean verbose, ListenerAutoApp listenerAutoApp) {
+    public AutoTransferManager(boolean verbose, ListenerApp listenerApp) {
         super(verbose);
         this.config.setAttemps(1);
         setListenerApp(initListener());
 
-        this.listenerAutoApp = listenerAutoApp;
+        this.listenerApp = listenerApp;
         this.connectedDevices = new HashSet<>();
         this.arrayList = new ArrayList<>();
         this.state = INIT_STATE;
     }
 
-    public AutoTransferManager(boolean verbose, Config config, ListenerAutoApp listenerAutoApp) {
+    public AutoTransferManager(boolean verbose, Config config, ListenerApp listenerApp) {
         super(verbose, config);
         this.config.setAttemps(1);
         setListenerApp(initListener());
 
-        this.listenerAutoApp = listenerAutoApp;
+        this.listenerApp = listenerApp;
         this.connectedDevices = new HashSet<>();
         this.arrayList = new ArrayList<>();
         this.state = INIT_STATE;
@@ -80,7 +81,7 @@ public class AutoTransferManager extends TransferManager {
 
                     try {
                         if (v) Log.d(TAG, "START new discovery");
-                        discovery();
+                        discovery(initListenerDiscovery());
                         timerDiscovery(waitRandomTime(elapseTimeMin, elapseTimeMax));
                     } catch (DeviceException e) {
                         e.printStackTrace();
@@ -91,6 +92,45 @@ public class AutoTransferManager extends TransferManager {
                 }
             }
         }, time);
+    }
+
+    private DiscoveryListener initListenerDiscovery() {
+        return new DiscoveryListener() {
+            @Override
+            public void onDeviceDiscovered(AdHocDevice adHocDevice) {
+                //Ignored
+            }
+
+            @Override
+            public void onDiscoveryStarted() {
+                if (v) Log.d(TAG, "onDiscoveryStarted");
+                state = DISCOVERY_STATE;
+            }
+
+            @Override
+            public void onDiscoveryFailed(Exception e) {
+                if (v) Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
+                state = INIT_STATE;
+            }
+
+            @Override
+            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
+
+                for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
+                    AdHocDevice adHocDevice = entry.getValue();
+
+                    if (adHocDevice.getDeviceName().contains(PREFIX)
+                            && !connectedDevices.contains(adHocDevice.getMacAddress())) {
+
+                        if (v) Log.d(TAG, "Add device " + adHocDevice.toString());
+                        arrayList.add(adHocDevice);
+                    } else {
+                        if (v) Log.d(TAG, "Found device " + adHocDevice.toString());
+                    }
+                }
+                state = INIT_STATE;
+            }
+        };
     }
 
     private int waitRandomTime(int min, int max) {
@@ -162,62 +202,29 @@ public class AutoTransferManager extends TransferManager {
 
     private ListenerApp initListener() {
         return new ListenerApp() {
-            @Override
-            public void onDeviceDiscovered(AdHocDevice adHocDevice) {
-                //Ignored
-            }
 
-            @Override
-            public void onDiscoveryStarted() {
-                if (v) Log.d(TAG, "onDiscoveryStarted");
-                state = DISCOVERY_STATE;
-            }
-
-            @Override
-            public void onDiscoveryFailed(Exception e) {
-                if (v) Log.d(TAG, "onDiscoveryFailed" + e.getMessage());
-                state = INIT_STATE;
-            }
-
-            @Override
-            public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice) {
-
-                for (final Map.Entry<String, AdHocDevice> entry : mapAddressDevice.entrySet()) {
-                    AdHocDevice adHocDevice = entry.getValue();
-
-                    if (adHocDevice.getDeviceName().contains(PREFIX)
-                            && !connectedDevices.contains(adHocDevice.getMacAddress())) {
-
-                        if (v) Log.d(TAG, "Add device " + adHocDevice.toString());
-                        arrayList.add(adHocDevice);
-                    } else {
-                        if (v) Log.d(TAG, "Found device " + adHocDevice.toString());
-                    }
-                }
-                state = INIT_STATE;
-            }
 
             @Override
             public void onConnectionClosed(AdHocDevice adHocDevice) {
                 if (v)
                     Log.d(TAG, "Remove " + adHocDevice.getMacAddress() + " from connectedDevices set");
                 connectedDevices.remove(adHocDevice.getMacAddress());
-                listenerAutoApp.onConnectionClosed(adHocDevice);
+                listenerApp.onConnectionClosed(adHocDevice);
             }
 
             @Override
             public void onConnectionClosedFailed(Exception e) {
-                listenerAutoApp.onConnectionClosedFailed(e);
+                listenerApp.onConnectionClosedFailed(e);
             }
 
             @Override
             public void processMsgException(Exception e) {
-                listenerAutoApp.processMsgException(e);
+                listenerApp.processMsgException(e);
             }
 
             @Override
             public void onReceivedData(AdHocDevice adHocDevice, Object pdu) {
-                listenerAutoApp.onReceivedData(adHocDevice, pdu);
+                listenerApp.onReceivedData(adHocDevice, pdu);
             }
 
             @Override
@@ -228,7 +235,7 @@ public class AutoTransferManager extends TransferManager {
 
                 connectedDevices.add(adHocDevice.getMacAddress());
 
-                listenerAutoApp.onConnection(adHocDevice);
+                listenerApp.onConnection(adHocDevice);
 
                 arrayList.remove(adHocDevice);
 
@@ -237,7 +244,7 @@ public class AutoTransferManager extends TransferManager {
 
             @Override
             public void onConnectionFailed(Exception e) {
-                listenerAutoApp.onConnectionFailed(e);
+                listenerApp.onConnectionFailed(e);
 
                 arrayList.remove(currentDevice);
 

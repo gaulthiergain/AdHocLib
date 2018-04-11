@@ -1,7 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
@@ -45,19 +44,19 @@ public abstract class Service {
     protected final boolean v;
     protected final boolean json;
 
-    private final MessageListener messageListener;
+    private final ServiceMessageListener serviceMessageListener;
 
     /**
      * Constructor
      *
      * @param verbose         a boolean value to set the debug/verbose mode.
      * @param json            a boolean value to use json or bytes in network transfer.
-     * @param messageListener a messageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    Service(boolean verbose, boolean json, MessageListener messageListener) {
+    Service(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
         this.v = verbose;
         this.json = json;
-        this.messageListener = messageListener;
+        this.serviceMessageListener = serviceMessageListener;
     }
 
     /**
@@ -87,23 +86,23 @@ public abstract class Service {
             switch (msg.what) {
                 case MESSAGE_READ:
                     if (v) Log.d(TAG, "MESSAGE_READ");
-                    messageListener.onMessageReceived((MessageAdHoc) msg.obj);
+                    serviceMessageListener.onMessageReceived((MessageAdHoc) msg.obj);
                     break;
                 case CONNECTION_ABORTED:
                     if (v) Log.d(TAG, "CONNECTION_ABORTED");
-                    messageListener.onConnectionClosed((String) msg.obj);
+                    serviceMessageListener.onConnectionClosed((String) msg.obj);
                     break;
                 case CONNECTION_PERFORMED:
                     if (v) Log.d(TAG, "CONNECTION_PERFORMED");
-                    messageListener.onConnection((String) msg.obj);
+                    serviceMessageListener.onConnection((String) msg.obj);
                     break;
                 case CONNECTION_FAILED:
                     if (v) Log.d(TAG, "CONNECTION_FAILED");
-                    messageListener.onConnectionFailed((Exception) msg.obj);
+                    serviceMessageListener.onConnectionFailed((Exception) msg.obj);
                     break;
                 case MESSAGE_EXCEPTION:
                     if (v) Log.e(TAG, "MESSAGE_EXCEPTION");
-                    messageListener.onMsgException((Exception) msg.obj);
+                    serviceMessageListener.onMsgException((Exception) msg.obj);
                     break;
                 case LOG_EXCEPTION:
                     if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());

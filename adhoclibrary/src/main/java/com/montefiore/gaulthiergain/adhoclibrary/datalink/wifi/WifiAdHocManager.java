@@ -60,7 +60,7 @@ public class WifiAdHocManager {
     private String initialName;
     private String currentAdapterName;
     private WifiP2pManager wifiP2pManager;
-    private ConnectionListener connectionListener;
+    private ConnectionWifiListener connectionWifiListener;
     private HashMap<String, AdHocDevice> mapMacDevices;
 
     private int valueGroupOwner = -1;
@@ -77,11 +77,11 @@ public class WifiAdHocManager {
      * @param verbose            a boolean value to set the debug/verbose mode.
      * @param context            a Context object which gives global information about an application
      *                           environment.
-     * @param connectionListener a connectionListener object which serves as callback functions.
+     * @param connectionWifiListener a connectionWifiListener object which serves as callback functions.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
                             final ListenerWifiDeviceInfos listenerDeviceInfos,
-                            final ConnectionListener connectionListener) throws DeviceException {
+                            final ConnectionWifiListener connectionWifiListener) throws DeviceException {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
@@ -103,8 +103,8 @@ public class WifiAdHocManager {
                     }
                 }
             };
-            if (connectionListener != null) {
-                this.connectionListener = connectionListener;
+            if (connectionWifiListener != null) {
+                this.connectionWifiListener = connectionWifiListener;
                 this.registerConnection();
             }
         }
@@ -130,21 +130,21 @@ public class WifiAdHocManager {
 
 
                 if (info.isGroupOwner) {
-                    connectionListener.onGroupOwner(info.groupOwnerAddress);
+                    connectionWifiListener.onGroupOwner(info.groupOwnerAddress);
                 } else {
                     try {
                         byte[] addr = getLocalIPAddress();
                         if (addr != null) {
-                            connectionListener.onClient(info.groupOwnerAddress,
+                            connectionWifiListener.onClient(info.groupOwnerAddress,
                                     InetAddress.getByName(getDottedDecimalIP(addr)));
                         } else {
-                            connectionListener.onConnectionFailed(
+                            connectionWifiListener.onConnectionFailed(
                                     new NoConnectionException("Unknown IP address"));
                         }
                     } catch (UnknownHostException | SocketException e) {
-                        connectionListener.onConnectionFailed(e);
+                        connectionWifiListener.onConnectionFailed(e);
                     } catch (IOException e) {
-                        connectionListener.onConnectionFailed(e);
+                        connectionWifiListener.onConnectionFailed(e);
                     }
                 }
             }
@@ -245,7 +245,7 @@ public class WifiAdHocManager {
             @Override
             public void onSuccess() {
                 if (v) Log.d(TAG, "Start connecting Wifi Direct (onSuccess)");
-                connectionListener.onConnectionStarted();
+                connectionWifiListener.onConnectionStarted();
             }
 
             @Override
@@ -253,7 +253,7 @@ public class WifiAdHocManager {
                 if (v)
                     Log.e(TAG, "Error during connecting Wifi Direct (onFailure): " + errorCode(reasonCode));
 
-                connectionListener.onConnectionFailed(new NoConnectionException(errorCode(reasonCode)));
+                connectionWifiListener.onConnectionFailed(new NoConnectionException(errorCode(reasonCode)));
             }
         });
     }
