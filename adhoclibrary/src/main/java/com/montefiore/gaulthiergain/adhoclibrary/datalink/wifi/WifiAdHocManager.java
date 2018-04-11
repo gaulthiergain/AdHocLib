@@ -74,9 +74,9 @@ public class WifiAdHocManager {
     /**
      * Constructor
      *
-     * @param verbose            a boolean value to set the debug/verbose mode.
-     * @param context            a Context object which gives global information about an application
-     *                           environment.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param context                a Context object which gives global information about an application
+     *                               environment.
      * @param connectionWifiListener a connectionWifiListener object which serves as callback functions.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
@@ -149,6 +149,18 @@ public class WifiAdHocManager {
                 }
             }
         };
+
+        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                //Ignored
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                //Ignored
+            }
+        });
 
         registerConnection(intentFilter, onConnectionInfoAvailable);
     }
@@ -452,19 +464,6 @@ public class WifiAdHocManager {
                 peerListListener);
         discoveryRegistered = true;
         context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
-
-        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                discoveryListener.onDiscoveryStarted();
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                discoveryListener.onDiscoveryFailed(
-                        new WifiDiscoveryException(errorCode(reasonCode)));
-            }
-        });
     }
 
     private void registerConnection(IntentFilter intentFilter, WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
