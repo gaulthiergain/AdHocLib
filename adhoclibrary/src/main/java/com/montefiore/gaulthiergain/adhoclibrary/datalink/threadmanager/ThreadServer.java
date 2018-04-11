@@ -152,10 +152,10 @@ public class ThreadServer extends Thread {
                 }
 
             } catch (SocketException e) {
-                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
+                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
                 break;
             } catch (IOException e) {
-                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
+                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
                 break;
             }
         }
@@ -189,7 +189,7 @@ public class ThreadServer extends Thread {
                 }
 
             } catch (IOException e) {
-                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
+                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
                 break;
             }
         }
