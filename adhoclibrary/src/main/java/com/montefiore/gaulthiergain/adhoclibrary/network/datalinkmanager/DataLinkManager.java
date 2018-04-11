@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
@@ -15,6 +16,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerB
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.IWrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUdp;
@@ -367,9 +369,23 @@ public class DataLinkManager {
     }
 
     public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
-        WrapperWifi wrapperWifi = (WrapperWifi) wrappers[Service.WIFI];
+        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
             wrapperWifi.setGroupOwnerValue(valueGroupOwner);
+        }
+    }
+
+    public void removeGroup(ListenerAction listenerAction) {
+        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
+        if (wrapperWifi.isEnabled()) {
+            wrapperWifi.removeGroup(listenerAction);
+        }
+    }
+
+    public void cancelConnection(ListenerAction listenerAction) {
+        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
+        if (wrapperWifi.isEnabled()) {
+            wrapperWifi.cancelConnect(listenerAction);
         }
     }
 

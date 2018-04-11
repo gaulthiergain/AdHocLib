@@ -162,6 +162,14 @@ public class TransferManager {
         dataLinkManager.setWifiGroupOwnerValue(valueGroupOwner);
     }
 
+    public void removeGroup(ListenerAction listenerAction) {
+        dataLinkManager.removeGroup(listenerAction);
+    }
+
+    public void cancelConnection(ListenerAction listenerAction) {
+        dataLinkManager.cancelConnection(listenerAction);
+    }
+
     public ArrayList<String> getActifAdapterNames() {
         return dataLinkManager.getActifAdapterNames();
     }

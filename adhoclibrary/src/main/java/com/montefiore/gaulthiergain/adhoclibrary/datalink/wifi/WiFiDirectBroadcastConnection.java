@@ -9,6 +9,8 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
+import java.net.InetAddress;
+
 public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
 
     private final String TAG = "[AdHoc][BroadcastConn]";
@@ -16,21 +18,30 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
     private final boolean v;
     private WifiP2pManager manager;
     private Channel channel;
+    private WifiAdHocManager.ListenerWifiDeviceInfos listenerWifiDeviceInfo;
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
 
     public WiFiDirectBroadcastConnection(WifiP2pManager manager, Channel channel,
+                                         WifiAdHocManager.ListenerWifiDeviceInfos listenerWifiDeviceInfo,
                                          WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable, boolean verbose) {
         super();
         this.v = verbose;
         this.manager = manager;
         this.channel = channel;
+        this.listenerWifiDeviceInfo = listenerWifiDeviceInfo;
         this.onConnectionInfoAvailable = onConnectionInfoAvailable;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
+
+        if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+            WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+            if (listenerWifiDeviceInfo != null) {
+                listenerWifiDeviceInfo.getDeviceInfos(device.deviceName, device.deviceAddress.toUpperCase());
+            }
+        } else if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
 
             // State of Wifi P2P has change
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
@@ -48,27 +59,18 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
             if (manager != null) {
                 NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (networkInfo.isConnected()) {
+
                     // Connected with the other device, request connection info to find group owner
-                    Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION networkInfo.isConnected()");
+
+                    if (v)
+                        Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION networkInfo.isConnected()");
+
                     manager.requestConnectionInfo(channel, onConnectionInfoAvailable);
+
                 } else {
-                    Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION disconnect()");
+                    if (v) Log.d(TAG, "P2P WIFI_P2P_CONNECTION_CHANGED_ACTION disconnect()");
                 }
             }
-
-        } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-
-            // Connection has changed
-            if (v) Log.d(TAG, "P2P WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
-
-            WifiP2pDevice wifiP2pDevice = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
-            Log.d(TAG, "Test : "+  wifiP2pDevice.toString());
-        }else if(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)){
-
-            // Connection has changed
-            if (v) Log.d(TAG, "P2P WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
-
         }
     }
 }

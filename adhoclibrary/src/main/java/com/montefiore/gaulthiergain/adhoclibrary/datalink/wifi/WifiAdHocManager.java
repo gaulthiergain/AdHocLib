@@ -17,6 +17,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
@@ -33,10 +34,11 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.net.wifi.p2p.WifiP2pManager.BUSY;
 import static android.net.wifi.p2p.WifiP2pManager.ERROR;
@@ -57,12 +59,17 @@ public class WifiAdHocManager {
     private Channel channel;
     private String initialName;
     private String currentAdapterName;
-    private BroadcastWifi broadcastWifi;
     private WifiP2pManager wifiP2pManager;
     private ConnectionListener connectionListener;
     private HashMap<String, AdHocDevice> mapMacDevices;
 
     private int valueGroupOwner = -1;
+    private ListenerWifiDeviceInfos listenerWifiDeviceInfos;
+
+    private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
+    private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
+    private boolean discoveryRegistered = false;
+    private boolean connectionRegistered = false;
 
     /**
      * Constructor
@@ -73,6 +80,7 @@ public class WifiAdHocManager {
      * @param connectionListener a connectionListener object which serves as callback functions.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
+                            final ListenerWifiDeviceInfos listenerDeviceInfos,
                             final ConnectionListener connectionListener) throws DeviceException {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
@@ -84,8 +92,17 @@ public class WifiAdHocManager {
             this.v = verbose;
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
-            this.broadcastWifi = new BroadcastWifi();
             this.mapMacDevices = new HashMap<>();
+            this.listenerWifiDeviceInfos = new ListenerWifiDeviceInfos() {
+
+                @Override
+                public void getDeviceInfos(String name, String mac) {
+                    initialName = currentAdapterName = name;
+                    if (listenerDeviceInfos != null) {
+                        listenerDeviceInfos.getDeviceInfos(name, mac);
+                    }
+                }
+            };
             if (connectionListener != null) {
                 this.connectionListener = connectionListener;
                 this.registerConnection();
@@ -102,12 +119,15 @@ public class WifiAdHocManager {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         // Indicates the state of Wi-Fi P2P connectivity has changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        // Indicates this device's details are available
+        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
             @Override
             public void onConnectionInfoAvailable(final WifiP2pInfo info) {
                 if (v) Log.d(TAG, "Address groupOwner:"
                         + String.valueOf(info.groupOwnerAddress.getHostAddress()));
+
 
                 if (info.isGroupOwner) {
                     connectionListener.onGroupOwner(info.groupOwnerAddress);
@@ -130,33 +150,11 @@ public class WifiAdHocManager {
             }
         };
 
-        broadcastWifi.registerConnection(intentFilter, onConnectionInfoAvailable);
+        registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
     public String getDeviceName() {
         return currentAdapterName;
-    }
-
-    public void getAdapterName(final ListenerWifiDeviceName listenerWifiDeviceName) {
-        final IntentFilter intentFilter = new IntentFilter();
-
-        //  Indicates this device's details have changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        // Indicates this device's details are available
-        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
-        broadcastWifi.registerName(intentFilter, new ListenerWifiDeviceName() {
-
-            @Override
-            public void getDeviceName(String name) {
-                initialName = currentAdapterName = name;
-                if (listenerWifiDeviceName != null) {
-                    listenerWifiDeviceName.getDeviceName(name);
-                }
-
-                unregisterInitName();
-            }
-        });
     }
 
     /**
@@ -214,19 +212,15 @@ public class WifiAdHocManager {
             }
         };
 
-        new Thread(new Runnable() {
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(DISCOVERY_TIME);
-                    mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
-                } catch (InterruptedException e) {
-                    mHandler.obtainMessage(DISCOVERY_FAILED, e).sendToTarget();
-                }
+                mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
             }
-        }).start();
+        }, DISCOVERY_TIME);
 
-        broadcastWifi.registerDiscovery(intentFilter, discoveryListener, peerListListener);
+
+        registerDiscovery(intentFilter, discoveryListener, peerListListener);
     }
 
     /**
@@ -264,20 +258,16 @@ public class WifiAdHocManager {
         });
     }
 
-    public void cancelConnection() {
-        if (wifiP2pManager != null) {
-            wifiP2pManager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                    if (v) Log.d(TAG, "Cancel connecting Wifi Direct (onSuccess)");
-                }
 
-                @Override
-                public void onFailure(int reasonCode) {
-                    if (v) Log.e(TAG, "Error during canceling connection Wifi Direct " +
-                            "(onFailure): " + reasonCode);
-                }
-            });
+    public void removeGroup(ListenerAction listenerAction) {
+        if (wifiP2pManager != null) {
+            wifiP2pManager.removeGroup(channel, listenerAction);
+        }
+    }
+
+    public void cancelConnection(ListenerAction listenerAction) {
+        if (wifiP2pManager != null) {
+            wifiP2pManager.cancelConnect(channel, listenerAction);
         }
     }
 
@@ -308,57 +298,6 @@ public class WifiAdHocManager {
         if (wifi != null) {
             wifi.setWifiEnabled(state);
         }
-    }
-
-    /**
-     * Method allowing to unregister the connection broadcast.
-     */
-    public void unregisterConnection() {
-        broadcastWifi.unregisterConnection();
-    }
-
-    /**
-     * Method allowing to unregister the discovery broadcast.
-     */
-    public void unregisterDiscovery() {
-        broadcastWifi.unregisterDiscovery();
-    }
-
-    private void unregisterInitName() {
-        broadcastWifi.unregisterInitName();
-
-    }
-
-    public void unregisterGroupOwner() {
-        broadcastWifi.unregisterGroupOwner();
-    }
-
-    public String getOwnMACAddress() {
-        try {
-            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface ntwInterface : interfaces) {
-
-                if (ntwInterface.getName().equalsIgnoreCase("p2p0")) {
-                    byte[] byteMac = ntwInterface.getHardwareAddress();
-                    if (byteMac == null) {
-                        return null;
-                    }
-                    StringBuilder strBuilder = new StringBuilder();
-                    for (byte aByteMac : byteMac) {
-                        strBuilder.append(String.format("%02X:", aByteMac));
-                    }
-
-                    if (strBuilder.length() > 0) {
-                        strBuilder.deleteCharAt(strBuilder.length() - 1);
-                    }
-
-                    return strBuilder.toString();
-                }
-            }
-        } catch (Exception e) {
-            Log.d(TAG, e.getMessage());
-        }
-        return null;
     }
 
     private byte[] getLocalIPAddress() throws SocketException {
@@ -409,17 +348,6 @@ public class WifiAdHocManager {
             return false;
         } catch (NoSuchMethodException e) {
             return false;
-        }
-    }
-
-    public void requestGO(final ListenerWifiGroupOwner listenerWifiGroupOwner) {
-        if (listenerWifiGroupOwner != null) {
-            final IntentFilter intentFilter = new IntentFilter();
-
-            //  Indicates this device's details have changed.
-            intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-
-            broadcastWifi.registerGroupOwner(intentFilter, listenerWifiGroupOwner);
         }
     }
 
@@ -492,12 +420,8 @@ public class WifiAdHocManager {
         this.context = context;
     }
 
-    public interface ListenerWifiDeviceName {
-        void getDeviceName(String name);
-    }
-
-    public interface ListenerWifiGroupOwner {
-        void getGroupOwner(String address);
+    public interface ListenerWifiDeviceInfos {
+        void getDeviceInfos(String name, String mac);
     }
 
     private String errorCode(int reasonCode) {
@@ -513,105 +437,47 @@ public class WifiAdHocManager {
         return "Unknown error";
     }
 
-    class BroadcastWifi {
-        private boolean discoveryRegistered = false;
-        private boolean connectionRegistered = false;
-        private boolean nameRegistered = false;
-        private boolean groupOwnerRegistered = false;
+    private void registerDiscovery(IntentFilter intentFilter, final DiscoveryListener discoveryListener,
+                                   WifiP2pManager.PeerListListener peerListListener) {
+        wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(v, wifiP2pManager, channel,
+                peerListListener);
+        discoveryRegistered = true;
+        context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
 
-        private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
-        private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
-        private WifiDirectBroadcastGroupOwner wifiDirectBroadcastGroupOwner;
-        private WifiDirectBroadcastName wifiDirectBroadcastName;
-
-        BroadcastWifi() {
-
-        }
-
-        void registerName(IntentFilter intentFilter,
-                          final ListenerWifiDeviceName listenerWifiDeviceName) {
-            wifiDirectBroadcastName = new WifiDirectBroadcastName(new ListenerWifiDeviceName() {
-                @Override
-                public void getDeviceName(String name) {
-                    listenerWifiDeviceName.getDeviceName(name);
-                }
-            });
-            nameRegistered = true;
-            context.registerReceiver(wifiDirectBroadcastName, intentFilter);
-        }
-
-        void registerDiscovery(IntentFilter intentFilter, final DiscoveryListener discoveryListener,
-                               WifiP2pManager.PeerListListener peerListListener) {
-            wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(v, wifiP2pManager, channel,
-                    peerListListener);
-            discoveryRegistered = true;
-            context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
-
-            wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                    discoveryListener.onDiscoveryStarted();
-                }
-
-                @Override
-                public void onFailure(int reasonCode) {
-                    discoveryListener.onDiscoveryFailed(
-                            new WifiDiscoveryException(errorCode(reasonCode)));
-                }
-            });
-        }
-
-        void registerConnection(IntentFilter intentFilter, WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
-            wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(wifiP2pManager, channel,
-                    onConnectionInfoAvailable, v);
-            connectionRegistered = true;
-            context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
-        }
-
-        void registerGroupOwner(IntentFilter intentFilter, final ListenerWifiGroupOwner listenerWifiGroupOwner) {
-            wifiDirectBroadcastGroupOwner = new WifiDirectBroadcastGroupOwner(wifiP2pManager, channel,
-                    new ListenerWifiGroupOwner() {
-                        @Override
-                        public void getGroupOwner(String address) {
-                            listenerWifiGroupOwner.getGroupOwner(address);
-                        }
-                    });
-            groupOwnerRegistered = true;
-            context.registerReceiver(wifiDirectBroadcastGroupOwner, intentFilter);
-        }
-
-        void unregisterConnection() {
-            if (connectionRegistered) {
-                if (v) Log.d(TAG, "unregisterConnection()");
-                context.unregisterReceiver(wifiDirectBroadcastConnection);
-                connectionRegistered = false;
+        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                discoveryListener.onDiscoveryStarted();
             }
-        }
 
-        void unregisterDiscovery() {
-            if (discoveryRegistered) {
-                if (v) Log.d(TAG, "unregisterDiscovery()");
-                context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
-                discoveryRegistered = false;
+            @Override
+            public void onFailure(int reasonCode) {
+                discoveryListener.onDiscoveryFailed(
+                        new WifiDiscoveryException(errorCode(reasonCode)));
             }
-        }
-
-        void unregisterInitName() {
-            if (nameRegistered) {
-                if (v) Log.d(TAG, "unregisterName()");
-                context.unregisterReceiver(wifiDirectBroadcastName);
-                nameRegistered = false;
-            }
-        }
-
-        void unregisterGroupOwner() {
-            if (groupOwnerRegistered) {
-                if (v) Log.d(TAG, "unregisterGroupOwner()");
-                context.unregisterReceiver(wifiDirectBroadcastGroupOwner);
-                groupOwnerRegistered = false;
-            }
-        }
-
+        });
     }
 
+    private void registerConnection(IntentFilter intentFilter, WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
+        wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(wifiP2pManager, channel, listenerWifiDeviceInfos,
+                onConnectionInfoAvailable, v);
+        connectionRegistered = true;
+        context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
+    }
+
+    public void unregisterConnection() {
+        if (connectionRegistered) {
+            if (v) Log.d(TAG, "unregisterConnection()");
+            context.unregisterReceiver(wifiDirectBroadcastConnection);
+            connectionRegistered = false;
+        }
+    }
+
+    public void unregisterDiscovery() {
+        if (discoveryRegistered) {
+            if (v) Log.d(TAG, "unregisterDiscovery()");
+            context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
+            discoveryRegistered = false;
+        }
+    }
 }

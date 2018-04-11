@@ -8,6 +8,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -36,7 +37,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class WrapperWifiUdp extends AbstractWrapper {
+public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifiUdp]";
     private static final int TIMER_ACK = 2000;
@@ -57,7 +58,14 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
         try {
             this.type = Service.WIFI;
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiDeviceInfos() {
+                @Override
+                public void getDeviceInfos(String name, String mac) {
+                    ownName = name;
+                    ownMac = mac;
+                    listenerDataLink.initInfos(ownMac, ownName);
+                }
+            }, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
                 init(config, context);
             } else {
@@ -166,14 +174,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
     public void init(Config config, Context context) {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
-        this.ownMac = wifiAdHocManager.getOwnMACAddress();
-        this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
-            @Override
-            public void getDeviceName(String name) {
-                ownName = name;
-                listenerDataLink.initInfos(ownMac, ownName);
-            }
-        });
         this.ackSet = new HashSet<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
@@ -240,15 +240,26 @@ public class WrapperWifiUdp extends AbstractWrapper {
         }
     }
 
-    /*--------------------------------------Public methods----------------------------------------*/
+    /*--------------------------------------IWifi methods----------------------------------------*/
 
+    @Override
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
         if (valueGroupOwner < 0 || valueGroupOwner > 15) {
-            throw new GroupOwnerBadValue("GroupOwner value must be ");
+            throw new GroupOwnerBadValue("GroupOwner value must be between 0 and 15");
         }
 
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
+    }
+
+    @Override
+    public void removeGroup(ListenerAction listenerAction) {
+        wifiAdHocManager.removeGroup(listenerAction);
+    }
+
+    @Override
+    public void cancelConnect(ListenerAction listenerAction) {
+        wifiAdHocManager.cancelConnection(listenerAction);
     }
     /*--------------------------------------Private methods---------------------------------------*/
 
@@ -531,7 +542,6 @@ public class WrapperWifiUdp extends AbstractWrapper {
 
             @Override
             public void onConnectionFailed(Exception e) {
-                wifiAdHocManager.cancelConnection();
                 listenerApp.onConnectionFailed(e);
             }
 

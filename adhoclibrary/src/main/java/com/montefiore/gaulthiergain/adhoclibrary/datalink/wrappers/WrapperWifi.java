@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
+import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -27,7 +28,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-public class WrapperWifi extends WrapperConnOriented {
+public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
 
@@ -39,7 +40,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
     public WrapperWifi(boolean verbose, Context context, Config config,
                        HashMap<String, AdHocDevice> mapAddressDevice,
-                       final ListenerApp listenerApp, ListenerDataLink listenerDataLink)
+                       final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
 
         super(verbose, config, config.getNbThreadWifi(), mapAddressDevice,
@@ -47,7 +48,15 @@ public class WrapperWifi extends WrapperConnOriented {
 
         try {
             this.type = Service.WIFI;
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener());
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiDeviceInfos() {
+                @Override
+                public void getDeviceInfos(String name, String mac) {
+                    ownName = name;
+                    ownMac = mac;
+                    Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
+                    listenerDataLink.initInfos(ownMac, ownName);
+                }
+            }, initConnectionListener());
             if (wifiAdHocManager.isEnabled()) {
                 init(config, context);
             } else {
@@ -63,14 +72,6 @@ public class WrapperWifi extends WrapperConnOriented {
     @Override
     public void init(Config config, Context context) throws IOException {
         this.mapAddrMac = new HashMap<>();
-        this.ownMac = wifiAdHocManager.getOwnMACAddress();
-        this.wifiAdHocManager.getAdapterName(new WifiAdHocManager.ListenerWifiDeviceName() {
-            @Override
-            public void getDeviceName(String name) {
-                ownName = name;
-                listenerDataLink.initInfos(ownMac, ownName);
-            }
-        });
         this.serverPort = config.getServerPort();
         this.listenServer();
     }
@@ -185,8 +186,9 @@ public class WrapperWifi extends WrapperConnOriented {
         return wifiAdHocManager.getDeviceName();
     }
 
-    /*--------------------------------------Public methods----------------------------------------*/
+    /*--------------------------------------IWifi methods----------------------------------------*/
 
+    @Override
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
         if (valueGroupOwner < 0 || valueGroupOwner > 15) {
@@ -194,6 +196,16 @@ public class WrapperWifi extends WrapperConnOriented {
         }
 
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
+    }
+
+    @Override
+    public void removeGroup(ListenerAction listenerAction) {
+        wifiAdHocManager.removeGroup(listenerAction);
+    }
+
+    @Override
+    public void cancelConnect(ListenerAction listenerAction) {
+        wifiAdHocManager.cancelConnection(listenerAction);
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
@@ -293,7 +305,7 @@ public class WrapperWifi extends WrapperConnOriented {
 
                 // Send CONNECT message to establish the pairing
                 wifiServiceClient.send(new MessageAdHoc(
-                        new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName)));
+                        new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName), remoteAddress));
             }
         });
 
@@ -315,22 +327,14 @@ public class WrapperWifi extends WrapperConnOriented {
 
                     // If ownIP address is not known, request it by event
                     if (ownIpAddress == null) {
-                        wifiAdHocManager.requestGO(new WifiAdHocManager.ListenerWifiGroupOwner() {
-                            @Override
-                            public void getGroupOwner(String address) {
-                                ownIpAddress = address;
-                                wifiAdHocManager.unregisterGroupOwner();
-                                try {
-                                    // Send CONNECT message to establish the pairing
-                                    socketManager.sendMessage(new MessageAdHoc(
-                                            new Header(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
+                        // Get IP from remote pair
+                        ownIpAddress = (String) message.getPdu();
 
-                                    receivedPeerMsg(message.getHeader(), socketManager);
-                                } catch (IOException e) {
-                                    listenerApp.onConnectionFailed(e);
-                                }
-                            }
-                        });
+                        // Send CONNECT message to establish the pairing
+                        socketManager.sendMessage(new MessageAdHoc(
+                                new Header(CONNECT_CLIENT, ownIpAddress, ownMac, label, ownName)));
+
+                        receivedPeerMsg(message.getHeader(), socketManager);
                     } else {
                         // Send CONNECT message to establish the pairing
                         socketManager.sendMessage(new MessageAdHoc(
@@ -403,7 +407,6 @@ public class WrapperWifi extends WrapperConnOriented {
             @Override
             public void onConnectionFailed(Exception e) {
                 listenerApp.onConnectionFailed(e);
-                wifiAdHocManager.cancelConnection();
             }
 
             @Override
@@ -427,4 +430,6 @@ public class WrapperWifi extends WrapperConnOriented {
             }
         };
     }
+
+
 }
