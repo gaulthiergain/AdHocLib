@@ -47,7 +47,7 @@ class ListenServiceThread extends Thread {
                 // Get MessageAdHoc
                 MessageAdHoc messageAdHoc = network.receiveMessage();
                 if (messageAdHoc == null) {
-                    handler.obtainMessage(Service.CATH_EXCEPTION, new Exception("NULL message")).sendToTarget();//Todo Message exception
+                    handler.obtainMessage(Service.MESSAGE_EXCEPTION, new Exception("NULL message")).sendToTarget();
                 } else {
                     handler.obtainMessage(Service.MESSAGE_READ, messageAdHoc).sendToTarget();
                 }
@@ -57,7 +57,7 @@ class ListenServiceThread extends Thread {
                 }
                 break;
             } catch (ClassNotFoundException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();//Todo Message exception
+                handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             }
         }
     }
@@ -87,7 +87,7 @@ class ListenServiceThread extends Thread {
         try {
             network.closeConnection();
         } catch (IOException e) {
-            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+            handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
         }
     }
 }

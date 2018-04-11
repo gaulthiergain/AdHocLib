@@ -225,6 +225,11 @@ public class WrapperWifi extends WrapperConnOriented {
                 listenerApp.onConnectionFailed(e);
             }
 
+            @Override
+            public void onMsgException(Exception e) {
+                listenerApp.processMsgException(e);
+            }
+
         });
 
         // Start the wifi server listening process
@@ -253,6 +258,11 @@ public class WrapperWifi extends WrapperConnOriented {
             @Override
             public void onConnectionFailed(Exception e) {
                 listenerApp.onConnectionFailed(e);
+            }
+
+            @Override
+            public void onMsgException(Exception e) {
+                listenerApp.processMsgException(e);
             }
 
             @Override

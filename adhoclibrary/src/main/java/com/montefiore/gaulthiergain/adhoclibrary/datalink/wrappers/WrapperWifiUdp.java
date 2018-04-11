@@ -14,7 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionListener;
@@ -248,7 +248,7 @@ public class WrapperWifiUdp extends AbstractWrapper {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() {
-        udpPeers = new UdpPeers(true, serverPort, true, new MessageMainListener() {
+        udpPeers = new UdpPeers(true, serverPort, true, new MessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -256,6 +256,26 @@ public class WrapperWifiUdp extends AbstractWrapper {
                 } catch (IOException e) {
                     listenerApp.processMsgException(e);
                 }
+            }
+
+            @Override
+            public void onConnectionClosed(String remoteAddress) {
+                // Ignored in udp context
+            }
+
+            @Override
+            public void onConnection(String remoteAddress) {
+                // Ignored in udp context
+            }
+
+            @Override
+            public void onConnectionFailed(Exception e) {
+                // Ignored in udp context
+            }
+
+            @Override
+            public void onMsgException(Exception e) {
+                listenerApp.processMsgException(e);
             }
         });
 

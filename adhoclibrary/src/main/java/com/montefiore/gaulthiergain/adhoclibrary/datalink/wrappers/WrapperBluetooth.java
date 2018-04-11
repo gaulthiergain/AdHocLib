@@ -231,6 +231,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
                 listenerApp.onConnectionFailed(e);
             }
 
+            @Override
+            public void onMsgException(Exception e) {
+                listenerApp.processMsgException(e);
+            }
+
         });
 
         // Start the serviceServer listening process
@@ -267,6 +272,11 @@ public class WrapperBluetooth extends WrapperConnOriented {
             @Override
             public void onConnectionFailed(Exception e) {
                 listenerApp.onConnectionFailed(e);
+            }
+
+            @Override
+            public void onMsgException(Exception e) {
+                listenerApp.processMsgException(e);
             }
 
         });

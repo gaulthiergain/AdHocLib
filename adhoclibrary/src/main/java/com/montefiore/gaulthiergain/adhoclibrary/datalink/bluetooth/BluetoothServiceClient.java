@@ -119,7 +119,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 try {
                     Thread.sleep((getBackOffTime()));
                 } catch (InterruptedException e1) {
-                    handler.obtainMessage(Service.CATH_EXCEPTION, e1).sendToTarget();
+                    handler.obtainMessage(Service.CONNECTION_FAILED, e1).sendToTarget();
                 }
             }
         } while (i < this.attempts);

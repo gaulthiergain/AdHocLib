@@ -3,10 +3,10 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.EOFException;
@@ -34,20 +34,20 @@ class ThreadClient extends Thread {
                 MessageAdHoc messageAdHoc;
                 while (true) {
                     messageAdHoc = network.receiveMessage();
-                    if(messageAdHoc == null){
-                        handler.obtainMessage(Service.CATH_EXCEPTION, new Exception("NULL message")).sendToTarget();//TODO
-                    }else{
+                    if (messageAdHoc == null) {
+                        handler.obtainMessage(Service.MESSAGE_EXCEPTION, new Exception("NULL message")).sendToTarget();
+                    } else {
                         processRequest(messageAdHoc);
                     }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (EOFException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
             } catch (IOException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
             } catch (ClassNotFoundException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             } finally {
                 if (network != null) {
                     processDisconnect(socketDevice);

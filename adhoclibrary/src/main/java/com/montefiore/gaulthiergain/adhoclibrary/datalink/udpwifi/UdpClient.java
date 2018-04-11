@@ -40,8 +40,8 @@ public class UdpClient extends Thread {
                 datagramSocket = new DatagramSocket();
                 DatagramPacket datagramPacket = new DatagramPacket(msgBytes, msgBytes.length, serverAddr, serverPort);
                 datagramSocket.send(datagramPacket);
-            } catch (Exception e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+            } catch (IOException e) {
+                handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             } finally {
                 if (datagramSocket != null) {
                     datagramSocket.close();
@@ -49,7 +49,7 @@ public class UdpClient extends Thread {
             }
 
         } catch (IOException e) {
-            handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+            handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
         }
 
     }

@@ -6,15 +6,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageMainListener;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.MessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
-import java.io.IOException;
 import java.net.InetAddress;
-
-import static com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service.MESSAGE_READ;
 
 public class UdpPeers extends Thread {
 
@@ -24,15 +20,22 @@ public class UdpPeers extends Thread {
     private UdpServer udpServer;
 
     @SuppressLint("HandlerLeak")
-    public UdpPeers(boolean verbose, int serverPort, boolean background, final MessageMainListener messageListener) {
+    public UdpPeers(boolean verbose, int serverPort, boolean background, final MessageListener messageListener) {
         this.v = verbose;
         this.handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case MESSAGE_READ:
+                    case Service.MESSAGE_READ:
                         if (v) Log.d(TAG, "MESSAGE_READ");
                         messageListener.onMessageReceived((MessageAdHoc) msg.obj);
+                        break;
+                    case Service.MESSAGE_EXCEPTION:
+                        if (v) Log.e(TAG, "MESSAGE_EXCEPTION");
+                        messageListener.onMsgException((Exception) msg.obj);
+                        break;
+                    case Service.LOG_EXCEPTION:
+                        if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());
                         break;
                 }
             }

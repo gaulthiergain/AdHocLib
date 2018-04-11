@@ -6,13 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-
-import java.io.IOException;
 
 /**
  * <p>This class defines the constants for connection states and message handling and aims to serve
@@ -34,7 +28,7 @@ public abstract class Service {
     protected static final byte STATE_LISTENING = 1;            // listening for incoming connections
     protected static final byte STATE_CONNECTING = 2;           // initiating an outgoing connection
     protected static final byte STATE_CONNECTED = 3;            // connected to a remote device
-    protected static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
+    static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
     // Constants for message handling
     public static final byte MESSAGE_READ = 5;                   // message received
@@ -42,8 +36,10 @@ public abstract class Service {
     // Constants for connection
     public static final byte CONNECTION_ABORTED = 6;             // connection aborted
     public static final byte CONNECTION_PERFORMED = 7;           // connection performed
-    public static final byte CATH_EXCEPTION = 8;                 // catch exception
-    public static final byte CONNECTION_FAILED = 9;              // connection failed
+    public static final byte CONNECTION_FAILED = 8;              // connection failed
+
+    public static final byte LOG_EXCEPTION = 9;                  // log exception
+    public static final byte MESSAGE_EXCEPTION = 10;             // catch message exception
 
     protected int state;
     protected final boolean v;
@@ -109,9 +105,12 @@ public abstract class Service {
                     if (v) Log.d(TAG, "CONNECTION_FAILED");
                     messageListener.onConnectionFailed((Exception) msg.obj);
                     break;
-                case CATH_EXCEPTION:
-                    Exception e = (Exception) msg.obj;
-                    if (v) Log.e(TAG, "CATH_EXCEPTION: " + e.getMessage());
+                case MESSAGE_EXCEPTION:
+                    if (v) Log.e(TAG, "MESSAGE_EXCEPTION");
+                    messageListener.onMsgException((Exception) msg.obj);
+                    break;
+                case LOG_EXCEPTION:
+                    if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());
                     break;
             }
         }

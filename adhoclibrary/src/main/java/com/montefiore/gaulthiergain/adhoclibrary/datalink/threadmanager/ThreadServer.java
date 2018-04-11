@@ -147,12 +147,15 @@ public class ThreadServer extends Thread {
                             isocket.getRemoteSocketAddress()).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
+                    handler.obtainMessage(Service.CONNECTION_FAILED,
+                            new Exception("Accepting socket is null")).sendToTarget();
                 }
 
             } catch (SocketException e) {
+                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
                 break;
             } catch (IOException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
                 break;
             }
         }
@@ -181,10 +184,12 @@ public class ThreadServer extends Thread {
                             socket.getRemoteDevice().getAddress()).sendToTarget();
                 } else {
                     if (v) Log.d(TAG, "Error while accepting client");
+                    handler.obtainMessage(Service.CONNECTION_FAILED,
+                            new Exception("Accepting socket is null")).sendToTarget();
                 }
 
             } catch (IOException e) {
-                handler.obtainMessage(Service.CATH_EXCEPTION, e).sendToTarget();
+                handler.obtainMessage(Service.CONNECTION_FAILED, e).sendToTarget();
                 break;
             }
         }
@@ -200,7 +205,7 @@ public class ThreadServer extends Thread {
 
         // Use iterator to
         Iterator iterator = arrayThreadClients.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             ThreadClient threadClient = (ThreadClient) iterator.next();
             // Stop all threads client
             if (v) Log.d(TAG, "STOP thread " + threadClient.getNameThread());

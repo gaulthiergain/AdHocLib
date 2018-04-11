@@ -184,12 +184,12 @@ public class TransferManager {
 
     public String getOwnName() {
 
-        if (isWifiEnable()) {
-            return getWifiAdapterName();
-        }
-
         if (isBluetoothEnable()) {
             return getBluetoothAdapterName();
+        }
+
+        if (isWifiEnable()) {
+            return getWifiAdapterName();
         }
 
         return null;
