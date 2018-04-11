@@ -36,7 +36,6 @@ public class WifiServiceServer extends ServiceServer {
      * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
     public void listen(ServiceConfig config) throws IOException {
-        if (v) Log.d(TAG, "Listening()");
 
         // Cancel any thread currently running a connection
         if (threadListen != null) {
@@ -44,14 +43,17 @@ public class WifiServiceServer extends ServiceServer {
             threadListen = null;
         }
 
-        // Start thread Listening
-        threadListen = new ThreadServer(handler, config.getNbThreads(), v, config.getServerPort(),
-                new ListSocketDevice(json));
-        threadListen.start();
+        if(config.getNbThreads() > 0) {
 
-        // Update state
-        setState(STATE_LISTENING);
+            // Start thread Listening
+            threadListen = new ThreadServer(handler, config.getNbThreads(), v, config.getServerPort(),
+                    new ListSocketDevice(json));
+            threadListen.start();
 
-        if (v) Log.d(TAG, "Listening on port: " + config.getServerPort());
+            if (v) Log.d(TAG, "Listening on port: " + config.getServerPort());
+
+            // Update state
+            setState(STATE_LISTENING);
+        }
     }
 }
