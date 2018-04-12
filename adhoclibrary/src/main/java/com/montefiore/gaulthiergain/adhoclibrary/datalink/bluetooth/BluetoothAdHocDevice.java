@@ -125,7 +125,7 @@ public class BluetoothAdHocDevice extends AdHocDevice {
      *
      * @return an integer value which represents the rssi of the remote Bluetooth device.
      */
-    int getRssi() {
+    public int getRssi() {
         return rssi;
     }
 

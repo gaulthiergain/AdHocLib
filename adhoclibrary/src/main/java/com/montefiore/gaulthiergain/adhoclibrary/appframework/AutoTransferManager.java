@@ -138,26 +138,18 @@ public class AutoTransferManager extends TransferManager {
         return random.nextInt(max - min + 1) + min;
     }
 
-    private void updateAdapterName() {
+    private void updateAdapterName() throws DeviceException {
         String name = getBluetoothAdapterName();
         if (name != null) {
             if (!name.contains(PREFIX)) {
-                try {
-                    updateBluetoothAdapterName(PREFIX + name);
-                } catch (DeviceException e) {
-                    e.printStackTrace();
-                }
+                updateBluetoothAdapterName(PREFIX + name);
             }
         }
 
         //update Adapter Name
         name = getWifiAdapterName();
         if (name != null && !name.contains(PREFIX)) {
-            try {
-                updateWifiAdapterName(PREFIX + name);
-            } catch (DeviceException e) {
-                e.printStackTrace();
-            }
+            updateWifiAdapterName(PREFIX + name);
         }
     }
 
@@ -174,7 +166,7 @@ public class AutoTransferManager extends TransferManager {
         }
     }
 
-    private void _startDiscovery(int elapseTimeMin, int elapseTimeMax) {
+    private void _startDiscovery(int elapseTimeMin, int elapseTimeMax) throws DeviceException {
 
         this.elapseTimeMin = elapseTimeMin;
         this.elapseTimeMax = elapseTimeMax;
@@ -192,11 +184,11 @@ public class AutoTransferManager extends TransferManager {
         timerConnect();
     }
 
-    public void startDiscovery(int elapseTimeMin, int elapseTimeMax) {
+    public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws DeviceException {
         _startDiscovery(elapseTimeMin, elapseTimeMax);
     }
 
-    public void startDiscovery() {
+    public void startDiscovery() throws DeviceException {
         _startDiscovery(50000, 60000);
     }
 
@@ -291,7 +283,19 @@ public class AutoTransferManager extends TransferManager {
             case INIT_STATE:
             default:
                 return "INIT";
+        }
+    }
 
+    public void reset() throws DeviceException {
+        String name = getBluetoothAdapterName();
+        if (name != null && name.contains(PREFIX)) {
+            resetBluetoothAdapterName();
+        }
+
+        //update Adapter Name
+        name = getWifiAdapterName();
+        if (name != null && name.contains(PREFIX)) {
+            resetWifiAdapterName();
         }
     }
 }

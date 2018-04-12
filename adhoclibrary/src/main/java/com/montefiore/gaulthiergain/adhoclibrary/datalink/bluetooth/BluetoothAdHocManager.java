@@ -80,6 +80,14 @@ public class BluetoothAdHocManager {
     }
 
     /**
+     * Method allowing to disable the Bluetooth adapter.
+     */
+    public void enable() {
+        bluetoothAdapter.enable();
+    }
+
+
+    /**
      * Method allowing to get all the paired Bluetooth devices.
      *
      * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
@@ -97,7 +105,7 @@ public class BluetoothAdHocManager {
                 if (v) Log.d(TAG, "DeviceName: " + device.getName() +
                         " - DeviceHardwareAddress: " + device.getAddress());
                 hashMapBluetoothPairedDevice.put(device.getAddress(),
-                        new BluetoothAdHocDevice(device, Service.BLUETOOTH));
+                        new BluetoothAdHocDevice(device));
             }
         }
         return hashMapBluetoothPairedDevice;
@@ -241,10 +249,10 @@ public class BluetoothAdHocManager {
         return null;
     }
 
-    public void unpairDevice(BluetoothDevice device) throws InvocationTargetException,
+    public void unpairDevice(BluetoothAdHocDevice device) throws InvocationTargetException,
             IllegalAccessException, NoSuchMethodException {
-        Method m = device.getClass().getMethod("removeBond", (Class[]) null);
-        m.invoke(device, (Object[]) null);
+        Method m = device.getDevice().getClass().getMethod("removeBond", (Class[]) null);
+        m.invoke(device.getDevice(), (Object[]) null);
     }
 
     public void onEnableBluetooth(final ListenerAdapter listenerAdapter) {
