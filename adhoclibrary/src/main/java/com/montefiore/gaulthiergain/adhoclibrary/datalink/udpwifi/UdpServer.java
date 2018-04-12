@@ -15,13 +15,15 @@ import java.net.InetAddress;
 class UdpServer extends Thread {
 
     private final static String TAG = "[AdHoc][UdpServer]";
+    private final static int SIZE = 65507;
 
     private final boolean v;
     private final int serverPort;
     private final Handler handler;
+    private final ObjectMapper mapper;
+
     private DatagramSocket socket;
     private boolean running;
-    private final ObjectMapper mapper;
 
     UdpServer(boolean verbose, Handler handler, int serverPort) {
         this.v = verbose;
@@ -38,53 +40,38 @@ class UdpServer extends Thread {
     public void run() {
 
         running = true;
-
         try {
-            Log.d(TAG, "Starting UDP Server on " + serverPort);
+            if (v) Log.d(TAG, "Starting UDP Server on " + serverPort);
             socket = new DatagramSocket(serverPort);
-
 
             while (running) {
 
-                // receive request
-                byte[] buffer = new byte[65507];
+                // Receive request
+                byte[] buffer = new byte[SIZE];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
                 socket.receive(packet);
 
-
-                // send the response to the client at "address" and "port"
+                // Send the response to the client at "address" and "port"
                 InetAddress address = packet.getAddress();
                 int port = packet.getPort();
 
-                try {
-                    MessageAdHoc msg = (MessageAdHoc) deserialize(packet.getData());
-                    Log.d(TAG, "Request from: " + address + ":" + port + " - " + msg.toString() + "\n");
-
-                    handler.obtainMessage(Service.MESSAGE_READ, msg).sendToTarget();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                /*String dString = new Date().toString() + "\n"
-                        + "Your address " + address.toString() + ":" + String.valueOf(port);
-                buf = dString.getBytes();
-                packet = new DatagramPacket(buf, buf.length, address, port);
-                socket.send(packet);*/
+                MessageAdHoc msg = deserialize(packet.getData());
+                // Update Handler
+                handler.obtainMessage(Service.MESSAGE_READ, msg).sendToTarget();
             }
 
-            Log.d(TAG, "UDP Server ended");
+            if (v) Log.d(TAG, "UDP Server ended");
 
         } catch (IOException e) {
-            e.printStackTrace();
+            handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
         } finally {
             if (socket != null) {
                 socket.close();
-                Log.d(TAG, "socket.close()");
             }
         }
     }
 
-    private MessageAdHoc deserialize(byte[] data) throws IOException, ClassNotFoundException {
+    private MessageAdHoc deserialize(byte[] data) throws IOException {
         MessageAdHoc msg = mapper.readValue(data, MessageAdHoc.class);
         Log.d(TAG, "Received message: " + msg);
         return msg;

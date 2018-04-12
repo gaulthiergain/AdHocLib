@@ -52,7 +52,7 @@ public class UdpPeers extends Thread {
     }
 
     public void sendMessageTo(MessageAdHoc message, InetAddress serverAddr, int serverPort) {
-        UdpClient udpClient = new UdpClient(v, handler, message, serverAddr, serverPort);
+        UdpClient udpClient = new UdpClient(handler, message, serverAddr, serverPort);
         udpClient.start();
     }
 }

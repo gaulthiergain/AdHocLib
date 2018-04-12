@@ -11,17 +11,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class UdpClient extends Thread {
+class UdpClient extends Thread {
 
-    private final boolean v;
+    private final int serverPort;
     private final Handler handler;
     private final MessageAdHoc msg;
     private final InetAddress serverAddr;
-    private final int serverPort;
-    private static final String TAG = "[AdHoc][UDPClient]";
 
-    UdpClient(boolean verbose, Handler handler, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
-        this.v = verbose;
+    UdpClient(Handler handler, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
         this.handler = handler;
         this.msg = msg;
         this.serverAddr = serverAddr;
@@ -51,7 +48,6 @@ public class UdpClient extends Thread {
         } catch (IOException e) {
             handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
         }
-
     }
 }
 
