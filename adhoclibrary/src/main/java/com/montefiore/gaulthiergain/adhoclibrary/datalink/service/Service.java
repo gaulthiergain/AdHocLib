@@ -23,11 +23,11 @@ public abstract class Service {
     public static final byte BLUETOOTH = 1;
 
     // Constants that indicate the current connection state
-    protected static final byte STATE_NONE = 0;                 // no connection
-    protected static final byte STATE_LISTENING = 1;            // listening for incoming connections
-    protected static final byte STATE_CONNECTING = 2;           // initiating an outgoing connection
-    protected static final byte STATE_CONNECTED = 3;            // connected to a remote device
-    static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
+    public static final byte STATE_NONE = 0;                 // no connection
+    public static final byte STATE_LISTENING = 1;            // listening for incoming connections
+    public static final byte STATE_CONNECTING = 2;           // initiating an outgoing connection
+    public static final byte STATE_CONNECTED = 3;            // connected to a remote device
+    public static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
     // Constants for message handling
     public static final byte MESSAGE_READ = 5;                   // message received
@@ -49,8 +49,8 @@ public abstract class Service {
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param json            a boolean value to use json or bytes in network transfer.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
     Service(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {

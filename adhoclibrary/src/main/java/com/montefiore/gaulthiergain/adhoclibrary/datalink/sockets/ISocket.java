@@ -45,13 +45,6 @@ public interface ISocket {
     InputStream getInputStream() throws IOException;
 
     /**
-     * Method allowing to return the connection state of the socket.
-     *
-     * @return a boolean value which represents the connection state of the socket.
-     */
-    boolean isConnected();
-
-    /**
      * Method allowing to return remote the socket address.
      *
      * @return a String value which represents the remote socket address.

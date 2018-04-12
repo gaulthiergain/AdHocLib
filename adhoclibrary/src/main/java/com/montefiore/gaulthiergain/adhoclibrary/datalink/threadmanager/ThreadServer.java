@@ -64,6 +64,14 @@ public class ThreadServer extends Thread {
             , BluetoothAdapter mAdapter, UUID uuid, ListSocketDevice listSocketDevice)
             throws IOException {
 
+        if (mAdapter == null) {
+            throw new IOException("Bluetooth adapter is null");
+        }
+
+        if (uuid == null) {
+            throw new IOException("Uuid is null");
+        }
+
         this.handler = handler;
         this.nbThreads = nbThreads;
         this.v = verbose;

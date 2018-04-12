@@ -52,9 +52,4 @@ public class AdHocSocketWifi implements ISocket {
         return socket.getInputStream();
     }
 
-    @Override
-    public boolean isConnected() {
-        return socket.isConnected();
-    }
-
 }

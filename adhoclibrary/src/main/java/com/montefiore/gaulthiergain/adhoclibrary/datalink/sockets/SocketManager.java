@@ -45,7 +45,6 @@ public class SocketManager {
 
     public void sendMessage(MessageAdHoc msg) throws IOException {
 
-
         if (json) {
             PrintWriter pw = new PrintWriter(oos);
             pw.println(mapper.writeValueAsString(msg));
