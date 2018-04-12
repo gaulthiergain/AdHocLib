@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 
-public class Neighbors {
+class Neighbors {
 
     private ConcurrentHashMap<String, SocketManager> neighbors;
 
@@ -28,7 +28,7 @@ public class Neighbors {
      * @param key           a String value which represents the address of a remote device.
      * @param socketManager a SocketManager object which represents the state of the connection.
      */
-    public void addNeighbors(String key, SocketManager socketManager) {
+     void addNeighbors(String key, SocketManager socketManager) {
         neighbors.put(key, socketManager);
     }
 
@@ -38,17 +38,17 @@ public class Neighbors {
      * @return a ConcurrentHashMap(String, SocketManager) object which maps the remote node name to
      * a SocketManager object.
      */
-    public ConcurrentHashMap<String, SocketManager> getNeighbors() {
+     ConcurrentHashMap<String, SocketManager> getNeighbors() {
         return neighbors;
     }
 
-    public void remove(String remoteLabel) {
+     void remove(String remoteLabel) {
         if (neighbors.containsKey(remoteLabel)) {
             neighbors.remove(remoteLabel);
         }
     }
 
-    public SocketManager getNeighbor(String remoteLabel) {
+     SocketManager getNeighbor(String remoteLabel) {
         if (neighbors.containsKey(remoteLabel)) {
             return neighbors.get(remoteLabel);
         }

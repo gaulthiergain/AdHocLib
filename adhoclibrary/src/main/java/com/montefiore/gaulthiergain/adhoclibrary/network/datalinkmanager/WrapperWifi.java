@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.content.Context;
 import android.util.Log;
@@ -20,7 +20,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiLis
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -28,7 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
+class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
 
@@ -38,9 +37,9 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, String> mapAddrMac;
 
-    public WrapperWifi(boolean verbose, Context context, Config config,
-                       HashMap<String, AdHocDevice> mapAddressDevice,
-                       final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
+    WrapperWifi(boolean verbose, Context context, Config config,
+                HashMap<String, AdHocDevice> mapAddressDevice,
+                final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
 
         super(verbose, config, config.getNbThreadWifi(), mapAddressDevice,
@@ -70,24 +69,24 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void init(Config config, Context context) throws IOException {
+    void init(Config config, Context context) throws IOException {
         this.mapAddrMac = new HashMap<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
     }
 
     @Override
-    public void connect(AdHocDevice device) {
+    void connect(AdHocDevice device) {
         wifiAdHocManager.connect(device.getMacAddress());
     }
 
     @Override
-    public void stopListening() throws IOException {
+    void stopListening() throws IOException {
         serviceServer.stopListening();
     }
 
     @Override
-    public void discovery(final DiscoveryListener discoveryListener) {
+    void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
@@ -137,52 +136,52 @@ public class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     @Override
-    public HashMap<String, AdHocDevice> getPaired() {
+    HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }
 
     @Override
-    public void unregisterConnection() {
+    void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }
 
     @Override
-    public void enable(int duration, ListenerAdapter listenerAdapter) {
+    void enable(int duration, ListenerAdapter listenerAdapter) {
         wifiAdHocManager.enable();
         wifiAdHocManager.onEnableWifi(listenerAdapter);
         enabled = true;
     }
 
     @Override
-    public void disable() {
+    void disable() {
         wifiAdHocManager.disable();
         enabled = false;
     }
 
     @Override
-    public void updateContext(Context context) {
+    void updateContext(Context context) {
         wifiAdHocManager.updateContext(context);
     }
 
 
     @Override
-    public void unregisterAdapter() {
+    void unregisterAdapter() {
         // Not used in wifi context
     }
 
     @Override
-    public void resetDeviceName() {
+    void resetDeviceName() {
         wifiAdHocManager.resetDeviceName();
     }
 
     @Override
-    public boolean updateDeviceName(String name) {
+    boolean updateDeviceName(String name) {
         return wifiAdHocManager.updateDeviceName(name);
     }
 
     @Override
-    public String getAdapterName() {
+    String getAdapterName() {
         return wifiAdHocManager.getDeviceName();
     }
 

@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.content.Context;
 
@@ -18,14 +18,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractWrapper {
+abstract class AbstractWrapper {
 
     final static byte CONNECT_SERVER = 10;
     final static byte CONNECT_CLIENT = 11;
     final static byte CONNECT_BROADCAST = 12;
     final static byte DISCONNECT_BROADCAST = 13;
-
-    public final static byte BROADCAST = 14;
+    final static byte BROADCAST = 14;
 
     int type;
     final boolean v;
@@ -64,65 +63,65 @@ public abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    public abstract void connect(AdHocDevice device) throws DeviceAlreadyConnectedException;
+    abstract void connect(AdHocDevice device) throws DeviceAlreadyConnectedException;
 
-    public abstract void stopListening() throws IOException;
+    abstract void stopListening() throws IOException;
 
-    public abstract void discovery(DiscoveryListener discoveryListener);
+    abstract void discovery(DiscoveryListener discoveryListener);
 
-    public abstract HashMap<String, AdHocDevice> getPaired();
+    abstract HashMap<String, AdHocDevice> getPaired();
 
-    public abstract void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration;
+    abstract void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration;
 
-    public abstract void disable();
+    abstract void disable();
 
-    public abstract void updateContext(Context context);
+    abstract void updateContext(Context context);
 
-    public abstract void unregisterConnection();
+    abstract void unregisterConnection();
 
-    public abstract void resetDeviceName();
+    abstract void resetDeviceName();
 
-    public abstract boolean updateDeviceName(String name);
+    abstract boolean updateDeviceName(String name);
 
-    public abstract void init(Config config, Context context) throws IOException;
+    abstract void init(Config config, Context context) throws IOException;
 
-    public abstract void unregisterAdapter();
+    abstract void unregisterAdapter();
 
-    public abstract void sendMessage(MessageAdHoc message, String address) throws IOException;
+    abstract void sendMessage(MessageAdHoc message, String address) throws IOException;
 
-    public abstract boolean isDirectNeighbors(String address);
+    abstract boolean isDirectNeighbors(String address);
 
-    public abstract void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException;
+    abstract void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException;
 
-    public abstract void broadcast(MessageAdHoc message) throws IOException;
+    abstract void broadcast(MessageAdHoc message) throws IOException;
 
-    public abstract void disconnect(String remoteDest) throws IOException;
+    abstract void disconnect(String remoteDest) throws IOException;
 
-    public abstract void disconnectAll() throws IOException;
+    abstract void disconnectAll() throws IOException;
 
-    public abstract String getAdapterName();
+    abstract String getAdapterName();
 
     public boolean isEnabled() {
         return enabled;
     }
 
-    public boolean isDiscoveryCompleted() {
+    boolean isDiscoveryCompleted() {
         return discoveryCompleted;
     }
 
-    public void resetDiscoveryFlag() {
+    void resetDiscoveryFlag() {
         this.discoveryCompleted = false;
     }
 
-    public void setDiscoveryListener(DataLinkManager.ListenerBothDiscovery listenerBothDiscovery) {
+    void setDiscoveryListener(DataLinkManager.ListenerBothDiscovery listenerBothDiscovery) {
         this.listenerBothDiscovery = listenerBothDiscovery;
     }
 
-    public int getType() {
+    int getType() {
         return type;
     }
 
-    public String getMac() {
+    String getMac() {
         return ownMac;
     }
 
@@ -140,7 +139,7 @@ public abstract class AbstractWrapper {
         return false;
     }
 
-    public void updateListener(ListenerApp listenerApp) {
+    void updateListener(ListenerApp listenerApp) {
         this.listenerApp = listenerApp;
     }
 }

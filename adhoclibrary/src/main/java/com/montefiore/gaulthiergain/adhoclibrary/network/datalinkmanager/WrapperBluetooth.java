@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -21,7 +21,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessage
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -31,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class WrapperBluetooth extends WrapperConnOriented {
+class WrapperBluetooth extends WrapperConnOriented {
 
     private static final String TAG = "[AdHoc][WrapperBt]";
 
@@ -39,7 +38,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     private String ownStringUUID;
     private BluetoothAdHocManager bluetoothAdHocManager;
 
-    public WrapperBluetooth(boolean verbose, Context context, Config config,
+    WrapperBluetooth(boolean verbose, Context context, Config config,
                             HashMap<String, AdHocDevice> mapAddressDevice,
                             ListenerApp listenerApp, ListenerDataLink listenerDataLink) throws IOException {
 
@@ -61,7 +60,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void init(Config config, Context context) throws IOException {
+     void init(Config config, Context context) throws IOException {
         this.secure = config.isSecure();
         this.ownName = BluetoothUtil.getCurrentName();
         this.ownMac = BluetoothUtil.getCurrentMac(context);
@@ -71,7 +70,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
+     void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
 
         BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
         if (btDevice != null) {
@@ -86,12 +85,12 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void stopListening() throws IOException {
+     void stopListening() throws IOException {
         serviceServer.stopListening();
     }
 
     @Override
-    public void discovery(final DiscoveryListener discoveryListener) {
+     void discovery(final DiscoveryListener discoveryListener) {
         bluetoothAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
@@ -139,7 +138,7 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public HashMap<String, AdHocDevice> getPaired() {
+     HashMap<String, AdHocDevice> getPaired() {
 
         if (!bluetoothAdHocManager.isEnabled()) {
             return null;
@@ -159,45 +158,45 @@ public class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    public void unregisterConnection() {
+     void unregisterConnection() {
         // Not used in bluetooth context
     }
 
     @Override
-    public void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
+     void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         bluetoothAdHocManager.enableDiscovery(duration);
         bluetoothAdHocManager.onEnableBluetooth(listenerAdapter);
         enabled = true;
     }
 
     @Override
-    public void disable() {
+     void disable() {
         bluetoothAdHocManager.disable();
         enabled = false;
     }
 
     @Override
-    public void updateContext(Context context) {
+     void updateContext(Context context) {
         bluetoothAdHocManager.updateContext(context);
     }
 
     @Override
-    public void unregisterAdapter() {
+     void unregisterAdapter() {
         bluetoothAdHocManager.unregisterEnableAdapter();
     }
 
     @Override
-    public void resetDeviceName() {
+     void resetDeviceName() {
         bluetoothAdHocManager.resetDeviceName();
     }
 
     @Override
-    public boolean updateDeviceName(String name) {
+     boolean updateDeviceName(String name) {
         return bluetoothAdHocManager.updateDeviceName(name);
     }
 
     @Override
-    public String getAdapterName() {
+     String getAdapterName() {
         return bluetoothAdHocManager.getAdapterName();
     }
 

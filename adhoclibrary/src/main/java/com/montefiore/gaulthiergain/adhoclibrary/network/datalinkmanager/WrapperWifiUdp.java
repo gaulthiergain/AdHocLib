@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers;
+package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -23,7 +23,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -37,7 +36,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
+class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifiUdp]";
     private static final int TIMER_ACK = 2000;
@@ -51,9 +50,9 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     private HashMap<String, AdHocDevice> neighbors;
 
 
-    public WrapperWifiUdp(boolean verbose, Context context, Config config,
-                          HashMap<String, AdHocDevice> mapAddressDevice,
-                          final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
+    WrapperWifiUdp(boolean verbose, Context context, Config config,
+                   HashMap<String, AdHocDevice> mapAddressDevice,
+                   final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
         super(verbose, config, mapAddressDevice, listenerApp, listenerDataLink);
 
         try {
@@ -79,17 +78,17 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    public void connect(AdHocDevice device) {
+    void connect(AdHocDevice device) {
         wifiAdHocManager.connect(device.getMacAddress());
     }
 
     @Override
-    public void stopListening() {
+    void stopListening() {
         udpPeers.setBackgroundRunning(false);
     }
 
     @Override
-    public void discovery(final DiscoveryListener discoveryListener) {
+    void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted() {
@@ -142,36 +141,36 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    public HashMap<String, AdHocDevice> getPaired() {
+    HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }
 
     @Override
-    public void enable(int duration, ListenerAdapter listenerAdapter) {
+    void enable(int duration, ListenerAdapter listenerAdapter) {
         wifiAdHocManager.enable();
         wifiAdHocManager.onEnableWifi(listenerAdapter);
         enabled = true;
     }
 
     @Override
-    public void disable() {
+    void disable() {
         wifiAdHocManager.disable();
         enabled = false;
     }
 
     @Override
-    public void updateContext(Context context) {
+    void updateContext(Context context) {
         wifiAdHocManager.updateContext(context);
     }
 
     @Override
-    public void unregisterConnection() {
+    void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }
 
     @Override
-    public void init(Config config, Context context) {
+    void init(Config config, Context context) {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ackSet = new HashSet<>();
@@ -180,27 +179,27 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    public void unregisterAdapter() {
+    void unregisterAdapter() {
         // Not used in wifi context
     }
 
     @Override
-    public void resetDeviceName() {
+    void resetDeviceName() {
         wifiAdHocManager.resetDeviceName();
     }
 
     @Override
-    public boolean updateDeviceName(String name) {
+    boolean updateDeviceName(String name) {
         return wifiAdHocManager.updateDeviceName(name);
     }
 
     @Override
-    public String getAdapterName() {
+    String getAdapterName() {
         return wifiAdHocManager.getDeviceName();
     }
 
     @Override
-    public void sendMessage(MessageAdHoc msg, String label) {
+    void sendMessage(MessageAdHoc msg, String label) {
 
         WifiAdHocDevice wifiDevice = (WifiAdHocDevice) neighbors.get(label);
         if (wifiDevice != null) {
@@ -209,29 +208,29 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    public boolean isDirectNeighbors(String address) {
+    boolean isDirectNeighbors(String address) {
         return neighbors.containsKey(address);
     }
 
     @Override
-    public void broadcast(MessageAdHoc message) {
+    void broadcast(MessageAdHoc message) {
         if (neighbors.size() > 0) {
             _sendMessage(message, "192.168.49.255");
         }
     }
 
     @Override
-    public void disconnectAll() {
+    void disconnectAll() {
         // Not used in this context
     }
 
     @Override
-    public void disconnect(String remoteDest) {
+    void disconnect(String remoteDest) {
         // Not used in this context
     }
 
     @Override
-    public void broadcastExcept(MessageAdHoc message, String excludedAddress) {
+    void broadcastExcept(MessageAdHoc message, String excludedAddress) {
         for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
             if (!entry.getKey().equals(excludedAddress)) {
                 WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue();

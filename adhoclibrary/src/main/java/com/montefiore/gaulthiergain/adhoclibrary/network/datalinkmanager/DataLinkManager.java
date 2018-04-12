@@ -16,11 +16,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerB
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.AbstractWrapper;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.IWrapperWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperBluetooth;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifi;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wrappers.WrapperWifiUdp;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
