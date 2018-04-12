@@ -9,8 +9,6 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
-import java.net.InetAddress;
-
 public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
 
     private final String TAG = "[AdHoc][BroadcastConn]";
@@ -18,11 +16,11 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
     private final boolean v;
     private WifiP2pManager manager;
     private Channel channel;
-    private WifiAdHocManager.ListenerWifiDeviceInfos listenerWifiDeviceInfo;
+    private WifiAdHocManager.WifiDeviceInfosListener listenerWifiDeviceInfo;
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
 
     public WiFiDirectBroadcastConnection(WifiP2pManager manager, Channel channel,
-                                         WifiAdHocManager.ListenerWifiDeviceInfos listenerWifiDeviceInfo,
+                                         WifiAdHocManager.WifiDeviceInfosListener listenerWifiDeviceInfo,
                                          WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable, boolean verbose) {
         super();
         this.v = verbose;

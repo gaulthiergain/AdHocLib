@@ -21,7 +21,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.WifiDiscoveryException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 
@@ -64,7 +63,7 @@ public class WifiAdHocManager {
     private HashMap<String, AdHocDevice> mapMacDevices;
 
     private int valueGroupOwner = -1;
-    private ListenerWifiDeviceInfos listenerWifiDeviceInfos;
+    private WifiDeviceInfosListener wifiDeviceInfosListener;
 
     private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
     private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
@@ -80,7 +79,7 @@ public class WifiAdHocManager {
      * @param connectionWifiListener a connectionWifiListener object which serves as callback functions.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
-                            final ListenerWifiDeviceInfos listenerDeviceInfos,
+                            final WifiDeviceInfosListener listenerDeviceInfos,
                             final ConnectionWifiListener connectionWifiListener) throws DeviceException {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
@@ -93,7 +92,7 @@ public class WifiAdHocManager {
             this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
             this.context = context;
             this.mapMacDevices = new HashMap<>();
-            this.listenerWifiDeviceInfos = new ListenerWifiDeviceInfos() {
+            this.wifiDeviceInfosListener = new WifiDeviceInfosListener() {
 
                 @Override
                 public void getDeviceInfos(String name, String mac) {
@@ -441,7 +440,7 @@ public class WifiAdHocManager {
         this.context = context;
     }
 
-    public interface ListenerWifiDeviceInfos {
+    public interface WifiDeviceInfosListener {
         void getDeviceInfos(String name, String mac);
     }
 
@@ -467,7 +466,7 @@ public class WifiAdHocManager {
     }
 
     private void registerConnection(IntentFilter intentFilter, WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
-        wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(wifiP2pManager, channel, listenerWifiDeviceInfos,
+        wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(wifiP2pManager, channel, wifiDeviceInfosListener,
                 onConnectionInfoAvailable, v);
         connectionRegistered = true;
         context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);

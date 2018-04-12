@@ -58,7 +58,7 @@ public class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
         try {
             this.type = Service.WIFI;
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.ListenerWifiDeviceInfos() {
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.WifiDeviceInfosListener() {
                 @Override
                 public void getDeviceInfos(String name, String mac) {
                     ownName = name;
