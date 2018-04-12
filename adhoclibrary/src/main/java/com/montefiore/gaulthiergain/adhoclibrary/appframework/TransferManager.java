@@ -15,12 +15,13 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlread
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class TransferManager {
 
     protected final boolean v;
 
-    protected Config config;
+    protected final Config config;
     private AodvManager aodvManager;
     private ListenerApp listenerApp;
     private DataLinkManager dataLinkManager;
@@ -99,7 +100,7 @@ public class TransferManager {
         dataLinkManager.discovery(discoveryListener);
     }
 
-    public HashMap<String, AdHocDevice> getPairedDevices() {
+    public Map<String, AdHocDevice> getPairedDevices() {
         return dataLinkManager.getPaired();
     }
 
@@ -171,7 +172,7 @@ public class TransferManager {
         dataLinkManager.cancelConnection(listenerAction);
     }
 
-    public ArrayList<String> getActifAdapterNames() {
+    public Map<Integer, String> getActifAdapterNames() {
         return dataLinkManager.getActifAdapterNames();
     }
 

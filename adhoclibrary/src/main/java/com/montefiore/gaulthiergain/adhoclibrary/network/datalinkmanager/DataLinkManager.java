@@ -21,7 +21,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,10 +28,9 @@ public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
 
+    private Config config;
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
-
-    private Config config;
 
     public DataLinkManager(boolean verbose, Context context, Config config,
                            final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
@@ -60,16 +58,6 @@ public class DataLinkManager {
         checkState();
     }
 
-    private int checkState() {
-        int enabled = 0;
-        for (AbstractWrapper wrapper : wrappers) {
-            if (wrapper.isEnabled()) {
-                enabled++;
-            }
-        }
-        return enabled;
-    }
-
     public void discovery(final DiscoveryListener discovery) throws DeviceException {
 
         int enabled = checkState();
@@ -94,54 +82,6 @@ public class DataLinkManager {
                 }
             }
         }
-    }
-
-    private void bothDiscovery(final DiscoveryListener discovery) {
-
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
-            // Used handler to avoid updating views in other threads than the main thread
-            public void handleMessage(Message msg) {
-                discovery.onDiscoveryCompleted(mapAddressDevice);
-            }
-        };
-
-        for (AbstractWrapper wrapper : wrappers) {
-            wrapper.discovery(discovery);
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    // Use pooling to check if the discovery is completed
-                    while (true) {
-                        Thread.sleep(POOLING_DISCOVERY);
-
-                        boolean finished = true;
-                        for (AbstractWrapper wrapper : wrappers) {
-                            if (!wrapper.isDiscoveryCompleted()) {
-                                finished = false;
-                                break;
-                            }
-                        }
-
-                        if (finished) {
-                            // Used handler to avoid using runOnUiThread in main app
-                            mHandler.obtainMessage(1).sendToTarget();
-                            break;
-                        }
-                    }
-
-                    // Reset flag to perform a new discovery
-                    for (AbstractWrapper wrapper : wrappers) {
-                        wrapper.resetDiscoveryFlag();
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
     public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
@@ -328,12 +268,12 @@ public class DataLinkManager {
         }
     }
 
-    public ArrayList<String> getActifAdapterNames() {
-        ArrayList<String> adapterNames = new ArrayList<>();
+    public HashMap<Integer, String> getActifAdapterNames() {
+        @SuppressLint("UseSparseArrays") HashMap<Integer, String> adapterNames = new HashMap<>();
         for (AbstractWrapper wrapper : wrappers) {
             String name = getAdapterName(wrapper.getType());
             if (name != null) {
-                adapterNames.add(name);
+                adapterNames.put(wrapper.getType(), name);
             }
         }
 
@@ -382,8 +322,62 @@ public class DataLinkManager {
         }
     }
 
-    public interface ListenerBothDiscovery {
-        void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
+    private int checkState() {
+        int enabled = 0;
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                enabled++;
+            }
+        }
+        return enabled;
+    }
+
+    private void bothDiscovery(final DiscoveryListener discovery) {
+
+        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
+            // Used handler to avoid updating views in other threads than the main thread
+            public void handleMessage(Message msg) {
+                discovery.onDiscoveryCompleted(mapAddressDevice);
+            }
+        };
+
+        for (AbstractWrapper wrapper : wrappers) {
+            wrapper.discovery(discovery);
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    // Use pooling to check if the discovery is completed
+                    while (true) {
+                        Thread.sleep(POOLING_DISCOVERY);
+
+                        boolean finished = true;
+                        for (AbstractWrapper wrapper : wrappers) {
+                            if (!wrapper.isDiscoveryCompleted()) {
+                                finished = false;
+                                break;
+                            }
+                        }
+
+                        if (finished) {
+                            // Used handler to avoid using runOnUiThread in main app
+                            mHandler.obtainMessage(1).sendToTarget();
+                            break;
+                        }
+                    }
+
+                    // Reset flag to perform a new discovery
+                    for (AbstractWrapper wrapper : wrappers) {
+                        wrapper.resetDiscoveryFlag();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void processListenerAdapter(int type, boolean success, Context context,
@@ -422,6 +416,10 @@ public class DataLinkManager {
             default:
                 return "Unknown";
         }
+    }
+
+    public interface ListenerBothDiscovery {
+        void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
 
 }

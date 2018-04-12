@@ -154,7 +154,7 @@ public class AutoTransferManager extends TransferManager {
     }
 
     private void connectPairedDevices() {
-        HashMap<String, AdHocDevice> paired = getPairedDevices();
+        Map<String, AdHocDevice> paired = getPairedDevices();
         if (paired != null) {
             for (AdHocDevice adHocDevice : getPairedDevices().values()) {
                 if (v) Log.d(TAG, "Paired devices: " + String.valueOf(adHocDevice));
