@@ -46,7 +46,6 @@ import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager {
 
-
     public static String TAG = "[AdHoc][WifiManager]";
 
     private static final int DISCOVERY_TIME = 10000;
@@ -84,6 +83,7 @@ public class WifiAdHocManager {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
+
             // Device does not support Wifi Direct
             throw new DeviceException("Error device does not support Wifi Direct");
         } else {
@@ -109,62 +109,7 @@ public class WifiAdHocManager {
         }
     }
 
-    private void registerConnection() {
-        final IntentFilter intentFilter = new IntentFilter();
-
-        //  Indicates a change in the Wi-Fi P2P status.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        // Indicates this device's details are available
-        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
-        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
-            @Override
-            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-                if (v) Log.d(TAG, "Address groupOwner:"
-                        + String.valueOf(info.groupOwnerAddress.getHostAddress()));
-
-
-                if (info.isGroupOwner) {
-                    connectionWifiListener.onGroupOwner(info.groupOwnerAddress);
-                } else {
-                    try {
-                        byte[] addr = getLocalIPAddress();
-                        if (addr != null) {
-                            connectionWifiListener.onClient(info.groupOwnerAddress,
-                                    InetAddress.getByName(getDottedDecimalIP(addr)));
-                        } else {
-                            connectionWifiListener.onConnectionFailed(
-                                    new NoConnectionException("Unknown IP address"));
-                        }
-                    } catch (UnknownHostException | SocketException e) {
-                        connectionWifiListener.onConnectionFailed(e);
-                    } catch (IOException e) {
-                        connectionWifiListener.onConnectionFailed(e);
-                    }
-                }
-            }
-        };
-
-        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                //Ignored
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                //Ignored
-            }
-        });
-
-        registerConnection(intentFilter, onConnectionInfoAvailable);
-    }
-
-    public String getDeviceName() {
+    public String getAdapterName() {
         return currentAdapterName;
     }
 
@@ -263,7 +208,6 @@ public class WifiAdHocManager {
             public void onFailure(int reasonCode) {
                 if (v)
                     Log.e(TAG, "Error during connecting Wifi Direct (onFailure): " + errorCode(reasonCode));
-
                 connectionWifiListener.onConnectionFailed(new NoConnectionException(errorCode(reasonCode)));
             }
         });
@@ -319,33 +263,6 @@ public class WifiAdHocManager {
         }
     }
 
-    private byte[] getLocalIPAddress() throws SocketException {
-        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-            NetworkInterface intf = en.nextElement();
-            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                InetAddress inetAddress = enumIpAddr.nextElement();
-                if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
-                    if (inetAddress instanceof Inet4Address) {
-                        return inetAddress.getAddress();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getDottedDecimalIP(byte[] ipAddr) {
-        //convert to dotted decimal notation:
-        StringBuilder ipAddrStr = new StringBuilder();
-        for (int i = 0; i < ipAddr.length; i++) {
-            if (i > 0) {
-                ipAddrStr.append(".");
-            }
-            ipAddrStr.append(ipAddr[i] & 0xFF);
-        }
-        return ipAddrStr.toString();
-    }
-
     public void resetDeviceName() {
         if (initialName != null) {
             updateDeviceName(initialName);
@@ -374,6 +291,21 @@ public class WifiAdHocManager {
         this.valueGroupOwner = valueGroupOwner;
     }
 
+    public void unregisterConnection() {
+        if (connectionRegistered) {
+            if (v) Log.d(TAG, "unregisterConnection()");
+            context.unregisterReceiver(wifiDirectBroadcastConnection);
+            connectionRegistered = false;
+        }
+    }
+
+    public void unregisterDiscovery() {
+        if (discoveryRegistered) {
+            if (v) Log.d(TAG, "unregisterDiscovery()");
+            context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
+            discoveryRegistered = false;
+        }
+    }
 
     public void leaveWifiP2PGroup() {
         if (wifiP2pManager != null && channel != null) {
@@ -398,6 +330,14 @@ public class WifiAdHocManager {
                 }
             });
         }
+    }
+
+    public void updateContext(Context context) {
+        this.context = context;
+    }
+
+    public interface WifiDeviceInfosListener {
+        void getDeviceInfos(String name, String mac);
     }
 
     public void onEnableWifi(final ListenerAdapter listenerAdapter) {
@@ -430,18 +370,67 @@ public class WifiAdHocManager {
         t.start();
     }
 
+    private void registerConnection() {
+
+        final IntentFilter intentFilter = new IntentFilter();
+
+        //  Indicates a change in the Wi-Fi P2P status.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        // Indicates this device's details are available
+        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+
+        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
+            @Override
+            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+                if (v) Log.d(TAG, "Address groupOwner:"
+                        + String.valueOf(info.groupOwnerAddress.getHostAddress()));
+
+
+                if (info.isGroupOwner) {
+                    connectionWifiListener.onGroupOwner(info.groupOwnerAddress);
+                } else {
+                    try {
+                        byte[] addr = getLocalIPAddress();
+                        if (addr != null) {
+                            connectionWifiListener.onClient(info.groupOwnerAddress,
+                                    InetAddress.getByName(getDottedDecimalIP(addr)));
+                        } else {
+                            connectionWifiListener.onConnectionFailed(
+                                    new NoConnectionException("Unknown IP address"));
+                        }
+                    } catch (UnknownHostException | SocketException e) {
+                        connectionWifiListener.onConnectionFailed(e);
+                    } catch (IOException e) {
+                        connectionWifiListener.onConnectionFailed(e);
+                    }
+                }
+            }
+        };
+
+        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                if (v) Log.d(TAG, "Start discoveryPeers");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                if (v)
+                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + errorCode(reasonCode));
+            }
+        });
+
+        registerConnection(intentFilter, onConnectionInfoAvailable);
+    }
+
     private static boolean isConnected(Context context) {
 
         WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         return wifi != null && wifi.isWifiEnabled();
-    }
-
-    public void updateContext(Context context) {
-        this.context = context;
-    }
-
-    public interface WifiDeviceInfosListener {
-        void getDeviceInfos(String name, String mac);
     }
 
     private String errorCode(int reasonCode) {
@@ -472,19 +461,30 @@ public class WifiAdHocManager {
         context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
     }
 
-    public void unregisterConnection() {
-        if (connectionRegistered) {
-            if (v) Log.d(TAG, "unregisterConnection()");
-            context.unregisterReceiver(wifiDirectBroadcastConnection);
-            connectionRegistered = false;
+    private byte[] getLocalIPAddress() throws SocketException {
+        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+            NetworkInterface intf = en.nextElement();
+            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                InetAddress inetAddress = enumIpAddr.nextElement();
+                if (!inetAddress.isLoopbackAddress() && inetAddress.toString().contains("192.168.49")) {
+                    if (inetAddress instanceof Inet4Address) {
+                        return inetAddress.getAddress();
+                    }
+                }
+            }
         }
+        return null;
     }
 
-    public void unregisterDiscovery() {
-        if (discoveryRegistered) {
-            if (v) Log.d(TAG, "unregisterDiscovery()");
-            context.unregisterReceiver(wiFiDirectBroadcastDiscovery);
-            discoveryRegistered = false;
+    private String getDottedDecimalIP(byte[] ipAddr) {
+        //convert to dotted decimal notation:
+        StringBuilder ipAddrStr = new StringBuilder();
+        for (int i = 0; i < ipAddr.length; i++) {
+            if (i > 0) {
+                ipAddrStr.append(".");
+            }
+            ipAddrStr.append(ipAddr[i] & 0xFF);
         }
+        return ipAddrStr.toString();
     }
 }

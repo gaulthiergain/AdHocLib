@@ -195,7 +195,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     @Override
     String getAdapterName() {
-        return wifiAdHocManager.getDeviceName();
+        return wifiAdHocManager.getAdapterName();
     }
 
     @Override

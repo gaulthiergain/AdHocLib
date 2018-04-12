@@ -182,7 +182,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     @Override
     String getAdapterName() {
-        return wifiAdHocManager.getDeviceName();
+        return wifiAdHocManager.getAdapterName();
     }
 
     /*--------------------------------------IWifi methods----------------------------------------*/
