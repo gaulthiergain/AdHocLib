@@ -2,6 +2,7 @@ package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import android.content.Context;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
@@ -13,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -163,8 +165,17 @@ public class TransferManager {
         dataLinkManager.setWifiGroupOwnerValue(valueGroupOwner);
     }
 
-    public void removeGroup(ListenerAction listenerAction) {
+    public void removeWifiGroup(ListenerAction listenerAction) {
         dataLinkManager.removeGroup(listenerAction);
+    }
+
+    public void unpairBtDevice(AdHocDevice device)
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, DeviceException {
+        if(device instanceof BluetoothAdHocDevice) {
+            dataLinkManager.unpairDevice((BluetoothAdHocDevice) device);
+        }else{
+            throw new DeviceException("Only bluetooth device can be unpaired");
+        }
     }
 
     public void cancelConnection(ListenerAction listenerAction) {
@@ -200,4 +211,6 @@ public class TransferManager {
     public Config getConfig() {
         return config;
     }
+
+
 }

@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
@@ -21,6 +22,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -299,6 +301,14 @@ public class DataLinkManager {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
             wrapperWifi.setGroupOwnerValue(valueGroupOwner);
+        }
+    }
+
+    public void unpairDevice(BluetoothAdHocDevice adHocDevice)
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        WrapperBluetooth wrapperBt = (WrapperBluetooth) wrappers[Service.BLUETOOTH];
+        if (wrapperBt.isEnabled()) {
+            wrapperBt.unpairDevice(adHocDevice);
         }
     }
 
