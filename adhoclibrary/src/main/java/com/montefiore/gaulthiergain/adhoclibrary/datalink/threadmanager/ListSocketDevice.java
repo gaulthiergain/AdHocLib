@@ -78,12 +78,11 @@ public class ListSocketDevice {
      * Method allowing to remove an active connection (a socket) from the
      * ConcurrentHashMap<String, SocketManager>.
      *
-     * @param isocket a ISocket object which represents a socket between the server and the client.
+     * @param key a String value which represents the key mapping of hashMapNetwork.
      */
-    synchronized void removeActiveConnexion(ISocket isocket) {
-        String key = isocket.getRemoteSocketAddress();
+    synchronized void removeActiveConnexion(String key) {
         if (hashMapNetwork.containsKey(key)) {
-            hashMapNetwork.remove(isocket.getRemoteSocketAddress());
+            hashMapNetwork.remove(key);
         }
     }
 }

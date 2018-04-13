@@ -20,15 +20,12 @@ import java.io.PrintWriter;
 
 public class SocketManager {
 
-    private ISocket isocket;
+    private final ISocket isocket;
     private final ObjectMapper mapper;
     private final DataInputStream ois;
     private final DataOutputStream oos;
+    private final String remoteSocketAddress;
     private final boolean json;
-
-    public void setSocket(ISocket isocket) {
-        this.isocket = isocket;
-    }
 
     public ISocket getISocket() {
         return isocket;
@@ -36,6 +33,7 @@ public class SocketManager {
 
     public SocketManager(ISocket isocket, boolean json) throws IOException {
         this.isocket = isocket;
+        this.remoteSocketAddress = isocket.getRemoteSocketAddress();
         this.oos = new DataOutputStream(isocket.getOutputStream());
         this.ois = new DataInputStream(isocket.getInputStream());
         this.mapper = new ObjectMapper();
@@ -90,6 +88,10 @@ public class SocketManager {
         oos.close();
         ois.close();
         isocket.close();
+    }
+
+    public String getRemoteSocketAddress() {
+        return remoteSocketAddress;
     }
 
     private MessageAdHoc deserialize(byte[] byteArray) throws IOException, ClassNotFoundException {

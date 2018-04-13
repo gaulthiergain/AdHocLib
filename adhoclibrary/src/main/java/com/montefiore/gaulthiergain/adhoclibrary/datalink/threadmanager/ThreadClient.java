@@ -1,10 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager;
 
-import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
@@ -26,10 +24,9 @@ class ThreadClient extends Thread {
     }
 
     public void run() {
-        ISocket socketDevice = null;
         while (!isInterrupted()) {
             try {
-                socketDevice = listSocketDevice.getSocketDevice();
+                ISocket socketDevice = listSocketDevice.getSocketDevice();
                 network = listSocketDevice.getActiveConnection().get(socketDevice.getRemoteSocketAddress());
                 MessageAdHoc messageAdHoc;
                 while (true) {
@@ -50,31 +47,23 @@ class ThreadClient extends Thread {
                 handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             } finally {
                 if (network != null) {
-                    processDisconnect(socketDevice);
+                    processDisconnect();
                 }
             }
         }
     }
 
-    private void processRequest(MessageAdHoc request) throws IOException {
+    private void processRequest(MessageAdHoc request) {
         handler.obtainMessage(Service.MESSAGE_READ, request).sendToTarget();
     }
 
-    private void processDisconnect(ISocket socketDevice) {
-        if (socketDevice instanceof AdHocSocketWifi) {
-            // Notify handler
-            handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    network.getISocket().getRemoteSocketAddress()).sendToTarget();
-        } else {
-            // Get Socket
-            BluetoothSocket socket = (BluetoothSocket) network.getISocket().getSocket();
-            // Notify handler
-            handler.obtainMessage(Service.CONNECTION_ABORTED,
-                    socket.getRemoteDevice().getAddress()).sendToTarget();
-        }
+    private void processDisconnect() {
+        // Notify handler
+        handler.obtainMessage(Service.CONNECTION_ABORTED,
+                network.getRemoteSocketAddress()).sendToTarget();
 
         // Remove client from hashmap
-        listSocketDevice.removeActiveConnexion(socketDevice);
+        listSocketDevice.removeActiveConnexion(network.getRemoteSocketAddress());
 
         // Close network
         try {

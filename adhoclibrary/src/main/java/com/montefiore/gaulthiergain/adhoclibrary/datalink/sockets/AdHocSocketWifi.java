@@ -26,7 +26,7 @@ public class AdHocSocketWifi implements ISocket {
 
     @Override
     public String getRemoteSocketAddress() {
-        if (socket != null && socket.getRemoteSocketAddress() != null) {
+        if (socket.getRemoteSocketAddress() != null) {
             return socket.getRemoteSocketAddress().toString().split(":")[0].substring(1);
         }
 
