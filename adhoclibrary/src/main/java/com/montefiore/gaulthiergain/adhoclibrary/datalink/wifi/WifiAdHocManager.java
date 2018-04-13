@@ -48,7 +48,7 @@ public class WifiAdHocManager {
 
     public static String TAG = "[AdHoc][WifiManager]";
 
-    private static final int DISCOVERY_TIME = 10000;
+    public static final int DISCOVERY_TIME = 10000;
     private static final byte DISCOVERY_COMPLETED = 0;
     private static final byte DISCOVERY_FAILED = 1;
 

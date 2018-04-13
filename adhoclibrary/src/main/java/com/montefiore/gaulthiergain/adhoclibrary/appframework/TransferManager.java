@@ -13,7 +13,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,7 +99,7 @@ public class TransferManager {
         dataLinkManager.discovery(discoveryListener);
     }
 
-    public Map<String, AdHocDevice> getPairedDevices() {
+    public HashMap<String, AdHocDevice> getPairedDevices() {
         return dataLinkManager.getPaired();
     }
 
@@ -172,7 +171,7 @@ public class TransferManager {
         dataLinkManager.cancelConnection(listenerAction);
     }
 
-    public Map<Integer, String> getActifAdapterNames() {
+    public HashMap<Integer, String> getActifAdapterNames() {
         return dataLinkManager.getActifAdapterNames();
     }
 
