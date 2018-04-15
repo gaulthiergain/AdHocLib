@@ -55,7 +55,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                     Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
                     listenerDataLink.initInfos(ownMac, ownName);
                 }
-            }, initConnectionListener());
+            });
             if (wifiAdHocManager.isEnabled()) {
                 init(config, context);
             } else {
@@ -70,13 +70,15 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     @Override
     void init(Config config, Context context) throws IOException {
+        this.wifiAdHocManager.setConnectionListener(initConnectionListener());
         this.mapAddrMac = new HashMap<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
     }
 
     @Override
-    void connect(AdHocDevice device) {
+    void connect(short attemps, AdHocDevice device) {
+        this.attemps = attemps;
         wifiAdHocManager.connect(device.getMacAddress());
     }
 
@@ -252,7 +254,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
 
-    private void _connect() {
+    private void _connect(short attemps) {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json, background,
                 groupOwnerAddr, serverPort, 10000, attemps, new ServiceMessageListener() {
             @Override
@@ -425,7 +427,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
                 serviceServer.stopListening();
 
-                _connect();
+                _connect(attemps);
             }
         };
     }

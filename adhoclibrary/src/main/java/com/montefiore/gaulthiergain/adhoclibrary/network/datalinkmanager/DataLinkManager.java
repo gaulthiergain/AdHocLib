@@ -86,7 +86,7 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
 
         if (checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
@@ -94,29 +94,11 @@ public class DataLinkManager {
 
         switch (adHocDevice.getType()) {
             case Service.WIFI:
-                wrappers[Service.WIFI].connect(adHocDevice);
+                wrappers[Service.WIFI].connect(attemps, adHocDevice);
                 break;
             case Service.BLUETOOTH:
-                wrappers[Service.BLUETOOTH].connect(adHocDevice);
+                wrappers[Service.BLUETOOTH].connect(attemps, adHocDevice);
                 break;
-        }
-    }
-
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException, DeviceAlreadyConnectedException {
-
-        if (checkState() == 0) {
-            throw new DeviceException("No wifi and bluetooth connectivity");
-        }
-
-        for (Map.Entry<String, AdHocDevice> entry : hashMap.entrySet()) {
-            switch (entry.getValue().getType()) {
-                case Service.WIFI:
-                    wrappers[Service.WIFI].connect(entry.getValue());
-                    break;
-                case Service.BLUETOOTH:
-                    wrappers[Service.BLUETOOTH].connect(entry.getValue());
-                    break;
-            }
         }
     }
 
@@ -221,8 +203,7 @@ public class DataLinkManager {
     public void disableAll() throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
-                wrapper.stopListening();
-                wrapper.disable();
+                disable(wrapper.getType());
             }
         }
     }

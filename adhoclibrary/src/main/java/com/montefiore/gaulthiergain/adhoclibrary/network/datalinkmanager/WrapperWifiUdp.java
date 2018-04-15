@@ -64,7 +64,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                     ownMac = mac;
                     listenerDataLink.initInfos(ownMac, ownName);
                 }
-            }, initConnectionListener());
+            });
             if (wifiAdHocManager.isEnabled()) {
                 init(config, context);
             } else {
@@ -78,7 +78,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    void connect(AdHocDevice device) {
+    void connect(short attemps, AdHocDevice device) {
         wifiAdHocManager.connect(device.getMacAddress());
     }
 
@@ -174,6 +174,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ackSet = new HashSet<>();
+        this.wifiAdHocManager.setConnectionListener(initConnectionListener());
         this.serverPort = config.getServerPort();
         this.listenServer();
     }

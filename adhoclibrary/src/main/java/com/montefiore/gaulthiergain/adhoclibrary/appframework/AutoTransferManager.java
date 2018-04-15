@@ -42,7 +42,6 @@ public class AutoTransferManager extends TransferManager {
 
     public AutoTransferManager(boolean verbose, ListenerApp listenerApp) {
         super(verbose);
-        this.config.setAttemps(1);
         setListenerApp(initListener());
 
         this.listenerApp = listenerApp;
@@ -53,9 +52,7 @@ public class AutoTransferManager extends TransferManager {
 
     public AutoTransferManager(boolean verbose, Config config, ListenerApp listenerApp) {
         super(verbose, config);
-        this.config.setAttemps(1);
         setListenerApp(initListener());
-
         this.listenerApp = listenerApp;
         this.connectedDevices = new HashSet<>();
         this.arrayList = new ArrayList<>();

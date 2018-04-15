@@ -85,12 +85,12 @@ public class TransferManager {
 
     /*-------------------------------------DataLink methods---------------------------------------*/
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
-        dataLinkManager.connect(adHocDevice);
+    public void connect(int attemps, AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+        dataLinkManager.connect((short) attemps, adHocDevice);
     }
 
-    public void connect(HashMap<String, AdHocDevice> hashMap) throws DeviceException, DeviceAlreadyConnectedException {
-        dataLinkManager.connect(hashMap);
+    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+        dataLinkManager.connect((short) 1, adHocDevice);
     }
 
     public void stopListening() throws IOException {
@@ -171,9 +171,9 @@ public class TransferManager {
 
     public void unpairBtDevice(AdHocDevice device)
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, DeviceException {
-        if(device instanceof BluetoothAdHocDevice) {
+        if (device instanceof BluetoothAdHocDevice) {
             dataLinkManager.unpairDevice((BluetoothAdHocDevice) device);
-        }else{
+        } else {
             throw new DeviceException("Only bluetooth device can be unpaired");
         }
     }

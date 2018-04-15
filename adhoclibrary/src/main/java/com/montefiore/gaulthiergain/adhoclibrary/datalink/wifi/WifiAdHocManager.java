@@ -76,11 +76,9 @@ public class WifiAdHocManager {
      * @param verbose                a boolean value to set the debug/verbose mode.
      * @param context                a Context object which gives global information about an application
      *                               environment.
-     * @param connectionWifiListener a connectionWifiListener object which serves as callback functions.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
-                            final WifiDeviceInfosListener listenerDeviceInfos,
-                            final ConnectionWifiListener connectionWifiListener) throws DeviceException {
+                            final WifiDeviceInfosListener listenerDeviceInfos) throws DeviceException {
 
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
@@ -103,10 +101,6 @@ public class WifiAdHocManager {
                     }
                 }
             };
-            if (connectionWifiListener != null) {
-                this.connectionWifiListener = connectionWifiListener;
-                this.registerConnection();
-            }
         }
     }
 
@@ -273,6 +267,14 @@ public class WifiAdHocManager {
 
     public void disable() {
         wifiAdapterState(false);
+
+        if (discoveryRegistered) {
+            unregisterDiscovery();
+        }
+
+        if (connectionRegistered) {
+            unregisterConnection();
+        }
     }
 
     /**
@@ -280,13 +282,6 @@ public class WifiAdHocManager {
      */
     public void enable() {
         wifiAdapterState(true);
-    }
-
-    private void wifiAdapterState(boolean state) {
-        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifi != null) {
-            wifi.setWifiEnabled(state);
-        }
     }
 
     public void resetDeviceName() {
@@ -360,6 +355,13 @@ public class WifiAdHocManager {
 
     public void updateContext(Context context) {
         this.context = context;
+    }
+
+    public void setConnectionListener(ConnectionWifiListener connectionWifiListener) {
+        if (connectionWifiListener != null) {
+            this.connectionWifiListener = connectionWifiListener;
+            this.registerConnection();
+        }
     }
 
     public interface WifiDeviceInfosListener {
@@ -437,6 +439,19 @@ public class WifiAdHocManager {
             }
         };
 
+        discoverPeers();
+
+        registerConnection(intentFilter, onConnectionInfoAvailable);
+    }
+
+    private void wifiAdapterState(boolean state) {
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null) {
+            wifi.setWifiEnabled(state);
+        }
+    }
+
+    private void discoverPeers() {
         wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -451,8 +466,6 @@ public class WifiAdHocManager {
                     Log.e(TAG, "Error start discoveryPeers (onFailure): " + discoveryException);
             }
         });
-
-        registerConnection(intentFilter, onConnectionInfoAvailable);
     }
 
     private static boolean isConnected(Context context) {

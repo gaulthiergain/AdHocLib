@@ -63,7 +63,7 @@ abstract class AbstractWrapper {
         this.listenerDataLink = listenerDataLink;
     }
 
-    abstract void connect(AdHocDevice device) throws DeviceAlreadyConnectedException;
+    abstract void connect(short attemps, AdHocDevice device) throws DeviceAlreadyConnectedException;
 
     abstract void stopListening() throws IOException;
 

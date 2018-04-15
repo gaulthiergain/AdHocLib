@@ -71,12 +71,12 @@ class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    void connect(AdHocDevice device) throws DeviceAlreadyConnectedException {
+    void connect(short attemps, AdHocDevice device) throws DeviceAlreadyConnectedException {
 
         BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
         if (btDevice != null) {
             if (!neighbors.getNeighbors().containsKey(btDevice.getUuid())) {
-                _connect(btDevice);
+                _connect(attemps, btDevice);
             } else {
                 throw new DeviceAlreadyConnectedException(btDevice.getUuid()
                         + " is already connected");
@@ -251,7 +251,7 @@ class WrapperBluetooth extends WrapperConnOriented {
                 UUID.fromString(ownStringUUID)));
     }
 
-    private void _connect(final BluetoothAdHocDevice bluetoothAdHocDevice) {
+    private void _connect(short attemps, final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v,
                 json, background, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
             @Override
