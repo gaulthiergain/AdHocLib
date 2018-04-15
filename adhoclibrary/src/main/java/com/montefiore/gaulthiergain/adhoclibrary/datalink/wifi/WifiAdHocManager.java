@@ -68,6 +68,7 @@ public class WifiAdHocManager {
     private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
     private boolean discoveryRegistered = false;
     private boolean connectionRegistered = false;
+    private String discoveryException = null;
 
     /**
      * Constructor
@@ -120,63 +121,68 @@ public class WifiAdHocManager {
      */
     public void discovery(final DiscoveryListener discoveryListener) {
 
-        final IntentFilter intentFilter = new IntentFilter();
+        if (discoveryException != null) {
+            discoveryListener.onDiscoveryFailed(new Exception(discoveryException));
+        } else {
+            final IntentFilter intentFilter = new IntentFilter();
 
-        //  Indicates a change in the list of available mapMacDevices.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+            //  Indicates a change in the list of available mapMacDevices.
+            intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
 
-        // Listener onDiscoveryStarted
-        discoveryListener.onDiscoveryStarted();
+            // Listener onDiscoveryStarted
+            discoveryListener.onDiscoveryStarted();
 
-        WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-            @Override
-            public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+                @Override
+                public void onPeersAvailable(WifiP2pDeviceList peerList) {
 
-                if (v) Log.d(TAG, "onPeersAvailable()");
+                    if (v) Log.d(TAG, "onPeersAvailable()");
 
-                List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
+                    List<WifiP2pDevice> refreshedPeers = new ArrayList<>(peerList.getDeviceList());
 
-                for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
+                    for (WifiP2pDevice wifiP2pDevice : refreshedPeers) {
 
-                    WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress.toUpperCase(),
-                            wifiP2pDevice.deviceName);
+                        WifiAdHocDevice device = new WifiAdHocDevice(wifiP2pDevice.deviceAddress.toUpperCase(),
+                                wifiP2pDevice.deviceName);
 
-                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
-                        mapMacDevices.put(device.getMacAddress(), device);
-                        if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
-                    } else {
-                        if (v) Log.d(TAG, "Device " + device.getDeviceName() + " already present");
+                        if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                            mapMacDevices.put(device.getMacAddress(), device);
+                            if (v) Log.d(TAG, "Devices added: " + device.getDeviceName());
+                        } else {
+                            if (v)
+                                Log.d(TAG, "Device " + device.getDeviceName() + " already present");
+                        }
+
+                        // Listener onDiscoveryStarted
+                        discoveryListener.onDeviceDiscovered(device);
                     }
-
-                    // Listener onDiscoveryStarted
-                    discoveryListener.onDeviceDiscovered(device);
                 }
-            }
-        };
+            };
 
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
-            // Used handler to avoid updating views in other threads than the main thread
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case DISCOVERY_COMPLETED:
-                        discoveryListener.onDiscoveryCompleted(mapMacDevices);
-                        break;
-                    case DISCOVERY_FAILED:
-                        discoveryListener.onDiscoveryFailed((Exception) msg.obj);
-                        break;
+            @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
+                // Used handler to avoid updating views in other threads than the main thread
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                        case DISCOVERY_COMPLETED:
+                            discoveryListener.onDiscoveryCompleted(mapMacDevices);
+                            break;
+                        case DISCOVERY_FAILED:
+                            discoveryListener.onDiscoveryFailed((Exception) msg.obj);
+                            break;
+                    }
                 }
-            }
-        };
+            };
 
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
-            }
-        }, DISCOVERY_TIME);
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
+                }
+            }, DISCOVERY_TIME);
 
 
-        registerDiscovery(intentFilter, discoveryListener, peerListListener);
+            registerDiscovery(intentFilter, discoveryListener, peerListListener);
+        }
     }
 
     /**
@@ -221,16 +227,36 @@ public class WifiAdHocManager {
                 public void onGroupInfoAvailable(WifiP2pGroup group) {
                     if (group != null && wifiP2pManager != null && channel != null
                             && group.isGroupOwner()) {
-                        wifiP2pManager.removeGroup(channel, listenerAction);
+                        wifiP2pManager.removeGroup(channel, new WifiP2pManager.ActionListener() {
+                            @Override
+                            public void onSuccess() {
+                                listenerAction.onSuccess();
+                            }
+
+                            @Override
+                            public void onFailure(int reason) {
+                                listenerAction.onFailure(new Exception(errorCode(reason)));
+                            }
+                        });
                     }
                 }
             });
         }
     }
 
-    public void cancelConnection(ListenerAction listenerAction) {
+    public void cancelConnection(final ListenerAction listenerAction) {
         if (wifiP2pManager != null) {
-            wifiP2pManager.cancelConnect(channel, listenerAction);
+            wifiP2pManager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    listenerAction.onSuccess();
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    listenerAction.onFailure(new Exception(errorCode(reason)));
+                }
+            });
         }
     }
 
@@ -415,12 +441,14 @@ public class WifiAdHocManager {
             @Override
             public void onSuccess() {
                 if (v) Log.d(TAG, "Start discoveryPeers");
+                discoveryException = null;
             }
 
             @Override
             public void onFailure(int reasonCode) {
+                discoveryException = errorCode(reasonCode);
                 if (v)
-                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + errorCode(reasonCode));
+                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + discoveryException);
             }
         });
 
