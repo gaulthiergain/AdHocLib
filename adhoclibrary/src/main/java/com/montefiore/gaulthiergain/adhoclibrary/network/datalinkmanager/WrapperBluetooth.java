@@ -113,23 +113,26 @@ class WrapperBluetooth extends WrapperConnOriented {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                // Add device into mapMacDevices
-                for (AdHocDevice device : mapNameDevice.values()) {
-                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
-                        if (v)
-                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
-                        mapMacDevices.put(device.getMacAddress(), device);
+                if (bluetoothAdHocManager == null) {
+                    discoveryListener.onDiscoveryFailed(
+                            new DeviceException("Unable to complete the discovery due to bluetooth connectivity"));
+                } else {
+                    // Add device into mapMacDevices
+                    for (AdHocDevice device : mapNameDevice.values()) {
+                        if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                            if (v)
+                                Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                            mapMacDevices.put(device.getMacAddress(), device);
+                        }
                     }
-                }
 
-                if (listenerBothDiscovery != null) {
-                    listenerBothDiscovery.onDiscoveryCompleted(mapMacDevices);
-                }
+                    if (listenerBothDiscovery != null) {
+                        listenerBothDiscovery.onDiscoveryCompleted(mapMacDevices);
+                    }
 
-                discoveryCompleted = true;
+                    discoveryCompleted = true;
 
-                // Stop and unregister to the discovery process
-                if (bluetoothAdHocManager != null) {
+                    // Stop and unregister to the discovery process
                     bluetoothAdHocManager.unregisterDiscovery();
                 }
             }
