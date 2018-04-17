@@ -11,6 +11,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketBlu
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 /**
@@ -24,24 +26,24 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
     private final boolean secure;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
     private ListenerAutoConnect listenerAutoConnect;
+    private BluetoothSocket bluetoothSocket;
 
     /**
      * Constructor
      *
-     * @param verbose              a boolean value to set the debug/verbose mode.
-     * @param json                 a boolean value to use json or bytes in network transfer.
-     * @param background           a boolean value which defines if the service must listen messages
-     *                             to background.
-     * @param secure               a boolean value which represents the state of the connection.
-     * @param attempts             a short value which represents the number of attempts.
-     * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth
-     *                             device.
-     * @param serviceMessageListener      a serviceMessageListener object which serves as callback functions.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
+     * @param timeOut
+     * @param secure                 a boolean value which represents the state of the connection.
+     * @param attempts               a short value which represents the number of attempts.
+     * @param bluetoothAdHocDevice   a BluetoothAdHocDevice object which represents a remote Bluetooth
+     *                               device.
+     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public BluetoothServiceClient(boolean verbose, boolean json, boolean background,
+    public BluetoothServiceClient(boolean verbose, boolean json, int timeOut,
                                   boolean secure, short attempts,
                                   BluetoothAdHocDevice bluetoothAdHocDevice, ServiceMessageListener serviceMessageListener) {
-        super(verbose, attempts, json, background, serviceMessageListener);
+        super(verbose, timeOut, attempts, json, serviceMessageListener);
         this.secure = secure;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;
     }
@@ -65,7 +67,6 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
 
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
-                BluetoothSocket bluetoothSocket;
                 if (secure) {
                     bluetoothSocket = bluetoothAdHocDevice.getDevice().createRfcommSocketToServiceRecord(uuid);
                 } else {
@@ -73,6 +74,7 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 }
 
                 // Connect to the remote host
+                timeout();
                 bluetoothSocket.connect();
                 network = new SocketManager(new AdHocSocketBluetooth(bluetoothSocket), json);
                 if (listenerAutoConnect != null) {
@@ -83,19 +85,33 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
                 handler.obtainMessage(Service.CONNECTION_PERFORMED,
                         bluetoothSocket.getRemoteDevice().getAddress()).sendToTarget();
 
+                // Listen in Background
+                listenInBackground();
+
                 // Update state
                 setState(STATE_CONNECTED);
 
-                // Listen in Background
-                if (background) {
-                    listenInBackground();
-                }
             } catch (IOException e) {
                 setState(STATE_NONE);
                 throw new NoConnectionException("Unable to connect to "
                         + bluetoothAdHocDevice.getUuid());
             }
         }
+    }
+
+    private void timeout() {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!bluetoothSocket.isConnected()) {
+                    try {
+                        bluetoothSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, timeOut);
     }
 
     @Override
