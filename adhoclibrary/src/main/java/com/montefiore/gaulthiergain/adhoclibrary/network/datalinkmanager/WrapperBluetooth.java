@@ -45,16 +45,12 @@ class WrapperBluetooth extends WrapperConnOriented {
 
         super(verbose, config, config.getNbThreadBt(), mapAddressDevice, listenerApp, listenerDataLink);
 
-        try {
-            this.type = Service.BLUETOOTH;
+        this.type = Service.BLUETOOTH;
+        if (BluetoothUtil.isEnabled()) {
             this.bluetoothAdHocManager = new BluetoothAdHocManager(v, context);
-            if (bluetoothAdHocManager.isEnabled()) {
-                init(config, context);
-            } else {
-                enabled = false;
-            }
-        } catch (DeviceException e) {
-            enabled = false;
+            this.init(config, context);
+        } else {
+            this.enabled = false;
         }
     }
 
@@ -133,7 +129,9 @@ class WrapperBluetooth extends WrapperConnOriented {
                 discoveryCompleted = true;
 
                 // Stop and unregister to the discovery process
-                bluetoothAdHocManager.unregisterDiscovery();
+                if (bluetoothAdHocManager != null) {
+                    bluetoothAdHocManager.unregisterDiscovery();
+                }
             }
         });
     }
@@ -141,7 +139,7 @@ class WrapperBluetooth extends WrapperConnOriented {
     @Override
     HashMap<String, AdHocDevice> getPaired() {
 
-        if (!bluetoothAdHocManager.isEnabled()) {
+        if (!BluetoothUtil.isEnabled()) {
             return null;
         }
 
@@ -164,8 +162,9 @@ class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
-        bluetoothAdHocManager.enableDiscovery(duration);
+    void enable(Context context, int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
+        bluetoothAdHocManager = new BluetoothAdHocManager(v, context);
+        bluetoothAdHocManager.enableDiscovery(context, duration);
         bluetoothAdHocManager.onEnableBluetooth(listenerAdapter);
         enabled = true;
     }
@@ -173,6 +172,7 @@ class WrapperBluetooth extends WrapperConnOriented {
     @Override
     void disable() {
         bluetoothAdHocManager.disable();
+        bluetoothAdHocManager = null;
         enabled = false;
     }
 
@@ -183,7 +183,7 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     void unregisterAdapter() {
-        bluetoothAdHocManager.unregisterEnableAdapter();
+        bluetoothAdHocManager.unregisterAdapter();
     }
 
     @Override

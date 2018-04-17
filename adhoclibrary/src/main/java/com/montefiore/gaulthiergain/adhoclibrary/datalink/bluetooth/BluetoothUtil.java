@@ -3,8 +3,11 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.Nullable;
+
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 
 /**
  * <p>This class allows to get the current name and the current MAC address of the bluetoothAdapter,
@@ -49,5 +52,14 @@ public class BluetoothUtil {
             return mBluetoothAdapter.getName();
         }
         return null;
+    }
+
+    /**
+     * Method allowing to check if the Bluetooth adapter is enabled.
+     *
+     * @return a boolean value which represents the status of the bluetooth adapter.
+     */
+    public static boolean isEnabled() {
+        return BluetoothAdapter.getDefaultAdapter() != null && BluetoothAdapter.getDefaultAdapter().isEnabled();
     }
 }
