@@ -21,8 +21,8 @@ public class BluetoothServiceServer extends ServiceServer {
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param json            a boolean value to use json or bytes in network transfer.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
     public BluetoothServiceServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
@@ -52,7 +52,7 @@ public class BluetoothServiceServer extends ServiceServer {
                     nameSocket, config.getBtAdapter(), config.getUuid(), new ListSocketDevice(json));
             threadListen.start();
 
-            if (v) Log.d(TAG, "Listening on port: " + config.getServerPort());
+            if (v) Log.d(TAG, "Server is listening ...");
 
             // Update state
             setState(STATE_LISTENING);

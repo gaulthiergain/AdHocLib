@@ -54,6 +54,7 @@ public abstract class Service {
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
     Service(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
+        this.state = 0;
         this.v = verbose;
         this.json = json;
         this.serviceMessageListener = serviceMessageListener;
@@ -65,7 +66,7 @@ public abstract class Service {
      * @param state a integer values which defines the state of a connection.
      */
     protected void setState(int state) {
-        if (v) Log.d(TAG, "setState() " + state + " -> " + state);
+        if (v) Log.d(TAG, "setState() " + this.state + " -> " + state);
         this.state = state;
     }
 
@@ -105,7 +106,7 @@ public abstract class Service {
                     serviceMessageListener.onMsgException((Exception) msg.obj);
                     break;
                 case LOG_EXCEPTION:
-                    if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());
+                    if (v) Log.w(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());
                     break;
             }
         }
