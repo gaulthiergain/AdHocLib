@@ -45,32 +45,29 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         super(verbose, config, config.getNbThreadWifi(), mapAddressDevice,
                 listenerApp, listenerDataLink);
 
-        try {
-            this.type = Service.WIFI;
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.WifiDeviceInfosListener() {
-                @Override
-                public void getDeviceInfos(String name, String mac) {
-                    ownName = name;
-                    ownMac = mac;
-                    Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
-                    listenerDataLink.initInfos(ownMac, ownName);
-                }
-            });
-            if (wifiAdHocManager.isEnabled()) {
-                init(config, context);
-            } else {
-                enabled = false;
-            }
-        } catch (DeviceException e) {
-            enabled = false;
+        this.type = Service.WIFI;
+        if (WifiAdHocManager.isWifiEnabled(context)) {
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+                    new WifiAdHocManager.WifiDeviceInfosListener() {
+                        @Override
+                        public void getDeviceInfos(String name, String mac) {
+                            ownName = name;
+                            ownMac = mac;
+                            Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
+                            listenerDataLink.initInfos(ownMac, ownName);
+                        }
+                    });
+            this.init(config, context);
+        } else {
+            this.enabled = false;
         }
+
     }
 
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
     void init(Config config, Context context) throws IOException {
-        this.wifiAdHocManager.setConnectionListener(initConnectionListener());
         this.mapAddrMac = new HashMap<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
@@ -130,9 +127,6 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 }
 
                 discoveryCompleted = true;
-
-                // Stop and unregister to the discovery process
-                wifiAdHocManager.unregisterDiscovery();
             }
         });
     }
@@ -149,7 +143,16 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     @Override
-    void enable(int duration, ListenerAdapter listenerAdapter) {
+    void enable(Context context, int duration, ListenerAdapter listenerAdapter) {
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+                new WifiAdHocManager.WifiDeviceInfosListener() {
+                    @Override
+                    public void getDeviceInfos(String name, String mac) {
+                        ownName = name;
+                        ownMac = mac;
+                        listenerDataLink.initInfos(ownMac, ownName);
+                    }
+                });
         wifiAdHocManager.enable();
         wifiAdHocManager.onEnableWifi(listenerAdapter);
         enabled = true;
@@ -158,6 +161,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     @Override
     void disable() {
         wifiAdHocManager.disable();
+        wifiAdHocManager = null;
         enabled = false;
     }
 
@@ -255,8 +259,8 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     private void _connect(short attemps) {
-        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json, background,
-                groupOwnerAddr, serverPort, 10000, attemps, new ServiceMessageListener() {
+        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json,
+                groupOwnerAddr, serverPort, 5000, attemps, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {

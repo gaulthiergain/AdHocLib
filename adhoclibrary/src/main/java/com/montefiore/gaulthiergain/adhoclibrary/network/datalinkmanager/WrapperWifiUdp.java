@@ -11,12 +11,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
@@ -55,23 +54,20 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                    final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
         super(verbose, config, mapAddressDevice, listenerApp, listenerDataLink);
 
-        try {
-            this.type = Service.WIFI;
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, new WifiAdHocManager.WifiDeviceInfosListener() {
-                @Override
-                public void getDeviceInfos(String name, String mac) {
-                    ownName = name;
-                    ownMac = mac;
-                    listenerDataLink.initInfos(ownMac, ownName);
-                }
-            });
-            if (wifiAdHocManager.isEnabled()) {
-                init(config, context);
-            } else {
-                enabled = false;
-            }
-        } catch (DeviceException e) {
-            enabled = false;
+        this.type = Service.WIFI;
+        if (WifiAdHocManager.isWifiEnabled(context)) {
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+                    new WifiAdHocManager.WifiDeviceInfosListener() {
+                        @Override
+                        public void getDeviceInfos(String name, String mac) {
+                            ownName = name;
+                            ownMac = mac;
+                            listenerDataLink.initInfos(ownMac, ownName);
+                        }
+                    });
+            this.init(config, context);
+        } else {
+            this.enabled = false;
         }
     }
 
@@ -134,8 +130,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
                 discoveryCompleted = true;
 
-                // Stop and unregister to the discovery process
-                wifiAdHocManager.unregisterDiscovery();
             }
         });
     }
@@ -147,7 +141,17 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    void enable(int duration, ListenerAdapter listenerAdapter) {
+    void enable(Context context, int duration, ListenerAdapter listenerAdapter) {
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+                new WifiAdHocManager.WifiDeviceInfosListener() {
+                    @Override
+                    public void getDeviceInfos(String name, String mac) {
+                        ownName = name;
+                        ownMac = mac;
+                        Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
+                        listenerDataLink.initInfos(ownMac, ownName);
+                    }
+                });
         wifiAdHocManager.enable();
         wifiAdHocManager.onEnableWifi(listenerAdapter);
         enabled = true;
@@ -156,6 +160,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     @Override
     void disable() {
         wifiAdHocManager.disable();
+        wifiAdHocManager = null;
         enabled = false;
     }
 
@@ -174,7 +179,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ackSet = new HashSet<>();
-        this.wifiAdHocManager.setConnectionListener(initConnectionListener());
         this.serverPort = config.getServerPort();
         this.listenServer();
     }
