@@ -6,6 +6,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -135,20 +136,22 @@ abstract class WrapperConnOriented extends AbstractWrapper {
             event = true;
         }
 
-        // Add the active connection into the neighbors object
-        neighbors.addNeighbors(header.getLabel(), socketManager);
-
-        // Callback connection
         if (event) {
-            listenerApp.onConnection(device);
-        }
 
-        // If connectionFlooding option is enable, flood connect events
-        if (connectionFlooding) {
-            String id = header.getLabel() + System.currentTimeMillis();
-            setFloodEvents.add(id);
-            header.setType(AbstractWrapper.CONNECT_BROADCAST);
-            broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+            // Add the active connection into the neighbors object
+            neighbors.addNeighbors(header.getLabel(), socketManager);
+
+            // Callback connection
+            listenerApp.onConnection(device);
+
+            // If connectionFlooding option is enable, flood connect events
+            if (connectionFlooding) {
+                String id = header.getLabel() + System.currentTimeMillis();
+                setFloodEvents.add(id);
+                header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+            }
+
         }
     }
 }
