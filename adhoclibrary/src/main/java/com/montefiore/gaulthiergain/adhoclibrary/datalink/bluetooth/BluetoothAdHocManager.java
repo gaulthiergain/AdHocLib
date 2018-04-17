@@ -161,7 +161,6 @@ public class BluetoothAdHocManager {
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-            Log.w(TAG, action);
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
                 // Get the BluetoothDevice object and its info from the Intent.
