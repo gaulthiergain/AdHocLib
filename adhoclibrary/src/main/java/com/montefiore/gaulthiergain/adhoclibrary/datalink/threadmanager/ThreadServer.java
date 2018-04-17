@@ -124,40 +124,17 @@ public class ThreadServer extends Thread {
             threadClient.start();
         }
 
-        // Manage client depending the connection
-        if (serverSocket instanceof AdHocServerSocketBluetooth) {
-            bluetoothRun();
-        } else {
-            wifiRun();
-        }
-    }
-
-    /**
-     * Method allowing to run the wifi server logic code.
-     */
-    private void wifiRun() {
-        // Server Waiting
-        Socket socket;
-        ISocket isocket;
         while (true) {
             try {
                 if (v) Log.d(TAG, "Server is waiting on accept...");
-                socket = (Socket) serverSocket.accept();
-                if (socket != null) {
+                ISocket isocket = acceptISocket();
 
-                    // Add to the list
-                    isocket = new AdHocSocketWifi(socket);
-                    if (v) Log.d(TAG, isocket.getRemoteSocketAddress() + " accepted");
-                    listSocketDevice.addSocketClient(isocket);
+                if (v) Log.d(TAG, isocket.getRemoteSocketAddress() + " accepted");
+                listSocketDevice.addSocketClient(isocket);
 
-                    // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                            isocket.getRemoteSocketAddress()).sendToTarget();
-                } else {
-                    if (v) Log.d(TAG, "Error while accepting client");
-                    handler.obtainMessage(Service.CONNECTION_FAILED,
-                            new Exception("Accepting socket is null")).sendToTarget();
-                }
+                // Notify handler
+                handler.obtainMessage(Service.CONNECTION_PERFORMED,
+                        isocket.getRemoteSocketAddress()).sendToTarget();
 
             } catch (SocketException e) {
                 handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
@@ -169,37 +146,12 @@ public class ThreadServer extends Thread {
         }
     }
 
-    /**
-     * Method allowing to run the bluetooth server logic code.
-     */
-    private void bluetoothRun() {
-        // Server Waiting
-        BluetoothSocket socket;
-        ISocket isocket;
-        while (true) {
-            try {
-                if (v) Log.d(TAG, "Server is waiting on accept...");
-                socket = (BluetoothSocket) serverSocket.accept();
-                if (socket != null) {
-
-                    // Add to the list
-                    isocket = new AdHocSocketBluetooth(socket);
-                    if (v) Log.d(TAG, socket.getRemoteDevice().getAddress() + " accepted");
-                    listSocketDevice.addSocketClient(isocket);
-
-                    // Notify handler
-                    handler.obtainMessage(Service.CONNECTION_PERFORMED,
-                            socket.getRemoteDevice().getAddress()).sendToTarget();
-                } else {
-                    if (v) Log.d(TAG, "Error while accepting client");
-                    handler.obtainMessage(Service.CONNECTION_FAILED,
-                            new Exception("Accepting socket is null")).sendToTarget();
-                }
-
-            } catch (IOException e) {
-                handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
-                break;
-            }
+    private ISocket acceptISocket() throws IOException {
+        // Manage client depending the connection
+        if (serverSocket instanceof AdHocServerSocketBluetooth) {
+            return new AdHocSocketBluetooth((BluetoothSocket) serverSocket.accept());
+        } else {
+            return new AdHocSocketWifi((Socket) serverSocket.accept());
         }
     }
 
