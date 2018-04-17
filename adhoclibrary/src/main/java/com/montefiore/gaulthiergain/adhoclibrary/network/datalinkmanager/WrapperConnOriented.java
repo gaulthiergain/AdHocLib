@@ -17,7 +17,6 @@ import java.util.Map;
 abstract class WrapperConnOriented extends AbstractWrapper {
 
     final short nbThreads;
-    final boolean background;
     final Neighbors neighbors;
     final HashMap<String, SocketManager> mapAddrNetwork;
 
@@ -31,7 +30,6 @@ abstract class WrapperConnOriented extends AbstractWrapper {
         super(v, config, mapAddressDevice, listenerApp, listenerDataLink);
         this.neighbors = new Neighbors();
         this.nbThreads = nbThreads;
-        this.background = config.isBackground();
         this.mapAddrDevices = new HashMap<>();
         this.mapAddrNetwork = new HashMap<>();
     }

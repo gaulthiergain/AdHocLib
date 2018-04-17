@@ -24,8 +24,8 @@ public abstract class ServiceClient extends Service {
     protected static final String TAG = "[AdHoc][ServiceClient]";
 
     protected SocketManager network;
+    protected final int timeOut;
     protected final short attempts;
-    protected final boolean background;
 
     private long backOffTime;
     private ListenServiceThread threadListening;
@@ -33,18 +33,17 @@ public abstract class ServiceClient extends Service {
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param attempts        a short value which represents the number of attempts.
-     * @param json            a boolean value to use json or bytes in network transfer.
-     * @param background      a boolean value which defines if the service must listen messages
-     *                        to background.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param timeOut
+     * @param attempts               a short value which represents the number of attempts.
+     * @param json                   a boolean value to use json or bytes in network transfer.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public ServiceClient(boolean verbose, short attempts, boolean json,
-                         boolean background, ServiceMessageListener serviceMessageListener) {
+    public ServiceClient(boolean verbose, int timeOut, short attempts, boolean json,
+                         ServiceMessageListener serviceMessageListener) {
         super(verbose, json, serviceMessageListener);
+        this.timeOut = timeOut;
         this.attempts = attempts;
-        this.background = background;
         this.backOffTime = (long) new Random().nextInt(HIGH - LOW) + LOW;
     }
 
@@ -72,7 +71,7 @@ public abstract class ServiceClient extends Service {
     private void stopListeningInBackground() throws IOException {
         if (v) Log.d(TAG, "stopListeningInBackground()");
 
-        if (state == STATE_LISTENING_CONNECTED) {
+        if (state == STATE_CONNECTED) {
             // Cancel any thread currently running a connection
             if (threadListening != null) {
                 threadListening.cancel();
@@ -102,9 +101,6 @@ public abstract class ServiceClient extends Service {
             // Start the thread to connect with the given device
             threadListening = new ListenServiceThread(v, network, handler);
             threadListening.start();
-
-            // Update the state
-            setState(STATE_LISTENING_CONNECTED);
         }
     }
 

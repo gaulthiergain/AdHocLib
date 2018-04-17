@@ -27,7 +27,6 @@ public abstract class Service {
     public static final byte STATE_LISTENING = 1;            // listening for incoming connections
     public static final byte STATE_CONNECTING = 2;           // initiating an outgoing connection
     public static final byte STATE_CONNECTED = 3;            // connected to a remote device
-    public static final byte STATE_LISTENING_CONNECTED = 4;  // connected to a remote device and listening
 
     // Constants for message handling
     public static final byte MESSAGE_READ = 5;                   // message received

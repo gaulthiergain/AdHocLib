@@ -22,32 +22,27 @@ import java.net.Socket;
 public class WifiServiceClient extends ServiceClient implements Runnable {
 
     private final int port;
-    private final int timeOut;
     private final String remoteAddress;
-
     private ListenerAutoConnect listenerAutoConnect;
 
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param json            a boolean value to use json or bytes in network transfer.
-     * @param background      a boolean value which defines if the service must listen messages
-     *                        to background.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
      * @param remoteAddress
      * @param port
-     * @param timeOut         an integer value which represents the timeout of a connection.
-     * @param attempts        a short value which represents the number of attempts.
+     * @param timeOut                an integer value which represents the timeout of a connection.
+     * @param attempts               a short value which represents the number of attempts.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public WifiServiceClient(boolean verbose, boolean json, boolean background,
-                             String remoteAddress, int port, int timeOut, short attempts,
+    public WifiServiceClient(boolean verbose, boolean json, String remoteAddress, int port,
+                             int timeOut, short attempts,
                              ServiceMessageListener serviceMessageListener) {
 
-        super(verbose, attempts, json, background, serviceMessageListener);
+        super(verbose, timeOut, attempts, json, serviceMessageListener);
         this.remoteAddress = remoteAddress;
         this.port = port;
-        this.timeOut = timeOut;
     }
 
 
@@ -109,9 +104,8 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
                 setState(STATE_CONNECTED);
 
                 // Listen in Background
-                if (background) {
-                    listenInBackground();
-                }
+                listenInBackground();
+
             } catch (IOException e) {
                 setState(STATE_NONE);
                 throw new NoConnectionException("Unable to connect to " + remoteAddress);

@@ -21,7 +21,6 @@ public class Config {
     private int serverPort;
     private short nbThreadBt;
     private short nbThreadWifi;
-    private boolean background;
     private boolean connectionFlooding;
     private boolean reliableTransportWifi;
 
@@ -31,14 +30,13 @@ public class Config {
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
         this.serverPort = 52000;
-        this.background = true;
         this.connectionFlooding = false;
         this.reliableTransportWifi = true;
         this.label = String.valueOf(UUID.randomUUID());
     }
 
     public Config(String label, boolean json, boolean secure, int serverPort,
-                  short nbThreadBt, short nbThreadWifi, boolean background, boolean reliableTransportWifi,
+                  short nbThreadBt, short nbThreadWifi, boolean reliableTransportWifi,
                   boolean connectionFlooding) {
         this.label = label;
         this.json = json;
@@ -46,7 +44,6 @@ public class Config {
         this.serverPort = serverPort;
         this.nbThreadBt = nbThreadBt;
         this.nbThreadWifi = nbThreadWifi;
-        this.background = background;
         this.connectionFlooding = connectionFlooding;
         this.reliableTransportWifi = reliableTransportWifi;
     }
@@ -103,10 +100,6 @@ public class Config {
         return json;
     }
 
-    public boolean isBackground() {
-        return background;
-    }
-
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
@@ -143,10 +136,6 @@ public class Config {
 
     public void setJson(boolean json) {
         this.json = json;
-    }
-
-    public void setBackground(boolean background) {
-        this.background = background;
     }
 
     public void setConnectionFlooding(boolean connectionFlooding) {
