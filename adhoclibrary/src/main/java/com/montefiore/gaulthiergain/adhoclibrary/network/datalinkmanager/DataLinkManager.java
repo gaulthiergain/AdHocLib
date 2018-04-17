@@ -86,11 +86,7 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
-
-        if (checkState() == 0) {
-            throw new DeviceException("No wifi and bluetooth connectivity");
-        }
+    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceAlreadyConnectedException {
 
         switch (adHocDevice.getType()) {
             case Service.WIFI:
@@ -113,6 +109,7 @@ public class DataLinkManager {
     }
 
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
+
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 wrapper.sendMessage(message, address);
@@ -160,6 +157,7 @@ public class DataLinkManager {
     }
 
     public void broadcastExcept(Object object, String excludedAddress) throws IOException {
+
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 Header header = new Header(AbstractWrapper.BROADCAST, wrapper.getMac(),
@@ -186,7 +184,7 @@ public class DataLinkManager {
                        final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
 
         if (!wrappers[type].isEnabled()) {
-            wrappers[type].enable(duration, new ListenerAdapter() {
+            wrappers[type].enable(context, duration, new ListenerAdapter() {
                 @Override
                 public void onEnableBluetooth(boolean success) {
                     processListenerAdapter(type, success, context, listenerAdapter);
@@ -215,7 +213,7 @@ public class DataLinkManager {
         }
     }
 
-    public boolean isEnable(int type) {
+    public boolean isEnabled(int type) {
         return wrappers[type].isEnabled();
     }
 
@@ -313,7 +311,7 @@ public class DataLinkManager {
         }
     }
 
-    private int checkState() {
+    public int checkState() {
         int enabled = 0;
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {

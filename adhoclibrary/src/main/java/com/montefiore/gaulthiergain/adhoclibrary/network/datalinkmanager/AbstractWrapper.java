@@ -71,7 +71,7 @@ abstract class AbstractWrapper {
 
     abstract HashMap<String, AdHocDevice> getPaired();
 
-    abstract void enable(int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration;
+    abstract void enable(Context context, int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration;
 
     abstract void disable();
 
