@@ -71,15 +71,30 @@ public class TransferManager {
     /*--------------------------------------Network methods---------------------------------------*/
 
 
-    public void sendMessageTo(Object msg, AdHocDevice adHocDevice) throws IOException {
+    public void sendMessageTo(Object msg, AdHocDevice adHocDevice) throws IOException, DeviceException {
+
+        if (dataLinkManager.checkState() == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         aodvManager.sendMessageTo(msg, adHocDevice.getLabel());
     }
 
-    public void broadcast(Object object) throws IOException {
+    public void broadcast(Object object) throws IOException, DeviceException {
+
+        if (dataLinkManager.checkState() == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         dataLinkManager.broadcast(object);
     }
 
-    public void broadcastExcept(Object object, AdHocDevice excludedDevice) throws IOException {
+    public void broadcastExcept(Object object, AdHocDevice excludedDevice) throws IOException, DeviceException {
+
+        if (dataLinkManager.checkState() == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         dataLinkManager.broadcastExcept(object, excludedDevice.getLabel());
     }
 
@@ -137,12 +152,12 @@ public class TransferManager {
         dataLinkManager.disable(Service.BLUETOOTH);
     }
 
-    public boolean isWifiEnable() {
-        return dataLinkManager.isEnable(Service.WIFI);
+    public boolean isWifiEnabled() {
+        return dataLinkManager.isEnabled(Service.WIFI);
     }
 
-    public boolean isBluetoothEnable() {
-        return dataLinkManager.isEnable(Service.BLUETOOTH);
+    public boolean isBluetoothEnabled() {
+        return dataLinkManager.isEnabled(Service.BLUETOOTH);
     }
 
     public boolean updateBluetoothAdapterName(String newName) throws DeviceException {
