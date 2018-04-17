@@ -18,15 +18,18 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
     private Channel channel;
     private WifiAdHocManager.WifiDeviceInfosListener listenerWifiDeviceInfo;
     private WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable;
+    private WifiAdHocManager.ListenerPeer listenerPeer;
 
-    public WiFiDirectBroadcastConnection(WifiP2pManager manager, Channel channel,
+    public WiFiDirectBroadcastConnection(boolean verbose, WifiP2pManager manager, Channel channel,
                                          WifiAdHocManager.WifiDeviceInfosListener listenerWifiDeviceInfo,
-                                         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable, boolean verbose) {
+                                         WifiAdHocManager.ListenerPeer listenerPeer,
+                                         WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
         super();
         this.v = verbose;
         this.manager = manager;
         this.channel = channel;
         this.listenerWifiDeviceInfo = listenerWifiDeviceInfo;
+        this.listenerPeer = listenerPeer;
         this.onConnectionInfoAvailable = onConnectionInfoAvailable;
     }
 
@@ -45,6 +48,9 @@ public class WiFiDirectBroadcastConnection extends BroadcastReceiver {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 if (v) Log.d(TAG, "P2P state enabled: " + state);
+                if (listenerPeer != null) {
+                    listenerPeer.discoverPeers();
+                }
             } else {
                 if (v) Log.d(TAG, "P2P state disabled: " + state);
             }

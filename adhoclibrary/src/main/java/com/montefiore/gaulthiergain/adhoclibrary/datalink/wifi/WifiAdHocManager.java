@@ -44,7 +44,7 @@ import static android.net.wifi.p2p.WifiP2pManager.ERROR;
 import static android.net.wifi.p2p.WifiP2pManager.P2P_UNSUPPORTED;
 import static android.os.Looper.getMainLooper;
 
-public class WifiAdHocManager {
+public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
     public static String TAG = "[AdHoc][WifiManager]";
 
@@ -73,34 +73,32 @@ public class WifiAdHocManager {
     /**
      * Constructor
      *
-     * @param verbose                a boolean value to set the debug/verbose mode.
-     * @param context                a Context object which gives global information about an application
-     *                               environment.
+     * @param verbose a boolean value to set the debug/verbose mode.
+     * @param context a Context object which gives global information about an application
+     *                environment.
      */
     public WifiAdHocManager(boolean verbose, final Context context,
-                            final WifiDeviceInfosListener listenerDeviceInfos) throws DeviceException {
+                            ConnectionWifiListener connectionWifiListener,
+                            final WifiDeviceInfosListener listenerDeviceInfos) {
 
+        this.v = verbose;
+        this.context = context;
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
-        if (wifiP2pManager == null) {
+        this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
+        this.mapMacDevices = new HashMap<>();
+        this.wifiDeviceInfosListener = new WifiDeviceInfosListener() {
 
-            // Device does not support Wifi Direct
-            throw new DeviceException("Error device does not support Wifi Direct");
-        } else {
-            // Device supports Wifi Direct
-            this.v = verbose;
-            this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
-            this.context = context;
-            this.mapMacDevices = new HashMap<>();
-            this.wifiDeviceInfosListener = new WifiDeviceInfosListener() {
-
-                @Override
-                public void getDeviceInfos(String name, String mac) {
-                    initialName = currentAdapterName = name;
-                    if (listenerDeviceInfos != null) {
-                        listenerDeviceInfos.getDeviceInfos(name, mac);
-                    }
+            @Override
+            public void getDeviceInfos(String name, String mac) {
+                initialName = currentAdapterName = name;
+                if (listenerDeviceInfos != null) {
+                    listenerDeviceInfos.getDeviceInfos(name, mac);
                 }
-            };
+            }
+        };
+        if (connectionWifiListener != null) {
+            this.connectionWifiListener = connectionWifiListener;
+            this.registerConnection();
         }
     }
 
@@ -172,7 +170,7 @@ public class WifiAdHocManager {
                 public void run() {
                     mHandler.obtainMessage(DISCOVERY_COMPLETED).sendToTarget();
                 }
-            }, DISCOVERY_TIME);
+            }, DISCOVERY_TIME * 30);
 
 
             registerDiscovery(intentFilter, discoveryListener, peerListListener);
@@ -254,19 +252,18 @@ public class WifiAdHocManager {
         }
     }
 
-    /**
-     * Method allowing to enable the wifi Direct adapter.
-     *
-     * @return a boolean value which represents the state of the wifi Direct.
-     */
-    public boolean isEnabled() {
-
-        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        return wifi != null && wifi.isWifiEnabled();
-    }
-
     public void disable() {
-        wifiAdapterState(false);
+        wifiP2pManager.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "onSuccess() stopPeerDiscovery");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.d(TAG, "onFailure() stopPeerDiscovery" + errorCode(reason));
+            }
+        });
 
         if (discoveryRegistered) {
             unregisterDiscovery();
@@ -275,6 +272,8 @@ public class WifiAdHocManager {
         if (connectionRegistered) {
             unregisterConnection();
         }
+
+        wifiAdapterState(false);
     }
 
     /**
@@ -354,18 +353,36 @@ public class WifiAdHocManager {
     }
 
     public void updateContext(Context context) {
+        Log.d(TAG, "Update context");
+
+        if (connectionRegistered) {
+            unregisterConnection();
+        }
+
+        this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
+        this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
+
         this.context = context;
+        this.registerConnection();
+
     }
 
-    public void setConnectionListener(ConnectionWifiListener connectionWifiListener) {
-        if (connectionWifiListener != null) {
-            this.connectionWifiListener = connectionWifiListener;
-            this.registerConnection();
+    @Override
+    public void onChannelDisconnected() {
+        // we will try once more
+        if (wifiP2pManager != null) {
+            Log.d(TAG, "Channel lost. Trying again");
+            wifiP2pManager.initialize(context, getMainLooper(), this);
         }
     }
 
+
     public interface WifiDeviceInfosListener {
         void getDeviceInfos(String name, String mac);
+    }
+
+    public interface ListenerPeer {
+        void discoverPeers();
     }
 
     public void onEnableWifi(final ListenerAdapter listenerAdapter) {
@@ -399,6 +416,27 @@ public class WifiAdHocManager {
     }
 
     private void registerConnection() {
+
+        ListenerPeer listenerPeer = new ListenerPeer() {
+            @Override
+            public void discoverPeers() {
+                wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        if (v) Log.d(TAG, "Start discoveryPeers");
+                        discoveryException = null;
+                    }
+
+                    @Override
+                    public void onFailure(int reasonCode) {
+                        discoveryException = errorCode(reasonCode);
+                        if (v)
+                            Log.e(TAG, "Error start discoveryPeers (onFailure): " + discoveryException);
+                    }
+                });
+            }
+        };
+
 
         final IntentFilter intentFilter = new IntentFilter();
 
@@ -439,9 +477,7 @@ public class WifiAdHocManager {
             }
         };
 
-        discoverPeers();
-
-        registerConnection(intentFilter, onConnectionInfoAvailable);
+        registerConnection(intentFilter, onConnectionInfoAvailable, listenerPeer);
     }
 
     private void wifiAdapterState(boolean state) {
@@ -449,23 +485,6 @@ public class WifiAdHocManager {
         if (wifi != null) {
             wifi.setWifiEnabled(state);
         }
-    }
-
-    private void discoverPeers() {
-        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                if (v) Log.d(TAG, "Start discoveryPeers");
-                discoveryException = null;
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                discoveryException = errorCode(reasonCode);
-                if (v)
-                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + discoveryException);
-            }
-        });
     }
 
     private static boolean isConnected(Context context) {
@@ -495,9 +514,11 @@ public class WifiAdHocManager {
         context.registerReceiver(wiFiDirectBroadcastDiscovery, intentFilter);
     }
 
-    private void registerConnection(IntentFilter intentFilter, WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable) {
-        wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(wifiP2pManager, channel, wifiDeviceInfosListener,
-                onConnectionInfoAvailable, v);
+    private void registerConnection(IntentFilter intentFilter,
+                                    WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable,
+                                    WifiAdHocManager.ListenerPeer listenerPeer) {
+        wifiDirectBroadcastConnection = new WiFiDirectBroadcastConnection(v, wifiP2pManager, channel,
+                wifiDeviceInfosListener, listenerPeer, onConnectionInfoAvailable);
         connectionRegistered = true;
         context.registerReceiver(wifiDirectBroadcastConnection, intentFilter);
     }
@@ -528,4 +549,15 @@ public class WifiAdHocManager {
         }
         return ipAddrStr.toString();
     }
+
+    /**
+     * Method allowing to enable the wifi Direct adapter.
+     *
+     * @return a boolean value which represents the state of the wifi Direct.
+     */
+    public static boolean isWifiEnabled(Context context) {
+        WifiManager mng = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return mng != null && mng.isWifiEnabled();
+    }
+
 }
