@@ -41,6 +41,12 @@ public class AdHocDevice implements Parcelable {
         this.directedConnected = directedConnected;
     }
 
+    public AdHocDevice(String label) {
+        this();
+        this.directedConnected = false;
+        this.label = label;
+    }
+
     private String checkName(String deviceName) {
         if (deviceName == null) {
             return "";
