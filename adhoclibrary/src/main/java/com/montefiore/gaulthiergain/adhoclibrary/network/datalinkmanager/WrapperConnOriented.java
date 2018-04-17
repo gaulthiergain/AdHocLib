@@ -6,7 +6,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -17,8 +16,8 @@ import java.util.Map;
 abstract class WrapperConnOriented extends AbstractWrapper {
 
     final short nbThreads;
-    final Neighbors neighbors;
     final HashMap<String, SocketManager> mapAddrNetwork;
+    private final Neighbors neighbors;
 
     private final HashMap<String, AdHocDevice> mapAddrDevices;
 
