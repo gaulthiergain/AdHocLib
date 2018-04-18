@@ -47,9 +47,10 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
     public static String TAG = "[AdHoc][WifiManager]";
 
-    private static final int MAX_TIMEOUT_CONNECT = 20000;
+    private static final int MAX_TIMEOUT_CONNECT = 15000;
     private static final int DISCOVERY_TIME = 12000;
     private static final byte DISCOVERY_COMPLETED = 0;
+    private static final byte DISCOVERY_FAILED = 1;
 
     private final boolean v;
     private Context context;
@@ -102,6 +103,20 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         }
     }
 
+    @SuppressLint("HandlerLeak")
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
+        // Used handler to avoid updating views in other threads than the main thread
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case DISCOVERY_COMPLETED:
+                    discoveryListener.onDiscoveryCompleted(mapMacDevices);
+                    break;
+                case DISCOVERY_FAILED:
+                    discoveryListener.onDiscoveryFailed(new Exception("Connection timeout"));
+            }
+        }
+    };
+
     public String getAdapterName() {
         return currentAdapterName;
     }
@@ -112,17 +127,6 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */
     public void discovery(final DiscoveryListener discoveryListener) {
-
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
-            // Used handler to avoid updating views in other threads than the main thread
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case DISCOVERY_COMPLETED:
-                        discoveryListener.onDiscoveryCompleted(mapMacDevices);
-                        break;
-                }
-            }
-        };
 
         final IntentFilter intentFilter = new IntentFilter();
         // Indicates a change in the list of available mapMacDevices.
@@ -221,17 +225,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
             @Override
             public void run() {
                 if (!connected) {
-                    cancelConnection(new ListenerAction() {
-                        @Override
-                        public void onSuccess() {
-                            if (v) Log.d(TAG, "cancelConnection onSuccess");
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            if (v) Log.e(TAG, "cancelConnection onFailed: " + e.getMessage());
-                        }
-                    });
+                    mHandler.obtainMessage(DISCOVERY_FAILED).sendToTarget();
                 }
             }
         }, MAX_TIMEOUT_CONNECT);
@@ -398,7 +392,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         // we will try once more
         if (wifiP2pManager != null) {
             if (v) Log.w(TAG, "Channel lost, update wifi manager");
-            wifiP2pManager.initialize(context, getMainLooper(), this);
+            this.channel = wifiP2pManager.initialize(context, getMainLooper(), this);
         }
     }
 
