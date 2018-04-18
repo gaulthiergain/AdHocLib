@@ -469,6 +469,8 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
+                boolean event = false;
+
                 // Receive UDP header from remote host
                 Header header = message.getHeader();
 
@@ -486,23 +488,31 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), type, header.getAddress());
 
-                // Add remote host to neighbors
-                neighbors.put(header.getLabel(), device);
+                if (!neighbors.containsKey(header.getLabel())) {
+                    event = true;
+                }
 
-                // Callback connection
-                listenerApp.onConnection(device);
+                if (event) {
+                    // Add remote host to neighbors
+                    neighbors.put(header.getLabel(), device);
 
-                // If connectionFlooding option is enable, flood connect events
-                if (connectionFlooding) {
-                    String id = header.getLabel() + System.currentTimeMillis();
-                    setFloodEvents.add(id);
-                    header.setType(AbstractWrapper.CONNECT_BROADCAST);
-                    broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                    // Callback connection
+                    listenerApp.onConnection(device);
+
+                    // If connectionFlooding option is enable, flood connect events
+                    if (connectionFlooding) {
+                        String id = header.getLabel() + System.currentTimeMillis();
+                        setFloodEvents.add(id);
+                        header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                        broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                    }
                 }
 
                 break;
             }
             case CONNECT_CLIENT: {
+
+                boolean event = false;
 
                 // Receive UDP header from remote host
                 Header header = message.getHeader();
@@ -517,18 +527,24 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), type, header.getAddress());
 
-                // Add remote host to neighbors
-                neighbors.put(header.getLabel(), device);
+                if (!neighbors.containsKey(header.getLabel())) {
+                    event = true;
+                }
 
-                // Callback connection
-                listenerApp.onConnection(device);
+                if (event) {
+                    // Add remote host to neighbors
+                    neighbors.put(header.getLabel(), device);
 
-                // If connectionFlooding option is enable, flood connect events
-                if (connectionFlooding) {
-                    String id = header.getLabel() + System.currentTimeMillis();
-                    setFloodEvents.add(id);
-                    header.setType(AbstractWrapper.CONNECT_BROADCAST);
-                    broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                    // Callback connection
+                    listenerApp.onConnection(device);
+
+                    // If connectionFlooding option is enable, flood connect events
+                    if (connectionFlooding) {
+                        String id = header.getLabel() + System.currentTimeMillis();
+                        setFloodEvents.add(id);
+                        header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                        broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                    }
                 }
 
                 break;
