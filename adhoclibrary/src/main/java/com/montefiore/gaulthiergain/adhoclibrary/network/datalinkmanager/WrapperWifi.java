@@ -61,7 +61,6 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         } else {
             this.enabled = false;
         }
-
     }
 
     /*-------------------------------------Override methods---------------------------------------*/
@@ -111,22 +110,27 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                //todo refactor this
-
-                // Add device into mapMacDevices
-                for (AdHocDevice device : mapNameDevice.values()) {
-                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
-                        if (v)
-                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
-                        mapMacDevices.put(device.getMacAddress(), device);
+                if (wifiAdHocManager == null) {
+                    discoveryListener.onDiscoveryFailed(
+                            new DeviceException("Unable to complete the discovery due to wifi connectivity"));
+                } else {
+                    // Add device into mapMacDevices
+                    for (AdHocDevice device : mapNameDevice.values()) {
+                        if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                            if (v)
+                                Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                            mapMacDevices.put(device.getMacAddress(), device);
+                        }
                     }
-                }
 
-                if (listenerBothDiscovery != null) {
-                    discoveryListener.onDiscoveryCompleted(mapMacDevices);
-                }
+                    if (listenerBothDiscovery != null) {
+                        discoveryListener.onDiscoveryCompleted(mapMacDevices);
+                    }
 
-                discoveryCompleted = true;
+                    discoveryCompleted = true;
+
+                    wifiAdHocManager.unregisterDiscovery();
+                }
             }
         });
     }

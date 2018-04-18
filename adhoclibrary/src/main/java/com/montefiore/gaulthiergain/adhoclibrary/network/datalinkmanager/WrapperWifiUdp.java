@@ -11,6 +11,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerBadValue;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
@@ -113,23 +114,27 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
             @Override
             public void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice) {
 
-                //todo refactor this
-
-                // Add device into mapMacDevices
-                for (AdHocDevice device : mapNameDevice.values()) {
-                    if (!mapMacDevices.containsKey(device.getMacAddress())) {
-                        if (v)
-                            Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
-                        mapMacDevices.put(device.getMacAddress(), device);
+                if (wifiAdHocManager == null) {
+                    discoveryListener.onDiscoveryFailed(
+                            new DeviceException("Unable to complete the discovery due to wifi connectivity"));
+                } else {
+                    // Add device into mapMacDevices
+                    for (AdHocDevice device : mapNameDevice.values()) {
+                        if (!mapMacDevices.containsKey(device.getMacAddress())) {
+                            if (v)
+                                Log.d(TAG, "Add " + device.getMacAddress() + " into mapMacDevices");
+                            mapMacDevices.put(device.getMacAddress(), device);
+                        }
                     }
+
+                    if (listenerBothDiscovery != null) {
+                        discoveryListener.onDiscoveryCompleted(mapMacDevices);
+                    }
+
+                    discoveryCompleted = true;
+
+                    wifiAdHocManager.unregisterDiscovery();
                 }
-
-                if (listenerBothDiscovery != null) {
-                    listenerBothDiscovery.onDiscoveryCompleted(mapMacDevices);
-                }
-
-                discoveryCompleted = true;
-
             }
         });
     }
