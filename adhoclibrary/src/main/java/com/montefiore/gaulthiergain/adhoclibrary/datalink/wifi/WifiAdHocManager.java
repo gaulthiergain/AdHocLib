@@ -19,7 +19,6 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
@@ -45,31 +44,31 @@ import static android.net.wifi.p2p.WifiP2pManager.P2P_UNSUPPORTED;
 import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
-    public static final int MAX_TIMEOUT_CONNECT = 20000;
+
     public static String TAG = "[AdHoc][WifiManager]";
 
-    public static final int DISCOVERY_TIME = 12000;
+    private static final int MAX_TIMEOUT_CONNECT = 20000;
+    private static final int DISCOVERY_TIME = 12000;
     private static final byte DISCOVERY_COMPLETED = 0;
 
-    private boolean v;
+    private final boolean v;
     private Context context;
     private Channel channel;
     private String initialName;
     private String currentAdapterName;
     private WifiP2pManager wifiP2pManager;
     private ConnectionWifiListener connectionWifiListener;
-    private HashMap<String, AdHocDevice> mapMacDevices;
+    private final HashMap<String, AdHocDevice> mapMacDevices;
 
-    private int valueGroupOwner = -1;
-    private WifiDeviceInfosListener wifiDeviceInfosListener;
-
-    private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
-    private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
+    private Timer timer;
+    private boolean connected;
     private boolean discoveryRegistered = false;
     private boolean connectionRegistered = false;
+    private int valueGroupOwner = -1;
     private DiscoveryListener discoveryListener;
-    private boolean connected;
-    private Timer timer;
+    private WifiDeviceInfosListener wifiDeviceInfosListener;
+    private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
+    private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
 
     /**
      * Constructor
@@ -107,78 +106,6 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         return currentAdapterName;
     }
 
-    private void registerConnection() {
-
-        ListenerPeer listenerPeer = new ListenerPeer() {
-            @Override
-            public void discoverPeers() {
-                discoverPeer();
-            }
-        };
-
-
-        final IntentFilter intentFilter = new IntentFilter();
-
-        //  Indicates a change in the Wi-Fi P2P status.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed.
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        // Indicates this device's details are available
-        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
-        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
-            @Override
-            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-                if (v) Log.d(TAG, "Address groupOwner:"
-                        + String.valueOf(info.groupOwnerAddress.getHostAddress()));
-
-
-                connected = true;
-
-                if (info.isGroupOwner) {
-                    connectionWifiListener.onGroupOwner(info.groupOwnerAddress);
-                } else {
-                    try {
-                        byte[] addr = getLocalIPAddress();
-                        if (addr != null) {
-                            connectionWifiListener.onClient(info.groupOwnerAddress,
-                                    InetAddress.getByName(getDottedDecimalIP(addr)));
-                        } else {
-                            connectionWifiListener.onConnectionFailed(
-                                    new NoConnectionException("Unknown IP address"));
-                        }
-                    } catch (UnknownHostException | SocketException e) {
-                        connectionWifiListener.onConnectionFailed(e);
-                    } catch (IOException e) {
-                        connectionWifiListener.onConnectionFailed(e);
-                    }
-                }
-            }
-        };
-
-        registerConnection(intentFilter, onConnectionInfoAvailable, listenerPeer);
-    }
-
-    private void discoverPeer() {
-        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                if (v) Log.d(TAG, "Start discoveryPeers");
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                if (v)
-                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + errorCode(reasonCode));
-                if (discoveryListener != null) {
-                    discoveryListener.onDiscoveryFailed(new Exception(errorCode(reasonCode)));
-                }
-            }
-        });
-    }
-
     /**
      * Method allowing to discovery other wifi Direct mapMacDevices.
      *
@@ -198,7 +125,6 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         };
 
         final IntentFilter intentFilter = new IntentFilter();
-
         // Indicates a change in the list of available mapMacDevices.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
 
@@ -245,7 +171,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         }, DISCOVERY_TIME);
 
 
-        registerDiscovery(intentFilter, discoveryListener, peerListListener);
+        registerDiscovery(intentFilter, peerListListener);
     }
 
     /**
@@ -270,6 +196,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
             @Override
             public void onSuccess() {
                 if (v) Log.d(TAG, "Start connecting Wifi Direct (onSuccess)");
+                // Launch timeout to cancel connection
                 timeout();
                 connectionWifiListener.onConnectionStarted();
             }
@@ -286,6 +213,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     private void timeout() {
         connected = false;
         if (timer != null) {
+            // Cancel previous timer if any
             timer.cancel();
         }
         timer = new Timer();
@@ -296,12 +224,12 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                     cancelConnection(new ListenerAction() {
                         @Override
                         public void onSuccess() {
-                            Log.d(TAG, "Success");
+                            if (v) Log.d(TAG, "cancelConnection onSuccess");
                         }
 
                         @Override
                         public void onFailure(Exception e) {
-                            e.printStackTrace();
+                            if (v) Log.e(TAG, "cancelConnection onFailed: " + e.getMessage());
                         }
                     });
                 }
@@ -354,12 +282,12 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         wifiP2pManager.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "onSuccess() stopPeerDiscovery");
+                if (v) Log.d(TAG, "onSuccess() stopPeerDiscovery");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.d(TAG, "onFailure() stopPeerDiscovery" + errorCode(reason));
+                if (v) Log.e(TAG, "onFailure() stopPeerDiscovery" + errorCode(reason));
             }
         });
 
@@ -469,7 +397,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     public void onChannelDisconnected() {
         // we will try once more
         if (wifiP2pManager != null) {
-            if (v) Log.d(TAG, "Channel lost, update wifi manager");
+            if (v) Log.w(TAG, "Channel lost, update wifi manager");
             wifiP2pManager.initialize(context, getMainLooper(), this);
         }
     }
@@ -539,8 +467,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         return "Unknown error";
     }
 
-    private void registerDiscovery(IntentFilter intentFilter, final DiscoveryListener discoveryListener,
-                                   WifiP2pManager.PeerListListener peerListListener) {
+    private void registerDiscovery(IntentFilter intentFilter, WifiP2pManager.PeerListListener peerListListener) {
         wiFiDirectBroadcastDiscovery = new WiFiDirectBroadcastDiscovery(v, wifiP2pManager, channel,
                 peerListListener);
         discoveryRegistered = true;
@@ -581,6 +508,79 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
             ipAddrStr.append(ipAddr[i] & 0xFF);
         }
         return ipAddrStr.toString();
+    }
+
+    private void registerConnection() {
+
+        // Define listener to update the status of the peer
+        ListenerPeer listenerPeer = new ListenerPeer() {
+            @Override
+            public void discoverPeers() {
+                // Call discoverPeer method
+                discoverPeer();
+            }
+        };
+
+        final IntentFilter intentFilter = new IntentFilter();
+        // Indicates a change in the Wi-Fi P2P status.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        // Indicates this device's details are available
+        intentFilter.addAction(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+
+        WifiP2pManager.ConnectionInfoListener onConnectionInfoAvailable = new WifiP2pManager.ConnectionInfoListener() {
+            @Override
+            public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+                if (v) Log.d(TAG, "Address groupOwner:"
+                        + String.valueOf(info.groupOwnerAddress.getHostAddress()));
+
+                // Device is connected to remote node
+                connected = true;
+
+                if (info.isGroupOwner) {
+                    connectionWifiListener.onGroupOwner(info.groupOwnerAddress);
+                } else {
+                    try {
+                        byte[] addr = getLocalIPAddress();
+                        if (addr != null) {
+                            connectionWifiListener.onClient(info.groupOwnerAddress,
+                                    InetAddress.getByName(getDottedDecimalIP(addr)));
+                        } else {
+                            connectionWifiListener.onConnectionFailed(
+                                    new NoConnectionException("Unknown IP address"));
+                        }
+                    } catch (UnknownHostException | SocketException e) {
+                        connectionWifiListener.onConnectionFailed(e);
+                    } catch (IOException e) {
+                        connectionWifiListener.onConnectionFailed(e);
+                    }
+                }
+            }
+        };
+
+        // Register to receiver to get connection details
+        registerConnection(intentFilter, onConnectionInfoAvailable, listenerPeer);
+    }
+
+    private void discoverPeer() {
+        wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                if (v) Log.d(TAG, "Start discoveryPeers");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                if (v)
+                    Log.e(TAG, "Error start discoveryPeers (onFailure): " + errorCode(reasonCode));
+                if (discoveryListener != null) {
+                    discoveryListener.onDiscoveryFailed(new Exception(errorCode(reasonCode)));
+                }
+            }
+        });
     }
 
     /**
