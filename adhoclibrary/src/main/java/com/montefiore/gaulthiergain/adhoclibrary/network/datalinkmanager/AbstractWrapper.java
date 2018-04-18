@@ -51,11 +51,7 @@ abstract class AbstractWrapper {
         this.json = config.isJson();
         this.enabled = true;
         this.connectionFlooding = config.isConnectionFlooding();
-        if (connectionFlooding) {
-            // Use set only if connectionFlooding option is enabled
-            this.setFloodEvents = new HashSet<>();
-        }
-
+        this.setFloodEvents = new HashSet<>();
         this.label = config.getLabel();
         this.discoveryCompleted = false;
         this.listenerApp = listenerApp;
