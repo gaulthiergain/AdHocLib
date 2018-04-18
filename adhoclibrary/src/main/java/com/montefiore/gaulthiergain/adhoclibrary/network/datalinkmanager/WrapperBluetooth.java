@@ -17,11 +17,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceExcep
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -67,14 +66,14 @@ class WrapperBluetooth extends WrapperConnOriented {
     }
 
     @Override
-    void connect(short attemps, AdHocDevice device) throws DeviceAlreadyConnectedException {
+    void connect(short attemps, AdHocDevice device) throws DeviceException {
 
         BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
         if (btDevice != null) {
             if (!serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
                 _connect(attemps, btDevice);
             } else {
-                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                throw new DeviceException(device.getDeviceName()
                         + "(" + device.getMacAddress() + ") is already connected");
             }
         }

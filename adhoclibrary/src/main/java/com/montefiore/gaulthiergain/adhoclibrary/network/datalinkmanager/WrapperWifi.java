@@ -12,15 +12,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerB
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
@@ -83,7 +82,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     @Override
-    void connect(short attempts, AdHocDevice device) throws DeviceAlreadyConnectedException {
+    void connect(short attempts, AdHocDevice device) throws DeviceException {
 
         String ip = getIpByMac(device.getMacAddress());
         if (ip == null) {
@@ -94,7 +93,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 this.attemps = attempts;
                 wifiAdHocManager.connect(device.getMacAddress());
             } else {
-                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                throw new DeviceException(device.getDeviceName()
                         + "(" + device.getMacAddress() + ") is already connected");
             }
         }

@@ -11,12 +11,10 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListe
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.AodvManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class TransferManager {
 
@@ -100,7 +98,7 @@ public class TransferManager {
 
     /*-------------------------------------DataLink methods---------------------------------------*/
 
-    public void connect(int attemps, AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+    public void connect(int attemps, AdHocDevice adHocDevice) throws DeviceException {
 
         if (dataLinkManager.checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
@@ -109,7 +107,7 @@ public class TransferManager {
         dataLinkManager.connect((short) attemps, adHocDevice);
     }
 
-    public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+    public void connect(AdHocDevice adHocDevice) throws DeviceException {
 
         if (dataLinkManager.checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");

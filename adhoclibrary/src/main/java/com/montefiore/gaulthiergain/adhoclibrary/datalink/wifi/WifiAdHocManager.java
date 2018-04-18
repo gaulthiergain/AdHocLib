@@ -19,6 +19,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
@@ -184,10 +185,14 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
      * @param address a String value which represents the address of the remote wifi
      *                Direct peer.
      */
-    public void connect(final String address) {
+    public void connect(final String address) throws DeviceException {
 
         // Get The device from its address
         final WifiAdHocDevice device = (WifiAdHocDevice) mapMacDevices.get(address);
+        if(device == null){
+            throw new DeviceException("Discovery is required before connecting");
+        }
+
         final WifiP2pConfig config = new WifiP2pConfig();
 
         if (valueGroupOwner != -1) {

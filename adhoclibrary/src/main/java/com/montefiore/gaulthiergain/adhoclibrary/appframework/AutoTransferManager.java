@@ -5,7 +5,6 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -255,10 +254,6 @@ public class AutoTransferManager extends TransferManager {
                             state = CONNECT_STATE;
                             connect(device);
                         } catch (DeviceException e) {
-                            e.printStackTrace();
-                            state = INIT_STATE;
-                            arrayList.remove(device);
-                        } catch (DeviceAlreadyConnectedException e) {
                             e.printStackTrace();
                             state = INIT_STATE;
                             arrayList.remove(device);

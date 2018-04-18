@@ -17,14 +17,12 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.GroupOwnerB
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class DataLinkManager {
 
@@ -86,7 +84,7 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceAlreadyConnectedException {
+    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceException {
 
         switch (adHocDevice.getType()) {
             case Service.WIFI:

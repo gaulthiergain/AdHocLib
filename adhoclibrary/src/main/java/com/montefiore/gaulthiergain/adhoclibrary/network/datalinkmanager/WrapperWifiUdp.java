@@ -2,8 +2,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -25,13 +23,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,7 +75,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    void connect(short attempts, AdHocDevice device) throws DeviceAlreadyConnectedException {
+    void connect(short attempts, AdHocDevice device) throws DeviceException {
 
         String label = getLabelByMac(device.getMacAddress());
         if (label == null) {
@@ -88,7 +84,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
             if (!neighbors.containsKey(label)) {
                 wifiAdHocManager.connect(device.getMacAddress());
             } else {
-                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                throw new DeviceException(device.getDeviceName()
                         + "(" + device.getMacAddress() + ") is already connected");
             }
         }
