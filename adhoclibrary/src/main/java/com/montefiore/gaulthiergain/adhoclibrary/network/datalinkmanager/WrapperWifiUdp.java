@@ -2,6 +2,8 @@ package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -23,11 +25,13 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,13 +79,24 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*-------------------------------------Override methods---------------------------------------*/
 
     @Override
-    void connect(short attemps, AdHocDevice device) {
-        wifiAdHocManager.connect(device.getMacAddress());
+    void connect(short attempts, AdHocDevice device) throws DeviceAlreadyConnectedException {
+
+        String label = getLabelByMac(device.getMacAddress());
+        if (label == null) {
+            wifiAdHocManager.connect(device.getMacAddress());
+        } else {
+            if (!neighbors.containsKey(label)) {
+                wifiAdHocManager.connect(device.getMacAddress());
+            } else {
+                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                        + "(" + device.getMacAddress() + ") is already connected");
+            }
+        }
     }
 
     @Override
     void stopListening() {
-        udpPeers.setBackgroundRunning(false);
+        udpPeers.stopServer();
     }
 
     @Override
@@ -153,7 +168,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                     public void getDeviceInfos(String name, String mac) {
                         ownName = name;
                         ownMac = mac;
-                        Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
                         listenerDataLink.initInfos(ownMac, ownName);
                     }
                 });
@@ -164,6 +178,11 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     @Override
     void disable() {
+        // Clear data structure if adapter is disabled
+        neighbors.clear();
+        ackSet.clear();
+        helloMessages.clear();
+
         wifiAdHocManager.disable();
         wifiAdHocManager = null;
         enabled = false;
@@ -273,7 +292,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() {
-        udpPeers = new UdpPeers(true, serverPort, true, new ServiceMessageListener() {
+        udpPeers = new UdpPeers(v, serverPort, json, label, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -285,7 +304,23 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
             @Override
             public void onConnectionClosed(String remoteAddress) {
-                // Ignored in udp context
+                // If remote node has disabled wifi
+                String label = getLabelByIP(remoteAddress);
+                AdHocDevice adHocDevice = null;
+
+                if (v) Log.w(TAG, label + " has wifi doisconnected");
+                if (neighbors.containsKey(label)) {
+                    adHocDevice = neighbors.get(label);
+                    neighbors.remove(label);
+                }
+
+                if (helloMessages.containsKey(label)) {
+                    helloMessages.remove(label);
+                }
+
+                if (adHocDevice != null) {
+                    listenerApp.onConnectionClosed(adHocDevice);
+                }
             }
 
             @Override
@@ -332,8 +367,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 try {
                     inetAddress = InetAddress.getByName(address);
                     udpPeers.sendMessageTo(msg, inetAddress, serverPort);
-                    if (v)
-                        Log.d(TAG, msg.toString() + " is sent on " + inetAddress + " on " + serverPort);
                 } catch (UnknownHostException e) {
                     listenerApp.processMsgException(e);
                 }
@@ -372,7 +405,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         timerHelloPackets.schedule(new TimerTask() {
             @Override
             public void run() {
-                broadcast(new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)));
+                broadcastExcept(new MessageAdHoc(new Header(TypeAodv.HELLO.getType(), label, ownName)), label);
                 timerHello(time);
             }
         }, time);
@@ -477,6 +510,8 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 // Update the ackSet for reliable transmission
                 if (ackSet.contains(header.getAddress())) {
                     ackSet.remove(header.getAddress());
+                } else {
+                    break;
                 }
 
                 WifiAdHocDevice device = new WifiAdHocDevice(header.getLabel(), header.getMac(),
@@ -532,6 +567,9 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 break;
             }
             case Constants.HELLO: {
+
+                if (v) Log.d(TAG, "Received Hello message from " + message.getHeader().getName());
+
                 // Add helloMessages messages to hashmap
                 helloMessages.put(message.getHeader().getLabel(), System.currentTimeMillis());
                 break;
@@ -573,5 +611,24 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                         groupOwnerAddress.getHostAddress(), TIMER_ACK);
             }
         };
+    }
+
+    private String getLabelByMac(String mac) {
+        for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
+            if (mac.equals(entry.getValue().getMacAddress())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private String getLabelByIP(String ip) {
+        for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
+            WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();
+            if (ip.equals(wifiDevice.getIpAddress())) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 }
