@@ -4,18 +4,13 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 
 public class SocketManager {
@@ -48,7 +43,7 @@ public class SocketManager {
             pw.println(mapper.writeValueAsString(msg));
             pw.flush();
         } else {
-            byte[] byteArray = serialize(msg);
+            byte[] byteArray = Utils.serialize(msg);
             if (byteArray != null) {
                 oos.writeInt(byteArray.length);
                 Log.d("[AdHoc]", "Length " + byteArray.length);
@@ -77,8 +72,8 @@ public class SocketManager {
             if (length > 0) {
                 byte[] message = new byte[length];
                 ois.readFully(message, 0, message.length);
-                Log.d("[AdHoc]", "Rcv " + deserialize(message).toString());
-                return deserialize(message);
+                Log.d("[AdHoc]", "Rcv " + Utils.deserialize(message).toString());
+                return Utils.deserialize(message);
             }
             return null;
         }
@@ -92,27 +87,5 @@ public class SocketManager {
 
     public String getRemoteSocketAddress() {
         return remoteSocketAddress;
-    }
-
-    private MessageAdHoc deserialize(byte[] byteArray) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
-        ObjectInput in;
-
-        in = new ObjectInputStream(bis);
-        MessageAdHoc messageAdHoc = (MessageAdHoc) in.readObject();
-        in.close();
-        return messageAdHoc;
-    }
-
-    private byte[] serialize(MessageAdHoc messageAdHoc) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out;
-
-        out = new ObjectOutputStream(bos);
-        out.writeObject(messageAdHoc);
-        out.flush();
-        byte[] byteArray = bos.toByteArray();
-        bos.close();
-        return byteArray;
     }
 }
