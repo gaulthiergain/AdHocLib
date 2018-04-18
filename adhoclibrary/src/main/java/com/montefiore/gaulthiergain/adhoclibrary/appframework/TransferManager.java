@@ -101,10 +101,20 @@ public class TransferManager {
     /*-------------------------------------DataLink methods---------------------------------------*/
 
     public void connect(int attemps, AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+
+        if (dataLinkManager.checkState() == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         dataLinkManager.connect((short) attemps, adHocDevice);
     }
 
     public void connect(AdHocDevice adHocDevice) throws DeviceException, DeviceAlreadyConnectedException {
+
+        if (dataLinkManager.checkState() == 0) {
+            throw new DeviceException("No wifi and bluetooth connectivity");
+        }
+
         dataLinkManager.connect((short) 1, adHocDevice);
     }
 
