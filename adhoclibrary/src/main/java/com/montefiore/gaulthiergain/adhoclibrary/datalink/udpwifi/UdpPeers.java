@@ -17,11 +17,15 @@ public class UdpPeers extends Thread {
     private static final String TAG = "[AdHoc][UDPClient]";
     private final Handler handler;
     private final boolean v;
+    private final boolean json;
     private UdpServer udpServer;
 
+
     @SuppressLint("HandlerLeak")
-    public UdpPeers(boolean verbose, int serverPort, boolean background, final ServiceMessageListener serviceMessageListener) {
+    public UdpPeers(boolean verbose, int serverPort, boolean json, String label,
+                    final ServiceMessageListener serviceMessageListener) {
         this.v = verbose;
+        this.json = json;
         this.handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -34,25 +38,28 @@ public class UdpPeers extends Thread {
                         if (v) Log.e(TAG, "MESSAGE_EXCEPTION");
                         serviceMessageListener.onMsgException((Exception) msg.obj);
                         break;
+                    case Service.NETWORK_UNREACHABLE:
+                        if (v) Log.e(TAG, "NETWORK_UNREACHABLE");
+                        serviceMessageListener.onConnectionClosed((String) msg.obj);
+                        break;
                     case Service.LOG_EXCEPTION:
                         if (v) Log.e(TAG, "LOG_EXCEPTION: " + ((Exception) msg.obj).getMessage());
                         break;
                 }
             }
         };
-        if (background) {
-            Log.d(TAG, "Listen in background");
-            udpServer = new UdpServer(v, handler, serverPort);
-            udpServer.start();
-        }
+
+        if (v) Log.d(TAG, "Listen in background");
+        udpServer = new UdpServer(v, handler, serverPort, json, label);
+        udpServer.start();
     }
 
-    public void setBackgroundRunning(boolean backgroundRunning) {
-        udpServer.setRunning(backgroundRunning);
+    public void stopServer() {
+        udpServer.stopServer();
     }
 
     public void sendMessageTo(MessageAdHoc message, InetAddress serverAddr, int serverPort) {
-        UdpClient udpClient = new UdpClient(handler, message, serverAddr, serverPort);
+        UdpClient udpClient = new UdpClient(handler, json, message, serverAddr, serverPort);
         udpClient.start();
     }
 }

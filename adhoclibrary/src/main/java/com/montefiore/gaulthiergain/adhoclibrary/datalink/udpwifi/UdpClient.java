@@ -1,24 +1,31 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.os.StrictMode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 
 class UdpClient extends Thread {
 
     private final int serverPort;
+    private final boolean json;
     private final Handler handler;
     private final MessageAdHoc msg;
     private final InetAddress serverAddr;
 
-    UdpClient(Handler handler, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
+    UdpClient(Handler handler, boolean json, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
+        this.json = json;
         this.handler = handler;
         this.msg = msg;
         this.serverAddr = serverAddr;
@@ -29,14 +36,21 @@ class UdpClient extends Thread {
     public void run() {
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            byte[] msgBytes = mapper.writeValueAsString(msg).getBytes();
+            byte[] msgBytes;
+            if (json) {
+                ObjectMapper mapper = new ObjectMapper();
+                msgBytes = mapper.writeValueAsString(msg).getBytes();
+            } else {
+                msgBytes = Utils.serialize(msg);
+            }
 
             DatagramSocket datagramSocket = null;
             try {
                 datagramSocket = new DatagramSocket();
                 DatagramPacket datagramPacket = new DatagramPacket(msgBytes, msgBytes.length, serverAddr, serverPort);
                 datagramSocket.send(datagramPacket);
+            } catch (SocketException e) {
+                handler.obtainMessage(Service.NETWORK_UNREACHABLE, serverAddr.getHostAddress()).sendToTarget();
             } catch (IOException e) {
                 handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             } finally {
@@ -44,7 +58,6 @@ class UdpClient extends Thread {
                     datagramSocket.close();
                 }
             }
-
         } catch (IOException e) {
             handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
         }

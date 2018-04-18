@@ -38,6 +38,7 @@ public abstract class Service {
 
     public static final byte LOG_EXCEPTION = 9;                  // log exception
     public static final byte MESSAGE_EXCEPTION = 10;             // catch message exception
+    public static final int NETWORK_UNREACHABLE = 11;
 
     protected int state;
     protected final boolean v;
