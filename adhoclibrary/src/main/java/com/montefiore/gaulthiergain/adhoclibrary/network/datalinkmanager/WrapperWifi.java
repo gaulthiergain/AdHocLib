@@ -289,7 +289,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
 
-    private void _connect(short attemps) {
+    private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json,
                 groupOwnerAddr, serverPort, 5000, attemps, new ServiceMessageListener() {
             @Override
@@ -462,7 +462,12 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
                 serviceServer.stopListening();
 
-                _connect(attemps);
+                // If attempts is not defined set to 1
+                if (attemps == 0) {
+                    attemps = 3;
+                }
+
+                _connect();
             }
         };
     }
