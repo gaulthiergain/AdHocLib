@@ -74,8 +74,8 @@ class WrapperBluetooth extends WrapperConnOriented {
             if (!serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
                 _connect(attemps, btDevice);
             } else {
-                throw new DeviceAlreadyConnectedException(btDevice.getUuid()
-                        + " is already connected");
+                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                        + "(" + device.getMacAddress() + ") is already connected");
             }
         }
     }
