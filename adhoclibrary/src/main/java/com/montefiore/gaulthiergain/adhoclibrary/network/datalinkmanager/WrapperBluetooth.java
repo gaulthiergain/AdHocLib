@@ -173,6 +173,10 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     @Override
     void disable() {
+        // Clear data structure if adapter is disabled
+        mapAddrNetwork.clear();
+        neighbors.getNeighbors().clear();
+
         bluetoothAdHocManager.disable();
         bluetoothAdHocManager = null;
         enabled = false;

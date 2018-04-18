@@ -17,7 +17,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
 
     final short nbThreads;
     final HashMap<String, SocketManager> mapAddrNetwork;
-    private final Neighbors neighbors;
+    final Neighbors neighbors;
 
     private final HashMap<String, AdHocDevice> mapAddrDevices;
 

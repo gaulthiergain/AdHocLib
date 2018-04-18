@@ -20,12 +20,14 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiLis
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.DeviceAlreadyConnectedException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.Map;
 
 class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
@@ -53,7 +55,6 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                         public void getDeviceInfos(String name, String mac) {
                             ownName = name;
                             ownMac = mac;
-                            Log.d(TAG, "MAC: " + mac + " - Name: " + ownName);
                             listenerDataLink.initInfos(ownMac, ownName);
                         }
                     });
@@ -72,10 +73,31 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         this.listenServer();
     }
 
+    private String getIpByMac(String mac) {
+        for (Map.Entry<String, String> entry : mapAddrMac.entrySet()) {
+            if (mac.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
     @Override
-    void connect(short attemps, AdHocDevice device) {
-        this.attemps = attemps;
-        wifiAdHocManager.connect(device.getMacAddress());
+    void connect(short attempts, AdHocDevice device) throws DeviceAlreadyConnectedException {
+
+        String ip = getIpByMac(device.getMacAddress());
+        if (ip == null) {
+            this.attemps = attempts;
+            wifiAdHocManager.connect(device.getMacAddress());
+        } else {
+            if (!serviceServer.getActiveConnections().containsKey(ip)) {
+                this.attemps = attempts;
+                wifiAdHocManager.connect(device.getMacAddress());
+            } else {
+                throw new DeviceAlreadyConnectedException(device.getDeviceName()
+                        + "(" + device.getMacAddress() + ") is already connected");
+            }
+        }
     }
 
     @Override
@@ -164,6 +186,11 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     @Override
     void disable() {
+        // Clear data structure if adapter is disabled
+        mapAddrMac.clear();
+        mapAddrNetwork.clear();
+        neighbors.getNeighbors().clear();
+
         wifiAdHocManager.disable();
         wifiAdHocManager = null;
         enabled = false;
