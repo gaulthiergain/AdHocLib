@@ -12,7 +12,6 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 class UdpServer extends Thread {
@@ -58,14 +57,17 @@ class UdpServer extends Thread {
 
                 MessageAdHoc msg = deserialize(packet.getData());
 
-                // Check if message if from other node
-                Header header = msg.getHeader();
-                if (header != null && header.getLabel() != null && !header.getLabel().equals(label)) {
-                    // Update Handler
-                    handler.obtainMessage(Service.MESSAGE_READ, msg).sendToTarget();
+                if (msg != null) {
+                    // Check if message if from other node
+                    Header header = msg.getHeader();
+                    if (header != null && header.getLabel() != null && !header.getLabel().equals(label)) {
+                        // Update Handler
+                        handler.obtainMessage(Service.MESSAGE_READ, msg).sendToTarget();
+                    } else {
+                        Log.w(TAG, "Ignored message: " + msg);
+                    }
                 } else {
-                    //
-                    Log.w(TAG, "IGNORED MESSAGE " + header);
+                    handler.obtainMessage(Service.MESSAGE_EXCEPTION, new Exception("Null message")).sendToTarget();
                 }
             }
 
