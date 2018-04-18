@@ -12,4 +12,6 @@ public interface IWrapperWifi {
     void cancelConnect(ListenerAction listenerAction);
 
     boolean isEnabled();
+
+    boolean isWifiGroupOwner();
 }

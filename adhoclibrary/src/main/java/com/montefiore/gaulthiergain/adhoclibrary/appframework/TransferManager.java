@@ -184,12 +184,16 @@ public class TransferManager {
         dataLinkManager.resetAdapterName(Service.WIFI);
     }
 
-    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
+    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue, DeviceException {
         dataLinkManager.setWifiGroupOwnerValue(valueGroupOwner);
     }
 
-    public void removeWifiGroup(ListenerAction listenerAction) {
+    public void removeWifiGroup(ListenerAction listenerAction) throws DeviceException {
         dataLinkManager.removeGroup(listenerAction);
+    }
+
+    public boolean isWifiGroupOwner() throws DeviceException {
+        return dataLinkManager.isWifiGroupOwner();
     }
 
     public void unpairBtDevice(AdHocDevice device)
@@ -201,7 +205,7 @@ public class TransferManager {
         }
     }
 
-    public void cancelConnection(ListenerAction listenerAction) {
+    public void cancelConnection(ListenerAction listenerAction) throws DeviceException {
         dataLinkManager.cancelConnection(listenerAction);
     }
 

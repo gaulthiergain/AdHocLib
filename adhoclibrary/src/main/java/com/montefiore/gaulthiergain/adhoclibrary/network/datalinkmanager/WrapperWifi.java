@@ -35,6 +35,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     private int serverPort;
     private String ownIpAddress;
     private String groupOwnerAddr;
+    private boolean isGroupOwner;
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, String> mapAddrMac;
 
@@ -67,6 +68,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     @Override
     void init(Config config, Context context) throws IOException {
+        this.isGroupOwner = false;
         this.mapAddrMac = new HashMap<>();
         this.serverPort = config.getServerPort();
         this.listenServer();
@@ -241,6 +243,11 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     @Override
     public void cancelConnect(ListenerAction listenerAction) {
         wifiAdHocManager.cancelConnection(listenerAction);
+    }
+
+    @Override
+    public boolean isWifiGroupOwner() {
+        return isGroupOwner;
     }
 
     /*--------------------------------------Private methods---------------------------------------*/
@@ -447,7 +454,8 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
             @Override
             public void onGroupOwner(InetAddress groupOwnerAddress) {
                 ownIpAddress = groupOwnerAddress.getHostAddress();
-                if (v) Log.d(TAG, "GroupOwner IP: " + ownIpAddress);
+                isGroupOwner = true;
+                if (v) Log.d(TAG, "onGroupOwner-> own IP: " + ownIpAddress);
             }
 
             @Override
@@ -455,9 +463,10 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
                 groupOwnerAddr = groupOwnerAddress.getHostAddress();
                 ownIpAddress = address.getHostAddress();
-
-                if (v) Log.d(TAG, "GroupOwner IP: " + groupOwnerAddress.getHostAddress());
-                if (v) Log.d(TAG, "Own IP: " + ownIpAddress);
+                isGroupOwner = false;
+                if (v)
+                    Log.d(TAG, "onClient-> GroupOwner IP: " + groupOwnerAddress.getHostAddress());
+                if (v) Log.d(TAG, "onClient-> own IP: " + ownIpAddress);
 
                 serviceServer.stopListening();
 

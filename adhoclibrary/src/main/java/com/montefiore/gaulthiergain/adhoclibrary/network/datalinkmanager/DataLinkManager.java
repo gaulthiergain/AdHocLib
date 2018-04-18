@@ -274,32 +274,50 @@ public class DataLinkManager {
         }
     }
 
-    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
-        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
-        if (wrapperWifi.isEnabled()) {
-            wrapperWifi.setGroupOwnerValue(valueGroupOwner);
-        }
-    }
-
     public void unpairDevice(BluetoothAdHocDevice adHocDevice)
-            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, DeviceException {
         WrapperBluetooth wrapperBt = (WrapperBluetooth) wrappers[Service.BLUETOOTH];
         if (wrapperBt.isEnabled()) {
             wrapperBt.unpairDevice(adHocDevice);
+        } else {
+            throw new DeviceException("Bluetooth is not enabled");
         }
     }
 
-    public void removeGroup(ListenerAction listenerAction) {
+    public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue, DeviceException {
+        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
+        if (wrapperWifi.isEnabled()) {
+            wrapperWifi.setGroupOwnerValue(valueGroupOwner);
+        }else{
+            throw new DeviceException("Wifi is not enabled");
+        }
+    }
+
+    public void removeGroup(ListenerAction listenerAction) throws DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
             wrapperWifi.removeGroup(listenerAction);
+        } else {
+            throw new DeviceException("Wifi is not enabled");
         }
     }
 
-    public void cancelConnection(ListenerAction listenerAction) {
+    public boolean isWifiGroupOwner() throws DeviceException {
+        IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
+        if (wrapperWifi.isEnabled()) {
+            return wrapperWifi.isWifiGroupOwner();
+        } else {
+            throw new DeviceException("Wifi is not enabled");
+        }
+    }
+
+
+    public void cancelConnection(ListenerAction listenerAction) throws DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
             wrapperWifi.cancelConnect(listenerAction);
+        } else {
+            throw new DeviceException("Wifi is not enabled");
         }
     }
 

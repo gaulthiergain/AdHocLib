@@ -44,11 +44,11 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     private int serverPort;
     private UdpPeers udpPeers;
     private String ownIpAddress;
+    private boolean isGroupOwner;
     private HashSet<String> ackSet;
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, Long> helloMessages;
     private HashMap<String, AdHocDevice> neighbors;
-
 
     WrapperWifiUdp(boolean verbose, Context context, Config config,
                    HashMap<String, AdHocDevice> mapAddressDevice,
@@ -196,6 +196,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     @Override
     void init(Config config, Context context) {
+        this.isGroupOwner = false;
         this.neighbors = new HashMap<>();
         this.helloMessages = new HashMap<>();
         this.ackSet = new HashSet<>();
@@ -284,6 +285,11 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     @Override
     public void cancelConnect(ListenerAction listenerAction) {
         wifiAdHocManager.cancelConnection(listenerAction);
+    }
+
+    @Override
+    public boolean isWifiGroupOwner() {
+        return isGroupOwner;
     }
     /*--------------------------------------Private methods---------------------------------------*/
 
@@ -607,15 +613,18 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
             @Override
             public void onGroupOwner(InetAddress groupOwnerAddress) {
                 ownIpAddress = groupOwnerAddress.getHostAddress();
-                if (v) Log.d(TAG, "onGroupOwner: " + ownIpAddress);
+                isGroupOwner = true;
+                if (v) Log.d(TAG, "onGroupOwner-> own IP: " + ownIpAddress);
             }
 
             @Override
             public void onClient(final InetAddress groupOwnerAddress, final InetAddress address) {
 
                 ownIpAddress = address.getHostAddress();
-                if (v) Log.d(TAG, "onClient: " + ownIpAddress);
-
+                isGroupOwner = false;
+                if (v)
+                    Log.d(TAG, "onClient-> GroupOwner IP: " + groupOwnerAddress.getHostAddress());
+                if (v) Log.d(TAG, "onClient-> own IP: " + ownIpAddress);
                 ackSet.add(groupOwnerAddress.getHostAddress());
 
                 timerConnectMessage(new MessageAdHoc(new Header(CONNECT_SERVER, ownIpAddress,
