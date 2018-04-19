@@ -9,6 +9,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
+import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvMessageException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
 import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
@@ -483,7 +484,6 @@ public class AodvManager {
         // No destination was found, send RREQ request (with timer)
         if (v) Log.d(TAG, "No connection to " + destAddr + " -> send RREQ message");
 
-
         // Broadcast message to all directly connected devices
         MessageAdHoc message = new MessageAdHoc(new Header(TypeAodv.RREQ.getType(), ownAddress, ownName),
                 new RREQ(TypeAodv.RREQ.getType(), Constants.INIT_HOP_COUNT,
@@ -499,6 +499,8 @@ public class AodvManager {
                     // If no dest found, retry again the route discovery
                     if (retry == 0) {
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
+                        listenerApp.processMsgException(
+                                new AodvMessageException("Unable to establish a communication with: " + destAddr));
                         dataMessage = null;
                     } else {
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
