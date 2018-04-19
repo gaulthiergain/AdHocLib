@@ -28,6 +28,7 @@ import java.util.HashMap;
 public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
+    private static final short NB_WRAPPERS = 2;
 
     private Config config;
     private final AbstractWrapper wrappers[];
@@ -39,7 +40,7 @@ public class DataLinkManager {
 
         this.config = config;
         this.mapAddressDevice = new HashMap<>();
-        this.wrappers = new AbstractWrapper[2];
+        this.wrappers = new AbstractWrapper[NB_WRAPPERS];
 
         if (config.isReliableTransportWifi()) {
             // TCP connection
