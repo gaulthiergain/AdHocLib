@@ -85,9 +85,9 @@ abstract class AbstractWrapper {
 
     abstract boolean isDirectNeighbors(String address);
 
-    abstract void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException;
+    abstract boolean broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException;
 
-    abstract void broadcast(MessageAdHoc message) throws IOException;
+    abstract boolean broadcast(MessageAdHoc message) throws IOException;
 
     abstract void disconnect(String remoteDest) throws IOException;
 

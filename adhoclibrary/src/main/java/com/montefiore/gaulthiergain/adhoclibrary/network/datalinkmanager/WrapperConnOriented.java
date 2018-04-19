@@ -64,7 +64,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
         }
     }
 
-    void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
+    boolean broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
 
         if (neighbors.getNeighbors().size() > 0) {
             for (Map.Entry<String, SocketManager> entry : neighbors.getNeighbors().entrySet()) {
@@ -72,15 +72,21 @@ abstract class WrapperConnOriented extends AbstractWrapper {
                     entry.getValue().sendMessage(message);
                 }
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    void broadcast(MessageAdHoc message) throws IOException {
+    boolean broadcast(MessageAdHoc message) throws IOException {
         if (neighbors.getNeighbors().size() > 0) {
             for (Map.Entry<String, SocketManager> entry : neighbors.getNeighbors().entrySet()) {
                 entry.getValue().sendMessage(message);
             }
+            return true;
         }
+        return false;
     }
 
     void connectionClosed(String remoteAddress) throws IOException, NoConnectionException {

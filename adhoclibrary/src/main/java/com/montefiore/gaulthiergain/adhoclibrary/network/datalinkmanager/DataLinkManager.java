@@ -136,14 +136,18 @@ public class DataLinkManager {
         }
     }
 
-    public void broadcast(Object object) throws IOException {
+    public boolean broadcast(Object object) throws IOException {
+        boolean sent = false;
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 Header header = new Header(AbstractWrapper.BROADCAST, wrapper.getMac(),
                         config.getLabel(), wrapper.getAdapterName(), wrapper.getType());
-                wrapper.broadcast(new MessageAdHoc(header, object));
+                if (wrapper.broadcast(new MessageAdHoc(header, object))) {
+                    sent = true;
+                }
             }
         }
+        return sent;
     }
 
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
@@ -154,15 +158,19 @@ public class DataLinkManager {
         }
     }
 
-    public void broadcastExcept(Object object, String excludedAddress) throws IOException {
+    public boolean broadcastExcept(Object object, String excludedAddress) throws IOException {
 
+        boolean sent = false;
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
                 Header header = new Header(AbstractWrapper.BROADCAST, wrapper.getMac(),
                         config.getLabel(), wrapper.getAdapterName(), wrapper.getType());
-                wrapper.broadcastExcept(new MessageAdHoc(header, object), excludedAddress);
+                if (wrapper.broadcastExcept(new MessageAdHoc(header, object), excludedAddress)) {
+                    sent = true;
+                }
             }
         }
+        return sent;
     }
 
     public HashMap<String, AdHocDevice> getPaired() {
@@ -288,7 +296,7 @@ public class DataLinkManager {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
             wrapperWifi.setGroupOwnerValue(valueGroupOwner);
-        }else{
+        } else {
             throw new DeviceException("Wifi is not enabled");
         }
     }

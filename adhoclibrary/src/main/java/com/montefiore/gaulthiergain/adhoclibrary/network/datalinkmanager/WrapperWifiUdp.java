@@ -239,10 +239,13 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    void broadcast(MessageAdHoc message) {
+    boolean broadcast(MessageAdHoc message) {
         if (neighbors.size() > 0) {
             _sendMessage(message, "192.168.49.255");
+            return true;
         }
+
+        return false;
     }
 
     @Override
@@ -256,13 +259,17 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     }
 
     @Override
-    void broadcastExcept(MessageAdHoc message, String excludedAddress) {
-        for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
-            if (!entry.getKey().equals(excludedAddress)) {
-                WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue();
-                _sendMessage(message, wifiAdHocDevice.getIpAddress());
+    boolean broadcastExcept(MessageAdHoc message, String excludedAddress) {
+        if (neighbors.size() > 0) {
+            for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
+                if (!entry.getKey().equals(excludedAddress)) {
+                    WifiAdHocDevice wifiAdHocDevice = (WifiAdHocDevice) entry.getValue();
+                    _sendMessage(message, wifiAdHocDevice.getIpAddress());
+                }
             }
+            return true;
         }
+        return false;
     }
 
     /*--------------------------------------IWifi methods----------------------------------------*/

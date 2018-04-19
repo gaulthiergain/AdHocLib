@@ -78,22 +78,22 @@ public class TransferManager {
         aodvManager.sendMessageTo(msg, adHocDevice.getLabel());
     }
 
-    public void broadcast(Object object) throws IOException, DeviceException {
+    public boolean broadcast(Object object) throws IOException, DeviceException {
 
         if (dataLinkManager.checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        dataLinkManager.broadcast(object);
+        return dataLinkManager.broadcast(object);
     }
 
-    public void broadcastExcept(Object object, AdHocDevice excludedDevice) throws IOException, DeviceException {
+    public boolean broadcastExcept(Object object, AdHocDevice excludedDevice) throws IOException, DeviceException {
 
         if (dataLinkManager.checkState() == 0) {
             throw new DeviceException("No wifi and bluetooth connectivity");
         }
 
-        dataLinkManager.broadcastExcept(object, excludedDevice.getLabel());
+        return dataLinkManager.broadcastExcept(object, excludedDevice.getLabel());
     }
 
     /*-------------------------------------DataLink methods---------------------------------------*/
