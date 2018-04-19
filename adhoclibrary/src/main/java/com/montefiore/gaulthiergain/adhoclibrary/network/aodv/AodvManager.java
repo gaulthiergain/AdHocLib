@@ -1,6 +1,10 @@
 package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
@@ -498,9 +502,17 @@ public class AodvManager {
                 if (entry == null) {
                     // If no dest found, retry again the route discovery
                     if (retry == 0) {
+
+                        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
+                            // Used handler to avoid updating views in other threads than the main thread
+                            public void handleMessage(Message msg) {
+                                listenerApp.processMsgException(
+                                        new AodvMessageException("Unable to establish a communication with: " + destAddr));
+                            }
+                        };
+
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr);
-                        listenerApp.processMsgException(
-                                new AodvMessageException("Unable to establish a communication with: " + destAddr));
+                        mHandler.obtainMessage(1).sendToTarget();
                         dataMessage = null;
                     } else {
                         if (v) Log.d(TAG, "Expired time: no RREP received for " + destAddr +
