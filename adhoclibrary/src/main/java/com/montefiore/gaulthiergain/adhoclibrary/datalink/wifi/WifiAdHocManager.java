@@ -48,7 +48,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
     public static String TAG = "[AdHoc][WifiManager]";
 
-    private static final int MAX_TIMEOUT_CONNECT = 15000;
+    private static final int MAX_TIMEOUT_CONNECT = 20000;
     private static final int DISCOVERY_TIME = 12000;
     private static final byte DISCOVERY_COMPLETED = 0;
     private static final byte DISCOVERY_FAILED = 1;
@@ -113,7 +113,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                     discoveryListener.onDiscoveryCompleted(mapMacDevices);
                     break;
                 case DISCOVERY_FAILED:
-                    discoveryListener.onDiscoveryFailed(new Exception("Connection timeout"));
+                    discoveryListener.onDiscoveryFailed(new Exception("Connection timeout. Try to disable then Enable Wifi."));
             }
         }
     };
@@ -189,7 +189,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
         // Get The device from its address
         final WifiAdHocDevice device = (WifiAdHocDevice) mapMacDevices.get(address);
-        if(device == null){
+        if (device == null) {
             throw new DeviceException("Discovery is required before connecting");
         }
 
