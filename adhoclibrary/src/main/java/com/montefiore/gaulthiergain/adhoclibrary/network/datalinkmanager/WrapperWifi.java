@@ -190,7 +190,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         // Clear data structure if adapter is disabled
         mapAddrMac.clear();
         mapAddrNetwork.clear();
-        neighbors.getNeighbors().clear();
+        neighbors.clear();
 
         wifiAdHocManager.disable();
         wifiAdHocManager = null;

@@ -14,22 +14,27 @@ import java.util.concurrent.ConcurrentHashMap;
 class Neighbors {
 
     private ConcurrentHashMap<String, SocketManager> neighbors;
+    private ConcurrentHashMap<String, String> mapLabelMac;
 
     /**
      * Constructor
      */
     Neighbors() {
+
         this.neighbors = new ConcurrentHashMap<>();
+        this.mapLabelMac = new ConcurrentHashMap<>();
     }
 
     /**
      * Method allowing to add a connection into the neighbors hashmap.
      *
-     * @param key           a String value which represents the address of a remote device.
+     * @param label         a String value which represents the label of a remote device.
+     * @param mac
      * @param socketManager a SocketManager object which represents the state of the connection.
      */
-     void addNeighbors(String key, SocketManager socketManager) {
-        neighbors.put(key, socketManager);
+    void addNeighbors(String label, String mac, SocketManager socketManager) {
+        neighbors.put(label, socketManager);
+        mapLabelMac.put(label, mac);
     }
 
     /**
@@ -38,21 +43,32 @@ class Neighbors {
      * @return a ConcurrentHashMap(String, SocketManager) object which maps the remote node name to
      * a SocketManager object.
      */
-     ConcurrentHashMap<String, SocketManager> getNeighbors() {
+    ConcurrentHashMap<String, SocketManager> getNeighbors() {
         return neighbors;
     }
 
-     void remove(String remoteLabel) {
+
+    ConcurrentHashMap<String, String> getLabelMac() {
+        return mapLabelMac;
+    }
+
+    void remove(String remoteLabel) {
         if (neighbors.containsKey(remoteLabel)) {
             neighbors.remove(remoteLabel);
+            mapLabelMac.remove(remoteLabel);
         }
     }
 
-     SocketManager getNeighbor(String remoteLabel) {
+    SocketManager getNeighbor(String remoteLabel) {
         if (neighbors.containsKey(remoteLabel)) {
             return neighbors.get(remoteLabel);
         }
 
         return null;
+    }
+
+    void clear() {
+        neighbors.clear();
+        mapLabelMac.clear();
     }
 }

@@ -10,6 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +53,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
             for (Map.Entry<String, SocketManager> entry : neighbors.getNeighbors().entrySet()) {
                 entry.getValue().closeConnection();
             }
-            neighbors.getNeighbors().clear();
+            neighbors.clear();
         }
     }
 
@@ -89,6 +90,14 @@ abstract class WrapperConnOriented extends AbstractWrapper {
         return false;
     }
 
+    public ArrayList<AdHocDevice> getDirectNeighbors() {
+        ArrayList<AdHocDevice> arrayList = new ArrayList<>();
+        for (String mac: neighbors.getLabelMac().values()) {
+            arrayList.add(mapAddrDevices.get(mac));
+        }
+        return arrayList;
+    }
+
     void connectionClosed(String remoteAddress) throws IOException, NoConnectionException {
 
         // Get adHocDevice from address
@@ -96,7 +105,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
         if (adHocDevice != null) {
 
             // Remove device from neighbors and devices hashmap
-            neighbors.getNeighbors().remove(adHocDevice.getLabel());
+            neighbors.remove(adHocDevice.getLabel());
             mapAddrDevices.remove(remoteAddress);
 
             // Remove device from Network hashmap
@@ -142,7 +151,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
         if (event) {
 
             // Add the active connection into the neighbors object
-            neighbors.addNeighbors(header.getLabel(), socketManager);
+            neighbors.addNeighbors(header.getLabel(), header.getMac(), socketManager);
 
             // Callback connection
             listenerApp.onConnection(device);

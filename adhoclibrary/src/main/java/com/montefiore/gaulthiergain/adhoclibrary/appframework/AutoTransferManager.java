@@ -150,9 +150,9 @@ public class AutoTransferManager extends TransferManager {
     }
 
     private void connectPairedDevices() {
-        Map<String, AdHocDevice> paired = getPairedDevices();
+        Map<String, AdHocDevice> paired = getPairedBluetoothDevices();
         if (paired != null) {
-            for (AdHocDevice adHocDevice : getPairedDevices().values()) {
+            for (AdHocDevice adHocDevice : getPairedBluetoothDevices().values()) {
                 if (v) Log.d(TAG, "Paired devices: " + String.valueOf(adHocDevice));
                 if (!connectedDevices.contains(adHocDevice.getMacAddress())
                         && adHocDevice.getDeviceName().contains(PREFIX)) {

@@ -12,6 +12,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListe
 import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,6 +81,8 @@ abstract class AbstractWrapper {
     abstract void init(Config config, Context context) throws IOException;
 
     abstract void unregisterAdapter();
+
+    abstract ArrayList<AdHocDevice> getDirectNeighbors();
 
     abstract void sendMessage(MessageAdHoc message, String address) throws IOException;
 

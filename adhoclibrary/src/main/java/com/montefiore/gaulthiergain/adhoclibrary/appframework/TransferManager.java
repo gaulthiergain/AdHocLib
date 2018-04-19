@@ -14,6 +14,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLin
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TransferManager {
@@ -124,8 +125,12 @@ public class TransferManager {
         dataLinkManager.discovery(discoveryListener);
     }
 
-    public HashMap<String, AdHocDevice> getPairedDevices() {
+    public HashMap<String, AdHocDevice> getPairedBluetoothDevices() {
         return dataLinkManager.getPaired();
+    }
+
+    public ArrayList<AdHocDevice> getDirectNeighbors() {
+        return dataLinkManager.getDirectNeighbors();
     }
 
     public void enableAll(Context context, ListenerAdapter listenerAdapter) {

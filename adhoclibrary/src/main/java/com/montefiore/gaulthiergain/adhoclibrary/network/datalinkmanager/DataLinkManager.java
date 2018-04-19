@@ -22,6 +22,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DataLinkManager {
@@ -217,6 +218,18 @@ public class DataLinkManager {
             wrappers[type].stopListening();
             wrappers[type].disable();
         }
+    }
+
+    public ArrayList<AdHocDevice> getDirectNeighbors() {
+
+        ArrayList<AdHocDevice> adHocDevices = new ArrayList<>();
+        for (AbstractWrapper wrapper : wrappers) {
+            if (wrapper.isEnabled()) {
+                adHocDevices.addAll(wrapper.getDirectNeighbors());
+            }
+        }
+
+        return adHocDevices;
     }
 
     public boolean isEnabled(int type) {

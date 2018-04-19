@@ -84,16 +84,6 @@ public class AdHocDevice implements Parcelable {
         return directedConnected;
     }
 
-    @Override
-    public String toString() {
-        return "AdHocDevice{" +
-                "label='" + label + '\'' +
-                ", deviceName='" + deviceName + '\'' +
-                ", macAddress='" + macAddress + '\'' +
-                ", type=" + display(type) +
-                '}';
-    }
-
     protected String display(int type) {
         switch (type) {
             case Service.BLUETOOTH:
@@ -134,4 +124,15 @@ public class AdHocDevice implements Parcelable {
             return new AdHocDevice[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "AdHocDevice{" +
+                "label='" + label + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", macAddress='" + macAddress + '\'' +
+                ", type=" + display(type) +
+                ", directedConnected=" + directedConnected +
+                '}';
+    }
 }

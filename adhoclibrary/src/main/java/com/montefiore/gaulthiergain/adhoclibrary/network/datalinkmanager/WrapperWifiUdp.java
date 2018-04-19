@@ -29,6 +29,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -270,6 +271,10 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
             return true;
         }
         return false;
+    }
+
+    public ArrayList<AdHocDevice> getDirectNeighbors() {
+        return new ArrayList<>(neighbors.values());
     }
 
     /*--------------------------------------IWifi methods----------------------------------------*/
