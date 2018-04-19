@@ -258,7 +258,7 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     private void _connect(short attemps, final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v,
-                json, 5000, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
+                json, timeout, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {

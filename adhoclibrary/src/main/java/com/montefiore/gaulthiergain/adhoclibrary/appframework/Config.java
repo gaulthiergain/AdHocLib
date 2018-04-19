@@ -16,11 +16,12 @@ public class Config {
     private static final int MAX_PORT = 65535;
 
     private String label;
-    private boolean json;
-    private boolean secure;
+    private int timeout;
     private int serverPort;
     private short nbThreadBt;
     private short nbThreadWifi;
+    private boolean json;
+    private boolean secure;
     private boolean connectionFlooding;
     private boolean reliableTransportWifi;
 
@@ -29,6 +30,7 @@ public class Config {
         this.secure = true;
         this.nbThreadBt = 7;
         this.nbThreadWifi = 10;
+        this.timeout = 5000;
         this.serverPort = 52000;
         this.connectionFlooding = false;
         this.reliableTransportWifi = true;
@@ -72,6 +74,10 @@ public class Config {
         return serverPort;
     }
 
+    public int getTimeout() {
+        return timeout;
+    }
+
     public short getNbThreadBt() {
         return nbThreadBt;
     }
@@ -102,6 +108,10 @@ public class Config {
 
     public void setSecure(boolean secure) {
         this.secure = secure;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
     public void setServerPort(int serverPort) throws BadServerPortException {

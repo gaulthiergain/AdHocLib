@@ -26,6 +26,7 @@ abstract class AbstractWrapper {
     final static byte BROADCAST = 14;
 
     int type;
+    final int timeout;
     final boolean v;
     final boolean json;
     final boolean connectionFlooding;
@@ -47,6 +48,7 @@ abstract class AbstractWrapper {
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
         this.v = v;
+        this.timeout = config.getTimeout();
         this.json = config.isJson();
         this.enabled = true;
         this.connectionFlooding = config.isConnectionFlooding();

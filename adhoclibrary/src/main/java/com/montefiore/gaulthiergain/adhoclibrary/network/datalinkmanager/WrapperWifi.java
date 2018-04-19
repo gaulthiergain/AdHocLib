@@ -297,7 +297,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     private void _connect() {
         final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json,
-                groupOwnerAddr, serverPort, 5000, attemps, new ServiceMessageListener() {
+                groupOwnerAddr, serverPort, timeout, attemps, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
