@@ -33,7 +33,6 @@ public class SocketManager {
         this.ois = new DataInputStream(isocket.getInputStream());
         this.mapper = new ObjectMapper();
         this.json = json;
-        Log.d("[AdHoc]", "JSON is " + json);
     }
 
     public void sendMessage(MessageAdHoc msg) throws IOException {
@@ -46,12 +45,9 @@ public class SocketManager {
             byte[] byteArray = Utils.serialize(msg);
             if (byteArray != null) {
                 oos.writeInt(byteArray.length);
-                Log.d("[AdHoc]", "Length " + byteArray.length);
                 oos.write(byteArray);
             }
         }
-
-        Log.d("[AdHoc]", "Send " + msg.toString());
     }
 
     public MessageAdHoc receiveMessage() throws IOException, ClassNotFoundException {
@@ -61,18 +57,15 @@ public class SocketManager {
             MessageAdHoc msg;
             try {
                 msg = mapper.readValue(in.readLine(), MessageAdHoc.class);
-                Log.d("[AdHoc]", "Rcv " + msg.toString());
             } catch (NullPointerException e) {
                 throw new IOException("Closed remote socket");
             }
             return msg;
         } else {
             int length = ois.readInt();
-            Log.d("[AdHoc]", "Length " + length);
             if (length > 0) {
                 byte[] message = new byte[length];
                 ois.readFully(message, 0, message.length);
-                Log.d("[AdHoc]", "Rcv " + Utils.deserialize(message).toString());
                 return Utils.deserialize(message);
             }
             return null;
