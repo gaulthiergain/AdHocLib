@@ -5,7 +5,9 @@ import android.os.Parcelable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class AdHocDevice implements Parcelable {
+import java.io.Serializable;
+
+public class AdHocDevice implements Parcelable, Serializable {
 
     protected String label;
     protected final String deviceName;
