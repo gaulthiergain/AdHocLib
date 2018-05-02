@@ -5,7 +5,7 @@ import android.os.Handler;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.ISocket;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.EOFException;
 import java.io.IOException;

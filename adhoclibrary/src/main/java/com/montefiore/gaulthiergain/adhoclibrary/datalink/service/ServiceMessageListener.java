@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 /**
  * <p>This interface allows to define callback functions for messages and connection handling.</p>

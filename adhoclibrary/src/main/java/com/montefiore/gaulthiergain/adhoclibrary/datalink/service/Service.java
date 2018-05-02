@@ -5,7 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 /**
  * <p>This class defines the constants for connection states and message handling and aims to serve

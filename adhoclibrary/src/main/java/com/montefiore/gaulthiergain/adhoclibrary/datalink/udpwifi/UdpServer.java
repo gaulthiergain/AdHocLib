@@ -5,9 +5,9 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

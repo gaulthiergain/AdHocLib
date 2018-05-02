@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.util;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.util;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 

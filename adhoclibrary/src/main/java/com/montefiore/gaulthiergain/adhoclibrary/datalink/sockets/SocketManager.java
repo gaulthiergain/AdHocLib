@@ -1,10 +1,8 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

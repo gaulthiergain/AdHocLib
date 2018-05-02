@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
 
 import java.io.IOException;
 

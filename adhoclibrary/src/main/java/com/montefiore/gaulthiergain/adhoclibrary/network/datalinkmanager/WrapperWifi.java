@@ -20,8 +20,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiLis
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;

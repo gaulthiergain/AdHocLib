@@ -6,8 +6,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectio
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.ArrayList;

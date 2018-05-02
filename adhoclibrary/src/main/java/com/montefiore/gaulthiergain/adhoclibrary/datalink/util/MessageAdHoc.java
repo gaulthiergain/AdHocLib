@@ -1,4 +1,4 @@
-package com.montefiore.gaulthiergain.adhoclibrary.util;
+package com.montefiore.gaulthiergain.adhoclibrary.datalink.util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -15,7 +15,7 @@ import java.io.Serializable;
 @JsonDeserialize(using = MessageDeserializer.class)
 public class MessageAdHoc implements Serializable {
     @JsonProperty("header")
-    private Header header;
+    private com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header header;
 
     @JsonSerialize(using = Serializer.class)
     @JsonProperty("pdu")
@@ -24,16 +24,16 @@ public class MessageAdHoc implements Serializable {
     public MessageAdHoc() {
     }
 
-    public MessageAdHoc(Header header) {
+    public MessageAdHoc(com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header header) {
         this.header = header;
     }
 
-    public MessageAdHoc(Header header, Object pdu) {
+    public MessageAdHoc(com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header header, Object pdu) {
         this.header = header;
         this.pdu = pdu;
     }
 
-    public Header getHeader() {
+    public com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header getHeader() {
         return header;
     }
 
@@ -53,7 +53,7 @@ public class MessageAdHoc implements Serializable {
         this.pdu = pdu;
     }
 
-    public void setHeader(Header header) {
+    public void setHeader(com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header header) {
         this.header = header;
     }
 }

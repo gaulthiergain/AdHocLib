@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.net.InetAddress;
 

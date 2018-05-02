@@ -1,14 +1,11 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 import android.os.Handler;
-import android.os.StrictMode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Utils;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

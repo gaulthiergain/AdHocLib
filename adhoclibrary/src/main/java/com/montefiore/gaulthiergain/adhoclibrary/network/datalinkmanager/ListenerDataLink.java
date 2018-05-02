@@ -1,6 +1,6 @@
 package com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager;
 
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 
