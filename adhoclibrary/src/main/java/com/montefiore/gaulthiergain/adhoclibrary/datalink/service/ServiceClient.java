@@ -2,17 +2,19 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiClient;
 
 import java.io.IOException;
 import java.util.Random;
 
 /**
  * <p>This class defines the client's logic and methods and aims to serve as a common interface for
- * {@link com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient} and
- * {@link com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient} classes. </p>
+ * {@link BluetoothClient} and
+ * {@link WifiClient} classes. </p>
  *
  * @author Gaulthier Gain
  * @version 1.0

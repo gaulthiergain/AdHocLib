@@ -19,7 +19,7 @@ import java.net.Socket;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class WifiServiceClient extends ServiceClient implements Runnable {
+public class WifiClient extends ServiceClient implements Runnable {
 
     private final int port;
     private final String remoteAddress;
@@ -36,9 +36,9 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
      * @param attempts               a short value which represents the number of attempts.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public WifiServiceClient(boolean verbose, boolean json, String remoteAddress, int port,
-                             int timeOut, short attempts,
-                             ServiceMessageListener serviceMessageListener) {
+    public WifiClient(boolean verbose, boolean json, String remoteAddress, int port,
+                      int timeOut, short attempts,
+                      ServiceMessageListener serviceMessageListener) {
 
         super(verbose, timeOut, attempts, json, serviceMessageListener);
         this.remoteAddress = remoteAddress;
@@ -113,7 +113,7 @@ public class WifiServiceClient extends ServiceClient implements Runnable {
         }
     }
 
-    public void setListenerAutoConnect(WifiServiceClient.ListenerAutoConnect listenerAutoConnect) {
+    public void setListenerAutoConnect(WifiClient.ListenerAutoConnect listenerAutoConnect) {
         this.listenerAutoConnect = listenerAutoConnect;
     }
 

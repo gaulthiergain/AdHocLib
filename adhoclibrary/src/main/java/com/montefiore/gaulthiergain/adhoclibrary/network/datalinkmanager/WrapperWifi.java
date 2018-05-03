@@ -18,8 +18,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessage
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceClient;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
@@ -253,7 +253,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new WifiServiceServer(v, json, new ServiceMessageListener() {
+        serviceServer = new WifiServer(v, json, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -296,7 +296,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     }
 
     private void _connect() {
-        final WifiServiceClient wifiServiceClient = new WifiServiceClient(v, json,
+        final WifiClient wifiClient = new WifiClient(v, json,
                 groupOwnerAddr, serverPort, timeout, attemps, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
@@ -334,7 +334,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
             }
         });
 
-        wifiServiceClient.setListenerAutoConnect(new WifiServiceClient.ListenerAutoConnect()
+        wifiClient.setListenerAutoConnect(new WifiClient.ListenerAutoConnect()
 
         {
             @Override
@@ -346,13 +346,13 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 mapAddrNetwork.put(remoteAddress, network);
 
                 // Send CONNECT message to establish the pairing
-                wifiServiceClient.send(new MessageAdHoc(
+                wifiClient.send(new MessageAdHoc(
                         new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName), remoteAddress));
             }
         });
 
-        // Start the wifiServiceClient thread
-        new Thread(wifiServiceClient).start();
+        // Start the wifiClient thread
+        new Thread(wifiClient).start();
     }
 
     private void processMsgReceived(final MessageAdHoc message) throws IOException {

@@ -9,8 +9,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothAdHocManager;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceClient;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothUtil;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.BluetoothBadDuration;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -216,7 +216,7 @@ class WrapperBluetooth extends WrapperConnOriented {
     /*--------------------------------------Private methods---------------------------------------*/
 
     private void listenServer() throws IOException {
-        serviceServer = new BluetoothServiceServer(v, json, new ServiceMessageListener() {
+        serviceServer = new BluetoothServer(v, json, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -257,7 +257,7 @@ class WrapperBluetooth extends WrapperConnOriented {
     }
 
     private void _connect(short attemps, final BluetoothAdHocDevice bluetoothAdHocDevice) {
-        final BluetoothServiceClient bluetoothServiceClient = new BluetoothServiceClient(v,
+        final BluetoothClient bluetoothClient = new BluetoothClient(v,
                 json, timeout, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
@@ -294,7 +294,7 @@ class WrapperBluetooth extends WrapperConnOriented {
 
         });
 
-        bluetoothServiceClient.setListenerAutoConnect(new BluetoothServiceClient.ListenerAutoConnect() {
+        bluetoothClient.setListenerAutoConnect(new BluetoothClient.ListenerAutoConnect() {
             @Override
             public void connected(UUID uuid, SocketManager network) throws IOException, NoConnectionException {
 
@@ -304,14 +304,14 @@ class WrapperBluetooth extends WrapperConnOriented {
                 mapAddrNetwork.put(remoteUUIDString, network);
 
                 // Send CONNECT message to establish the pairing
-                bluetoothServiceClient.send(new MessageAdHoc(
+                bluetoothClient.send(new MessageAdHoc(
                         new Header(CONNECT_SERVER, ownStringUUID, ownMac, label, ownName)));
 
             }
         });
 
-        // Start the bluetoothServiceClient thread
-        new Thread(bluetoothServiceClient).start();
+        // Start the bluetoothClient thread
+        new Thread(bluetoothClient).start();
     }
 
     private void processMsgReceived(MessageAdHoc message) throws IOException {

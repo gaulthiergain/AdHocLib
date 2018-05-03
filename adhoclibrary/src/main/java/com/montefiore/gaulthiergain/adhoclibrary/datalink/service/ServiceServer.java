@@ -2,16 +2,18 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.service;
 
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.threadmanager.ThreadServer;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServer;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>This class defines the server's logic and methods and aims to serve as a common interface for
- * {@link com.montefiore.gaulthiergain.adhoclibrary.datalink.bluetooth.BluetoothServiceServer} and
- * {@link com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServiceServer} classes. </p>
+ * {@link BluetoothServer} and
+ * {@link WifiServer} classes. </p>
  *
  * @author Gaulthier Gain
  * @version 1.0

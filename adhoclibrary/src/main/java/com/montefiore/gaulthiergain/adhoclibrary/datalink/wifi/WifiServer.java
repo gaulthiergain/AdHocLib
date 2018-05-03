@@ -16,7 +16,7 @@ import java.io.IOException;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class WifiServiceServer extends ServiceServer {
+public class WifiServer extends ServiceServer {
 
     /**
      * Constructor
@@ -25,8 +25,8 @@ public class WifiServiceServer extends ServiceServer {
      * @param json            a boolean value to use json or bytes in network transfer.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public WifiServiceServer(boolean verbose, boolean json,
-                             ServiceMessageListener serviceMessageListener) {
+    public WifiServer(boolean verbose, boolean json,
+                      ServiceMessageListener serviceMessageListener) {
         super(verbose, json, serviceMessageListener);
     }
 

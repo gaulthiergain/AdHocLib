@@ -21,7 +21,7 @@ import java.util.UUID;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothServiceClient extends ServiceClient implements Runnable {
+public class BluetoothClient extends ServiceClient implements Runnable {
 
     private final boolean secure;
     private final BluetoothAdHocDevice bluetoothAdHocDevice;
@@ -40,9 +40,9 @@ public class BluetoothServiceClient extends ServiceClient implements Runnable {
      *                               device.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public BluetoothServiceClient(boolean verbose, boolean json, int timeOut,
-                                  boolean secure, short attempts,
-                                  BluetoothAdHocDevice bluetoothAdHocDevice, ServiceMessageListener serviceMessageListener) {
+    public BluetoothClient(boolean verbose, boolean json, int timeOut,
+                           boolean secure, short attempts,
+                           BluetoothAdHocDevice bluetoothAdHocDevice, ServiceMessageListener serviceMessageListener) {
         super(verbose, timeOut, attempts, json, serviceMessageListener);
         this.secure = secure;
         this.bluetoothAdHocDevice = bluetoothAdHocDevice;

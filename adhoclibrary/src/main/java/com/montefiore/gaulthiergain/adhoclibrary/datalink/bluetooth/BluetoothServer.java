@@ -16,7 +16,7 @@ import java.io.IOException;
  * @author Gaulthier Gain
  * @version 1.0
  */
-public class BluetoothServiceServer extends ServiceServer {
+public class BluetoothServer extends ServiceServer {
 
     /**
      * Constructor
@@ -25,7 +25,7 @@ public class BluetoothServiceServer extends ServiceServer {
      * @param json                   a boolean value to use json or bytes in network transfer.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
      */
-    public BluetoothServiceServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
+    public BluetoothServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
         super(verbose, json, serviceMessageListener);
     }
 
