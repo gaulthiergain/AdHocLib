@@ -12,17 +12,16 @@ import java.io.Serializable;
  * @version 1.0
  */
 @JsonTypeName("RERR")
-public class RERR implements Serializable {
+public class RERR extends AodvMessage {
 
-    @JsonProperty("type")
-    private final int type;
+
     @JsonProperty("unreachableDestIpAddress")
     private final String unreachableDestIpAddress;
     @JsonProperty("unreachableDestSeqNum")
     private final long unreachableDestSeqNum;
 
     public RERR() {
-        this.type = 0;
+        super(0);
         this.unreachableDestIpAddress = "";
         this.unreachableDestSeqNum = 0;
     }
@@ -38,18 +37,9 @@ public class RERR implements Serializable {
      *                                 of the RERR message.
      */
     public RERR(int type, String unreachableDestIpAddress, long unreachableDestSeqNum) {
-        this.type = type;
+        super(type);
         this.unreachableDestIpAddress = unreachableDestIpAddress;
         this.unreachableDestSeqNum = unreachableDestSeqNum;
-    }
-
-    /**
-     * Method allowing to get the type of the RERR message.
-     *
-     * @return an integer value which represents the type of the RERR message.
-     */
-    int getType() {
-        return type;
     }
 
     /**

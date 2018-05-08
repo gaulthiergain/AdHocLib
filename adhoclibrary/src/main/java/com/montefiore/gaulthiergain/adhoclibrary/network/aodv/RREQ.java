@@ -13,9 +13,8 @@ import java.io.Serializable;
  */
 
 @JsonTypeName("RREQ")
-public class RREQ implements Serializable {
-    @JsonProperty("type")
-    private final int type;
+public class RREQ extends AodvMessage {
+
     @JsonProperty("hopCount")
     private int hopCount;
     @JsonProperty("rreqId")
@@ -30,7 +29,7 @@ public class RREQ implements Serializable {
     private final String originIpAddress;
 
     public RREQ() {
-        type = 0;
+        super(0);
         hopCount = 0;
         destIpAddress = "";
         originIpAddress = "";
@@ -54,22 +53,13 @@ public class RREQ implements Serializable {
      */
     public RREQ(int type, int hopCount, long rreqId, long destSequenceNum, String destIpAddress, long originSequenceNum,
                 String originIpAddress) {
-        this.type = type;
+        super(type);
         this.hopCount = hopCount;
         this.rreqId = rreqId;
         this.destSequenceNum = destSequenceNum;
         this.destIpAddress = destIpAddress;
         this.originSequenceNum = originSequenceNum;
         this.originIpAddress = originIpAddress;
-    }
-
-    /**
-     * Method allowing to get the type of the RREQ message.
-     *
-     * @return an integer value which represents the type of the RREQ message.
-     */
-    int getType() {
-        return type;
     }
 
     /**

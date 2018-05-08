@@ -13,9 +13,8 @@ import java.io.Serializable;
  */
 
 @JsonTypeName("RREP")
-public class RREP implements Serializable {
-    @JsonProperty("type")
-    private int type;
+public class RREP extends AodvMessage {
+
     @JsonProperty("hopCount")
     private int hopCount;
     @JsonProperty("destIpAddress")
@@ -28,7 +27,7 @@ public class RREP implements Serializable {
     private final long lifetime;
 
     public RREP() {
-        type = 0;
+        super(0);
         hopCount = 0;
         destIpAddress = "";
         sequenceNum = 0;
@@ -49,21 +48,12 @@ public class RREP implements Serializable {
      */
     public RREP(int type, int hopCount, String destIpAddress, long sequenceNum, String originIpAddress,
                 long lifetime) {
-        this.type = type;
+        super(type);
         this.hopCount = hopCount;
         this.destIpAddress = destIpAddress;
         this.sequenceNum = sequenceNum;
         this.originIpAddress = originIpAddress;
         this.lifetime = lifetime;
-    }
-
-    /**
-     * Method allowing to get the type of the RREP message.
-     *
-     * @return an integer value which represents the type of the RREP message.
-     */
-    public int getType() {
-        return type;
     }
 
     /**
