@@ -49,7 +49,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
         this.type = Service.WIFI;
         if (WifiAdHocManager.isWifiEnabled(context)) {
-            this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+            this.wifiAdHocManager = new WifiAdHocManager(v, context, config.getServerPort(), initConnectionListener(),
                     new WifiAdHocManager.WifiDeviceInfosListener() {
                         @Override
                         public void getDeviceInfos(String name, String mac) {
@@ -171,7 +171,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     @Override
     void enable(Context context, int duration, ListenerAdapter listenerAdapter) {
-        this.wifiAdHocManager = new WifiAdHocManager(v, context, initConnectionListener(),
+        this.wifiAdHocManager = new WifiAdHocManager(v, context, serverPort, initConnectionListener(),
                 new WifiAdHocManager.WifiDeviceInfosListener() {
                     @Override
                     public void getDeviceInfos(String name, String mac) {
