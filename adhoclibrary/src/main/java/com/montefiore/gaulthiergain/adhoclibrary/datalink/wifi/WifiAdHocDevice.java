@@ -8,19 +8,25 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 public class WifiAdHocDevice extends AdHocDevice {
 
     private String ipAddress;
+    private int port;
 
     WifiAdHocDevice(String deviceAddress, String deviceName) {
         super(deviceAddress, deviceName, Service.WIFI);
+        this.ipAddress = "";
+        this.port = 0;
     }
 
-    public WifiAdHocDevice(String label, String macAddress, String deviceName, int type, String ipAddress) {
+    public WifiAdHocDevice(String label, String macAddress, String deviceName, int type,
+                           String ipAddress) {
         super(label, macAddress, deviceName, type);
         this.ipAddress = ipAddress;
+        this.port = 0;
     }
 
     private WifiAdHocDevice(Parcel in) {
         super(in.readString(), in.readString(), in.readString(), in.readInt(), in.readByte() != 0);
         this.ipAddress = in.readString();
+        this.port = in.readInt();
     }
 
     @Override
@@ -32,6 +38,7 @@ public class WifiAdHocDevice extends AdHocDevice {
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
         dest.writeString(ipAddress);
+        dest.writeInt(port);
     }
 
     public void setIpAddress(String ipAddress) {
@@ -41,6 +48,14 @@ public class WifiAdHocDevice extends AdHocDevice {
 
     public String getIpAddress() {
         return ipAddress;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     /**

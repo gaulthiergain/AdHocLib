@@ -17,6 +17,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.DiscoveryListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPDU;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
@@ -27,6 +28,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     private static final int TIMER_ACK = 2000;
 
     private int serverPort;
+    private int remotePort;
     private UdpPeers udpPeers;
     private String ownIpAddress;
     private boolean isGroupOwner;
@@ -380,7 +383,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 InetAddress inetAddress;
                 try {
                     inetAddress = InetAddress.getByName(address);
-                    udpPeers.sendMessageTo(msg, inetAddress, serverPort);
+                    udpPeers.sendMessageTo(msg, inetAddress, remotePort);
                 } catch (UnknownHostException e) {
                     listenerApp.processMsgException(e);
                 }
@@ -483,12 +486,18 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
 
+                Log.d(TAG, "Receive " + message);
+
                 boolean event = false;
 
                 // Receive UDP header from remote host
                 Header header = message.getHeader();
 
-                String destAddress = (String) message.getPdu();
+                // Extract PDU
+                UdpPDU udpPDU = (UdpPDU) message.getPdu();
+
+                String destAddress = udpPDU.getHostAddress();
+                remotePort = udpPDU.getPort();
 
                 // If ownIpAddress is unknown, init the field
                 if (ownIpAddress == null) {
@@ -525,6 +534,8 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 break;
             }
             case CONNECT_CLIENT: {
+
+                Log.d(TAG, "Receive " + message);
 
                 boolean event = false;
 
@@ -627,6 +638,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 ownIpAddress = groupOwnerAddress.getHostAddress();
                 isGroupOwner = true;
                 if (v) Log.d(TAG, "onGroupOwner-> own IP: " + ownIpAddress);
+                wifiAdHocManager.startRegistration();
             }
 
             @Override
@@ -639,12 +651,22 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                 if (v) Log.d(TAG, "onClient-> own IP: " + ownIpAddress);
                 ackSet.add(groupOwnerAddress.getHostAddress());
 
-                timerConnectMessage(new MessageAdHoc(new Header(CONNECT_SERVER, ownIpAddress,
-                                ownMac, label, ownName), groupOwnerAddress.getHostAddress()),
-                        groupOwnerAddress.getHostAddress(), TIMER_ACK);
+                wifiAdHocManager.discoverService(new WifiAdHocManager.ServiceDiscoverListener() {
+                    @Override
+                    public void onServiceCompleted(int port) {
+                        remotePort = port;
+                        Log.d(TAG, "Remote port is " + remotePort);
+                        timerConnectMessage(new MessageAdHoc(
+                                        new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName),
+                                        new UdpPDU(serverPort, groupOwnerAddress.getHostAddress())),
+                                groupOwnerAddress.getHostAddress(), TIMER_ACK);
+                    }
+                });
             }
         };
     }
+
+
 
     private String getLabelByMac(String mac) {
         for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {

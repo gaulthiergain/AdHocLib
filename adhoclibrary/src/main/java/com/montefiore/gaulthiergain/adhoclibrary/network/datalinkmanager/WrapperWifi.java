@@ -18,6 +18,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessage
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager.ServiceDiscoverListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServer;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
@@ -146,13 +147,15 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                         }
                     }
 
+                    wifiAdHocManager.unregisterDiscovery();
+
                     if (listenerBothDiscovery != null) {
                         discoveryListener.onDiscoveryCompleted(mapMacDevices);
                     }
 
                     discoveryCompleted = true;
 
-                    wifiAdHocManager.unregisterDiscovery();
+
                 }
             }
         });
@@ -295,9 +298,9 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
 
-    private void _connect() {
+    private void _connect(int remotePort) {
         final WifiClient wifiClient = new WifiClient(v, json,
-                groupOwnerAddr, serverPort, timeout, attemps, new ServiceMessageListener() {
+                groupOwnerAddr, remotePort, timeout, attemps, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
@@ -456,6 +459,8 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 ownIpAddress = groupOwnerAddress.getHostAddress();
                 isGroupOwner = true;
                 if (v) Log.d(TAG, "onGroupOwner-> own IP: " + ownIpAddress);
+
+                wifiAdHocManager.startRegistration();
             }
 
             @Override
@@ -475,7 +480,13 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                     attemps = 3;
                 }
 
-                _connect();
+                wifiAdHocManager.discoverService(new ServiceDiscoverListener() {
+                    @Override
+                    public void onServiceCompleted(int port) {
+                        _connect(port);
+                    }
+                });
+
             }
         };
     }

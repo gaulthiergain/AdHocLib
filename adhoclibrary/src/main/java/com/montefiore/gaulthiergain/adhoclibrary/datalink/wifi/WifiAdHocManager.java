@@ -12,11 +12,14 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.montefiore.gaulthiergain.adhoclibrary.R;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAction;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerAdapter;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.DeviceException;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -49,11 +53,13 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     public static String TAG = "[AdHoc][WifiManager]";
 
     private static final int MAX_TIMEOUT_CONNECT = 20000;
-    private static final int DISCOVERY_TIME = 12000;
+    private static final int DISCOVERY_TIME = 10000;
     private static final byte DISCOVERY_COMPLETED = 0;
     private static final byte DISCOVERY_FAILED = 1;
+    private static final byte SERVICE_COMPLETED = 2;
 
     private final boolean v;
+    private final int serverPort;
     private Context context;
     private Channel channel;
     private String initialName;
@@ -61,6 +67,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     private WifiP2pManager wifiP2pManager;
     private ConnectionWifiListener connectionWifiListener;
     private final HashMap<String, AdHocDevice> mapMacDevices;
+
 
     private Timer timer;
     private boolean connected;
@@ -72,6 +79,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     private WiFiDirectBroadcastDiscovery wiFiDirectBroadcastDiscovery;
     private WiFiDirectBroadcastConnection wifiDirectBroadcastConnection;
 
+
     /**
      * Constructor
      *
@@ -79,12 +87,13 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
      * @param context a Context object which gives global information about an application
      *                environment.
      */
-    public WifiAdHocManager(boolean verbose, final Context context,
+    public WifiAdHocManager(boolean verbose, final Context context, int serverPort,
                             ConnectionWifiListener connectionWifiListener,
                             final WifiDeviceInfosListener listenerDeviceInfos) {
 
         this.v = verbose;
         this.context = context;
+        this.serverPort = serverPort;
         this.wifiP2pManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         this.channel = wifiP2pManager.initialize(context, getMainLooper(), null);
         this.mapMacDevices = new HashMap<>();
@@ -104,6 +113,9 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         }
     }
 
+
+    ServiceDiscoverListener serviceListener;
+
     @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         // Used handler to avoid updating views in other threads than the main thread
@@ -114,6 +126,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                     break;
                 case DISCOVERY_FAILED:
                     discoveryListener.onDiscoveryFailed(new Exception("Connection timeout. Try to disable then Enable Wifi."));
+                    break;
             }
         }
     };
@@ -122,12 +135,18 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         return currentAdapterName;
     }
 
+
     /**
      * Method allowing to discovery other wifi Direct mapMacDevices.
      *
      * @param discoveryListener a discoveryListener object which serves as callback functions.
      */
     public void discovery(final DiscoveryListener discoveryListener) {
+
+        if (serviceTimer != null) {
+            serviceTimer.cancel();
+            serviceTimer = null;
+        }
 
         final IntentFilter intentFilter = new IntentFilter();
         // Indicates a change in the list of available mapMacDevices.
@@ -412,7 +431,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
     public void onEnableWifi(final ListenerAdapter listenerAdapter) {
 
-        @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
+        @SuppressLint("HandlerLeak") final Handler handlerEnable = new Handler(Looper.getMainLooper()) {
             // Used handler to avoid updating views in other threads than the main thread
             public void handleMessage(Message msg) {
                 listenerAdapter.onEnableWifi((boolean) msg.obj);
@@ -431,9 +450,9 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                     }
 
                     // Use handler to avoid using runOnUiThread in main app
-                    mHandler.obtainMessage(1, true).sendToTarget();
+                    handlerEnable.obtainMessage(1, true).sendToTarget();
                 } catch (InterruptedException e) {
-                    mHandler.obtainMessage(1, false).sendToTarget();
+                    handlerEnable.obtainMessage(1, false).sendToTarget();
                 }
             }
         };
@@ -592,4 +611,142 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         return mng != null && mng.isWifiEnabled();
     }
 
+
+    private static final String TXTRECORD_PROP_AVAILABLE = "available";
+    private static final String TXTRECORD_SERVER_PORT = "server_port";
+    private static final String SERVICE_INSTANCE = "_adhoclibrary";
+    private static final String SERVICE_REG_TYPE = "_presence._tcp";
+
+    public void startRegistration() {
+        Map<String, String> record = new HashMap<>();
+        record.put(TXTRECORD_SERVER_PORT, String.valueOf(serverPort));
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
+                SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
+        wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Added Local Service");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
+            }
+        });
+    }
+
+    public void addnewService(String key, String value) {
+        Map<String, String> record = new HashMap<>();
+        record.put(TXTRECORD_PROP_AVAILABLE, "visible");
+        record.put(TXTRECORD_SERVER_PORT, String.valueOf(serverPort));
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
+                SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
+        wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Added Local Service");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
+            }
+        });
+    }
+
+
+    public interface ServiceDiscoverListener {
+        void onServiceCompleted(int port);
+    }
+
+
+    private Timer serviceTimer;
+    public void discoverService(final ServiceDiscoverListener serviceListener) {
+
+        this.serviceListener = serviceListener;
+        /*
+         * Register listeners for DNS-SD services. These are callbacks invoked
+         * by the system when a service is actually discovered.
+         */
+        wifiP2pManager.setDnsSdResponseListeners(channel,
+                new WifiP2pManager.DnsSdServiceResponseListener() {
+                    @Override
+                    public void onDnsSdServiceAvailable(String instanceName,
+                                                        String registrationType, WifiP2pDevice srcDevice) {
+                        // A service has been discovered. Is this our app?
+                        if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
+                            // update the UI and add the item the discovered
+                            // device.
+
+                            WiFiP2pService service = new WiFiP2pService();
+                            service.device = srcDevice;
+                            service.instanceName = instanceName;
+                            service.serviceRegistrationType = registrationType;
+
+                            Log.d(TAG, "onBonjourServiceAvailable "
+                                    + instanceName);
+
+                        }
+                    }
+                }, new WifiP2pManager.DnsSdTxtRecordListener() {
+                    /**
+                     * A new TXT record is available. Pick up the advertised
+                     * buddy name.
+                     */
+                    @Override
+                    public void onDnsSdTxtRecordAvailable(
+                            String fullDomainName, Map<String, String> record,
+                            WifiP2pDevice device) {
+
+                        serviceTimer.cancel();
+
+                        try {
+                            int port = Integer.valueOf(record.get(TXTRECORD_SERVER_PORT));
+                            serviceListener.onServiceCompleted(port);
+                        } catch (Exception e) {
+                            serviceListener.onServiceCompleted(serverPort);
+                        }
+                    }
+                });
+        // After attaching listeners, create a service request and initiate
+        // discovery.
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        wifiP2pManager.addServiceRequest(channel, serviceRequest,
+                new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "Added service discovery request");
+                    }
+
+                    @Override
+                    public void onFailure(int reasonCode) {
+                        Log.e(TAG, "Failed adding service discovery request: " + errorCode(reasonCode));
+                    }
+                });
+        wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Service discovery initiated");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.e(TAG, "Service discovery failed: " + errorCode(reasonCode));
+            }
+        });
+
+        serviceTimer = new Timer();
+        serviceTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                serviceListener.onServiceCompleted(serverPort);
+            }
+        }, 5000);
+    }
+
+    private class WiFiP2pService {
+        WifiP2pDevice device;
+        String instanceName = null;
+        String serviceRegistrationType = null;
+    }
 }
