@@ -49,7 +49,6 @@ class UdpClient extends Thread {
             } catch (SocketException e) {
                 handler.obtainMessage(Service.NETWORK_UNREACHABLE, serverAddr.getHostAddress()).sendToTarget();
             } catch (IOException e) {
-                e.printStackTrace();
                 handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
             } finally {
                 if (datagramSocket != null) {
@@ -57,7 +56,6 @@ class UdpClient extends Thread {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
             handler.obtainMessage(Service.MESSAGE_EXCEPTION, e).sendToTarget();
         }
     }

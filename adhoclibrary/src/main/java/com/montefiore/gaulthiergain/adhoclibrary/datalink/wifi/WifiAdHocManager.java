@@ -50,6 +50,7 @@ import static android.os.Looper.getMainLooper;
 
 public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
+    public static final int MAX_SERVICE_DISC_TIME_OUT = 5000;
     public static String TAG = "[AdHoc][WifiManager]";
 
     private static final int MAX_TIMEOUT_CONNECT = 20000;
@@ -625,31 +626,31 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
         wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Added Local Service");
+                if (v) Log.d(TAG, "Added Local Service");
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
+                if (v) Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
             }
         });
     }
 
-    public void addnewService(String key, String value) {
+    public void addnewService(String value) {
         Map<String, String> record = new HashMap<>();
-        record.put(TXTRECORD_PROP_AVAILABLE, "visible");
+        record.put(TXTRECORD_PROP_AVAILABLE, value);
         record.put(TXTRECORD_SERVER_PORT, String.valueOf(serverPort));
         WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
                 SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
         wifiP2pManager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Added Local Service");
+                if (v) Log.d(TAG, "Added Local Service");
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
+                if (v) Log.e(TAG, "Failed to add a service: " + errorCode(reasonCode));
             }
         });
     }
@@ -661,6 +662,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
 
     private Timer serviceTimer;
+
     public void discoverService(final ServiceDiscoverListener serviceListener) {
 
         this.serviceListener = serviceListener;
@@ -683,7 +685,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                             service.instanceName = instanceName;
                             service.serviceRegistrationType = registrationType;
 
-                            Log.d(TAG, "onBonjourServiceAvailable "
+                            if (v) Log.d(TAG, "onBonjourServiceAvailable "
                                     + instanceName);
 
                         }
@@ -715,23 +717,24 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
                 new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, "Added service discovery request");
+                        if (v) Log.d(TAG, "Added service discovery request");
                     }
 
                     @Override
                     public void onFailure(int reasonCode) {
-                        Log.e(TAG, "Failed adding service discovery request: " + errorCode(reasonCode));
+                        if (v)
+                            Log.e(TAG, "Failed adding service discovery request: " + errorCode(reasonCode));
                     }
                 });
         wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Service discovery initiated");
+                if (v) Log.d(TAG, "Service discovery initiated");
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.e(TAG, "Service discovery failed: " + errorCode(reasonCode));
+                if (v) Log.e(TAG, "Service discovery failed: " + errorCode(reasonCode));
             }
         });
 
@@ -741,7 +744,7 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
             public void run() {
                 serviceListener.onServiceCompleted(serverPort);
             }
-        }, 5000);
+        }, MAX_SERVICE_DISC_TIME_OUT);
     }
 
     private class WiFiP2pService {

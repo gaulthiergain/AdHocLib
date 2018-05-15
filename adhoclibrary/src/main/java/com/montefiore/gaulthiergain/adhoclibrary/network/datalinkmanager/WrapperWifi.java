@@ -483,6 +483,7 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 wifiAdHocManager.discoverService(new ServiceDiscoverListener() {
                     @Override
                     public void onServiceCompleted(int port) {
+                        if (v) Log.d(TAG, "Remote port is " + port);
                         _connect(port);
                     }
                 });

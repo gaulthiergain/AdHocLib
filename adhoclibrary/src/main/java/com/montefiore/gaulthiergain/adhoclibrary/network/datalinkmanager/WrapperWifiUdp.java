@@ -655,7 +655,7 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
                     @Override
                     public void onServiceCompleted(int port) {
                         remotePort = port;
-                        Log.d(TAG, "Remote port is " + remotePort);
+                        if (v) Log.d(TAG, "Remote port is " + remotePort);
                         timerConnectMessage(new MessageAdHoc(
                                         new Header(CONNECT_SERVER, ownIpAddress, ownMac, label, ownName),
                                         new UdpPDU(serverPort, groupOwnerAddress.getHostAddress())),
@@ -665,7 +665,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
             }
         };
     }
-
 
 
     private String getLabelByMac(String mac) {
