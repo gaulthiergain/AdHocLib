@@ -16,8 +16,8 @@ import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstract
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvMessageException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.util.MessageAdHoc;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -450,10 +450,12 @@ public class AodvManager {
             if (v) Log.d(TAG, ownAddress + " is the destination (stop DATA message)");
             if (listenerApp != null) {
 
+                // Get header
                 Header header = message.getHeader();
                 AdHocDevice adHocDevice = new AdHocDevice(header.getLabel(), header.getMac(),
                         header.getName(), header.getDeviceType());
 
+                // Call listener
                 listenerApp.onReceivedData(adHocDevice, data.getPayload());
             }
         } else {
@@ -464,6 +466,14 @@ public class AodvManager {
                         data.getDestIpAddress());
             } else {
                 if (v) Log.d(TAG, "Destination reachable via " + destNext.getNext());
+
+                // Get header
+                Header header = message.getHeader();
+                AdHocDevice adHocDevice = new AdHocDevice(header.getLabel(), header.getMac(),
+                        header.getName(), header.getDeviceType());
+
+                // Call listener
+                listenerApp.onForwardData(adHocDevice, data.getPayload());
 
                 // Update dataPath
                 destNext.updateDataPath(data.getDestIpAddress());

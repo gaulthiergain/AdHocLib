@@ -2,8 +2,6 @@ package com.montefiore.gaulthiergain.adhoclibrary.appframework;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
 
-import java.io.IOException;
-
 public interface ListenerApp {
     /**
      * Callback when a Data message is received.
@@ -11,6 +9,8 @@ public interface ListenerApp {
      * @param pdu
      */
     void onReceivedData(AdHocDevice adHocDevice, Object pdu);
+
+    void onForwardData(AdHocDevice adHocDevice, Object pdu);
 
     void onConnection(AdHocDevice adHocDevice);
 

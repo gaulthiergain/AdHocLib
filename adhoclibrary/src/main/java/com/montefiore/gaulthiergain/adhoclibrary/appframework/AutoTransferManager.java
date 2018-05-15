@@ -216,6 +216,11 @@ public class AutoTransferManager extends TransferManager {
             }
 
             @Override
+            public void onForwardData(AdHocDevice adHocDevice, Object pdu) {
+                listenerApp.onForwardData(adHocDevice, pdu);
+            }
+
+            @Override
             public void onConnection(AdHocDevice adHocDevice) {
 
                 if (v)
