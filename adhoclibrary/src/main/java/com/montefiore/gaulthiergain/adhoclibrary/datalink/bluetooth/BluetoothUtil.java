@@ -23,8 +23,7 @@ public class BluetoothUtil {
     /**
      * Method allowing to get the current MAC address of the bluetoothAdapter.
      *
-     * @param context a Context object which gives global information about an application
-     *                environment.
+     * @param context a Context object which gives global information about an application environment.
      * @return a String value which represents the current MAC address of the bluetoothAdapter.
      */
     @SuppressLint("HardwareIds")

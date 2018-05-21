@@ -10,7 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import java.util.UUID;
 
 /**
- * <p>This class represents a remote Bluetooth device and is really just a thin wrapper for a
+ * <p>This class represents a remote Bluetooth device and corresponds to a wrapper for a
  * BluetoothDevice</p>
  *
  * @author Gaulthier Gain
@@ -40,7 +40,7 @@ public class BluetoothAdHocDevice extends AdHocDevice {
      * Constructor
      *
      * @param device a BluetoothDevice object which represents a remote Bluetooth device.
-     * @param rssi   an integer value which represents the rssi of the remote Bluetooth device.
+     * @param rssi   an integer value which represents the RSSI of the remote Bluetooth device.
      */
     BluetoothAdHocDevice(BluetoothDevice device, int rssi) {
         super(device.getAddress().toUpperCase(), device.getName(), Service.BLUETOOTH);
@@ -112,7 +112,7 @@ public class BluetoothAdHocDevice extends AdHocDevice {
     };
 
     /**
-     * Method allowing to get the UUID of the remote Bluetooth device.
+     * Method allowing to get the UUID as a String of the remote Bluetooth device.
      *
      * @return a String value which represents the UUID of the remote Bluetooth device.
      */
@@ -138,6 +138,11 @@ public class BluetoothAdHocDevice extends AdHocDevice {
         return device;
     }
 
+    /**
+     * Method allowing to get the UUID of the remote Bluetooth device.
+     *
+     * @return a UUID value which represents the UUID of the remote Bluetooth device.
+     */
     UUID getUUID() {
         return uuid.getUuid();
     }

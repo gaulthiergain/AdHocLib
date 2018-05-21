@@ -33,12 +33,12 @@ public class BluetoothClient extends ServiceClient implements Runnable {
      *
      * @param verbose                a boolean value to set the debug/verbose mode.
      * @param json                   a boolean value to use json or bytes in network transfer.
-     * @param timeOut
+     * @param timeOut                a integer value which represents the time-out of a connection.
      * @param secure                 a boolean value which represents the state of the connection.
      * @param attempts               a short value which represents the number of attempts.
      * @param bluetoothAdHocDevice   a BluetoothAdHocDevice object which represents a remote Bluetooth
      *                               device.
-     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which contains callback functions.
      */
     public BluetoothClient(boolean verbose, boolean json, int timeOut,
                            boolean secure, short attempts,
@@ -51,7 +51,7 @@ public class BluetoothClient extends ServiceClient implements Runnable {
     /**
      * Method allowing to connect to a remote bluetooth device.
      *
-     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
+     * @throws NoConnectionException signals that a No Connection Exception exception has occurred.
      */
     private void connect() throws NoConnectionException {
 
@@ -99,7 +99,11 @@ public class BluetoothClient extends ServiceClient implements Runnable {
         }
     }
 
+    /**
+     * Method allowing to launch a time-out if a connection fails.
+     */
     private void timeout() {
+
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -116,6 +120,7 @@ public class BluetoothClient extends ServiceClient implements Runnable {
 
     @Override
     public void run() {
+
         int i = 0;
         do {
             try {
@@ -130,6 +135,7 @@ public class BluetoothClient extends ServiceClient implements Runnable {
                 }
 
                 try {
+                    // Back-off algorithm before connecting
                     Thread.sleep((getBackOffTime()));
                 } catch (InterruptedException e1) {
                     handler.obtainMessage(Service.CONNECTION_FAILED, e1).sendToTarget();
@@ -138,10 +144,20 @@ public class BluetoothClient extends ServiceClient implements Runnable {
         } while (i < this.attempts);
     }
 
+    /**
+     * Method allowing to get a SocketManager object.
+     *
+     * @return a SocketManager object which a socket connected between two devices.
+     */
     public SocketManager getNetwork() {
         return network;
     }
 
+    /**
+     * Method allowing to set a ListenerAutoConnect object.
+     *
+     * @param listenerAutoConnect a ListenerAutoConnect object which contains callback functions.
+     */
     public void setListenerAutoConnect(ListenerAutoConnect listenerAutoConnect) {
         this.listenerAutoConnect = listenerAutoConnect;
     }

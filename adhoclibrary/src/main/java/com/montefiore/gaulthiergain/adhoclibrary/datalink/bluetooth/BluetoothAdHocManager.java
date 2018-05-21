@@ -19,10 +19,11 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * Created by gaulthiergain on 25/10/17.
- * Manage the Bluetooth discovery and the peering with other bluetooth devices.
+ * <p>This class manages the Bluetooth discovery and the peering with other bluetooth devices.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public class BluetoothAdHocManager {
 
     private final boolean v;
@@ -62,7 +63,7 @@ public class BluetoothAdHocManager {
     }
 
     /**
-     * Method allowing to disable the Bluetooth adapter.
+     * Method allowing to enable the Bluetooth adapter.
      */
     public void enable() {
         bluetoothAdapter.enable();
@@ -73,9 +74,10 @@ public class BluetoothAdHocManager {
      *
      * @param duration an integer value between 0 and 3600 which represents the time of
      *                 the discovery mode.
-     * @throws BluetoothBadDuration Signals that a Bluetooth Bad Duration exception has occurred.
+     * @throws BluetoothBadDuration signals that a Bluetooth Bad Duration exception has occurred.
      */
     public void enableDiscovery(Context context, int duration) throws BluetoothBadDuration {
+
         if (duration < 0 || duration > 3600) {
             throw new BluetoothBadDuration("Duration must be between 0 and 3600 second(s)");
         }
@@ -90,14 +92,14 @@ public class BluetoothAdHocManager {
         }
     }
 
-
     /**
      * Method allowing to get all the paired Bluetooth devices.
      *
-     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with
+     * @return a HashMap<String, BluetoothAdHocDevice> that maps the device's name with a
      * BluetoothAdHocDevice object.
      */
     public HashMap<String, BluetoothAdHocDevice> getPairedDevices() {
+
         if (v) Log.d(TAG, "getPairedDevices()");
 
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
@@ -115,10 +117,19 @@ public class BluetoothAdHocManager {
         return hashMapBluetoothPairedDevice;
     }
 
+    /**
+     * Method allowing to update the device local adapter name.
+     *
+     * @param name a String value which represents the new name of the  device adapter.
+     * @return true if the name was set, false otherwise.
+     */
     public boolean updateDeviceName(String name) {
         return bluetoothAdapter.setName(name);
     }
 
+    /**
+     * Method allowing to reset the device local adapter name.
+     */
     public void resetDeviceName() {
         if (initialName != null) {
             bluetoothAdapter.setName(initialName);
@@ -128,17 +139,19 @@ public class BluetoothAdHocManager {
     /**
      * Method allowing to discovery other bluetooth devices.
      *
-     * @param discoveryListener a discoveryListener object which serves as callback functions.
+     * @param discoveryListener a discoveryListener object which contains callback functions.
      */
     public void discovery(DiscoveryListener discoveryListener) {
+
+        if (v) Log.d(TAG, "discovery()");
 
         // Check if the device is already "discovering". If it is, then cancel discovery.
         cancelDiscovery();
 
+        // Update Listener
         this.discoveryListener = discoveryListener;
 
         // Start Discovery
-        if (v) Log.d(TAG, "discovery()");
         bluetoothAdapter.startDiscovery();
 
         // Set Register to true
@@ -195,7 +208,7 @@ public class BluetoothAdHocManager {
     /**
      * Method allowing to unregister the discovery broadcast.
      *
-     * @throws IllegalArgumentException Signals that a method has been passed an illegal or
+     * @throws IllegalArgumentException signals that a method has been passed an illegal or
      *                                  inappropriate argument.
      */
     public void unregisterDiscovery() throws IllegalArgumentException {
@@ -228,20 +241,44 @@ public class BluetoothAdHocManager {
      * @return a String value which represents the name of the Bluetooth adapter.
      */
     public String getAdapterName() {
+
+        if (v) Log.d(TAG, "getAdapterName()");
+
         if (bluetoothAdapter != null) {
             return bluetoothAdapter.getName();
         }
         return null;
     }
 
+    /**
+     * Method allowing to unpair a previously paired bluetooth device.
+     *
+     * @param device a BluetoothAdHocDevice object which represents a remote Bluetooth device.
+     * @throws InvocationTargetException signals that a method does not exist.
+     * @throws IllegalAccessException    signals that an application tries to reflectively create
+     *                                   an instance which has no access to the definition of
+     *                                   the specified class
+     * @throws NoSuchMethodException     signals that a method does not exist.
+     */
     public void unpairDevice(BluetoothAdHocDevice device) throws InvocationTargetException,
             IllegalAccessException, NoSuchMethodException {
+
+        if (v) Log.d(TAG, "unpairDevice()");
+
         Method m = device.getDevice().getClass().getMethod("removeBond", (Class[]) null);
         m.invoke(device.getDevice(), (Object[]) null);
     }
 
+    /**
+     * Method allowing to notify if the Bluetooth adapter has been enabled.
+     *
+     * @param listenerAdapter a listenerAdapter object which contains callback functions.
+     */
     public void onEnableBluetooth(final ListenerAdapter listenerAdapter) {
 
+        if (v) Log.d(TAG, "onEnableBluetooth()");
+
+        // unregister BroadcastReceiver event
         unregisterAdapter();
 
         mReceiverAdapter = new BroadcastReceiver() {
@@ -262,11 +299,17 @@ public class BluetoothAdHocManager {
                 }
             }
         };
+
+        // Register again to BroadcastReceiver event
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         context.registerReceiver(mReceiverAdapter, filter);
         registeredAdapter = true;
     }
 
+    /**
+     * Method allowing to unregister a previously registered BroadcastReceiver related
+     * to adapter event.
+     */
     public void unregisterAdapter() {
 
         if (registeredAdapter) {
@@ -276,8 +319,15 @@ public class BluetoothAdHocManager {
         }
     }
 
+    /**
+     * Method allowing to update the context of the current class.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
     public void updateContext(Context context) {
-        if (v) Log.d(TAG, "Update context");
+
+        if (v) Log.d(TAG, "updateContext()");
 
         // Unregister previous context to avoid memory leak
         unregisterDiscovery();
