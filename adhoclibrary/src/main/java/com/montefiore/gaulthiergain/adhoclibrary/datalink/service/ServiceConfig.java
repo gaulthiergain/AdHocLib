@@ -4,6 +4,12 @@ import android.bluetooth.BluetoothAdapter;
 
 import java.util.UUID;
 
+/**
+ * <p>This class defines several different parameters to setup server's logic. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class ServiceConfig {
 
     private short nbThreads;
@@ -42,22 +48,47 @@ public class ServiceConfig {
         this.uuid = uuid;
     }
 
+    /**
+     * Method allowing to get the number of threads managed by the server.;
+     *
+     * @return a short value to determine the number of threads managed by the server.
+     */
     public short getNbThreads() {
         return nbThreads;
     }
 
+    /**
+     * Method allowing to get the server listening port number.
+     *
+     * @return an integer value to set the server listening port number.
+     */
     public int getServerPort() {
         return serverPort;
     }
 
+    /**
+     * Method allowing to know if the connection is secure or not.
+     *
+     * @return a boolean value to determine if the connection is secure.
+     */
     public boolean isSecure() {
         return secure;
     }
 
+    /**
+     * Method allowing to get the local device Bluetooth adapter.
+     *
+     * @return a BluetoothAdapter object which represents the local device Bluetooth adapter.
+     */
     public BluetoothAdapter getBtAdapter() {
         return btAdapter;
     }
 
+    /**
+     * Method allowing to get an UUID object.
+     *
+     * @return an UUID object which identify the physical device.
+     */
     public UUID getUuid() {
         return uuid;
     }

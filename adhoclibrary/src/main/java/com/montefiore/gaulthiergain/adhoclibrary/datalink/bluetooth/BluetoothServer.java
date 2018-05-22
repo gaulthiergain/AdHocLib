@@ -32,10 +32,10 @@ public class BluetoothServer extends ServiceServer {
     /**
      * Method allowing to launch a server to handle incoming connections in background.
      *
-     * @param config a Config which contains different paramaters to setup server.
+     * @param serviceConfig a ServiceConfig object which contains different parameters to setup server.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
-    public void listen(ServiceConfig config) throws IOException {
+    public void listen(ServiceConfig serviceConfig) throws IOException {
 
         // Cancel any thread currently running a connection
         if (threadListen != null) {
@@ -43,13 +43,13 @@ public class BluetoothServer extends ServiceServer {
             threadListen = null;
         }
 
-        if (config.getNbThreads() > 0) {
+        if (serviceConfig.getNbThreads() > 0) {
 
-            String nameSocket = config.isSecure() ? "secure" : "insecure";
+            String nameSocket = serviceConfig.isSecure() ? "secure" : "insecure";
 
             // Start thread Listening
-            threadListen = new ThreadServer(handler, config.getNbThreads(), v, config.isSecure(),
-                    nameSocket, config.getBtAdapter(), config.getUuid(), new ListSocketDevice(json));
+            threadListen = new ThreadServer(handler, serviceConfig.getNbThreads(), v, serviceConfig.isSecure(),
+                    nameSocket, serviceConfig.getBtAdapter(), serviceConfig.getUuid(), new ListSocketDevice(json));
             threadListen.start();
 
             if (v) Log.d(TAG, "Server is listening ...");

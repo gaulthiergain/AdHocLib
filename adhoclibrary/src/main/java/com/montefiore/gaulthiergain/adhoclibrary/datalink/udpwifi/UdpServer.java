@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 
+/**
+ * <p>This class manages the UDP server for the Wi-Fi technology.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class UdpServer extends Thread {
 
     private final static String TAG = "[AdHoc][UdpServer]";
@@ -29,6 +36,14 @@ class UdpServer extends Thread {
     private DatagramSocket socket;
     private boolean running;
 
+    /**
+     * @param verbose    a boolean value to set the debug/verbose mode.
+     * @param handler    a Handler object which allows to send and process {@link Message}
+     *                   and Runnable objects associated with a thread's.
+     * @param serverPort an integer value to set the listening port number.
+     * @param json       a boolean value to use json or bytes in network transfer.
+     * @param label      a String value which represents the label used to identify device.
+     */
     UdpServer(boolean verbose, Handler handler, int serverPort, boolean json, String label) {
         this.v = verbose;
         this.json = json;
@@ -55,7 +70,12 @@ class UdpServer extends Thread {
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
                 socket.receive(packet);
 
-                MessageAdHoc msg = deserialize(packet.getData());
+                MessageAdHoc msg;
+                if (json) {
+                    msg = mapper.readValue(packet.getData(), MessageAdHoc.class);
+                } else {
+                    msg = Utils.deserialize(packet.getData());
+                }
 
                 if (msg != null) {
                     // Check if message if from other node
@@ -84,13 +104,9 @@ class UdpServer extends Thread {
         }
     }
 
-    private MessageAdHoc deserialize(byte[] data) throws IOException, ClassNotFoundException {
-        if (json) {
-            return mapper.readValue(data, MessageAdHoc.class);
-        }
-        return Utils.deserialize(data);
-    }
-
+    /**
+     * Method allowing to stop the server.
+     */
     public void stopServer() {
         this.running = false;
     }

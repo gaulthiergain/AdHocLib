@@ -3,9 +3,9 @@ package com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi;
 import android.util.Log;
 
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions.NoConnectionException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceClient;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.AdHocSocketWifi;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
 
@@ -30,8 +30,8 @@ public class WifiClient extends ServiceClient implements Runnable {
      *
      * @param verbose                a boolean value to set the debug/verbose mode.
      * @param json                   a boolean value to use json or bytes in network transfer.
-     * @param remoteAddress
-     * @param port
+     * @param remoteAddress          a String value which represents the IP address of the remote peer.
+     * @param port                   an integer value to set the listening port number.
      * @param timeOut                an integer value which represents the timeout of a connection.
      * @param attempts               a short value which represents the number of attempts.
      * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
@@ -113,6 +113,11 @@ public class WifiClient extends ServiceClient implements Runnable {
         }
     }
 
+    /**
+     * Method allowing to set a ListenerAutoConnect object.
+     *
+     * @param listenerAutoConnect a ListenerAutoConnect object which contains callback functions.
+     */
     public void setListenerAutoConnect(WifiClient.ListenerAutoConnect listenerAutoConnect) {
         this.listenerAutoConnect = listenerAutoConnect;
     }

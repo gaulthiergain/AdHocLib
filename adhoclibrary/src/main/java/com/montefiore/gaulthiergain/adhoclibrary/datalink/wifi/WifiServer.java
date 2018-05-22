@@ -21,21 +21,19 @@ public class WifiServer extends ServiceServer {
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param json            a boolean value to use json or bytes in network transfer.
-     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
+     * @param serviceMessageListener a serviceMessageListener object which contains callback functions.
      */
-    public WifiServer(boolean verbose, boolean json,
-                      ServiceMessageListener serviceMessageListener) {
+    public WifiServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
         super(verbose, json, serviceMessageListener);
     }
 
     /**
-     * Method allowing to listen for incoming wifi connections.
-     *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @param serviceConfig a ServiceConfig object which contains different parameters to setup server.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
-    public void listen(ServiceConfig config) throws IOException {
+    public void listen(ServiceConfig serviceConfig) throws IOException {
 
         // Cancel any thread currently running a connection
         if (threadListen != null) {
@@ -43,14 +41,14 @@ public class WifiServer extends ServiceServer {
             threadListen = null;
         }
 
-        if(config.getNbThreads() > 0) {
+        if (serviceConfig.getNbThreads() > 0) {
 
             // Start thread Listening
-            threadListen = new ThreadServer(handler, config.getNbThreads(), v, config.getServerPort(),
+            threadListen = new ThreadServer(handler, serviceConfig.getNbThreads(), v, serviceConfig.getServerPort(),
                     new ListSocketDevice(json));
             threadListen.start();
 
-            if (v) Log.d(TAG, "Listening on port: " + config.getServerPort());
+            if (v) Log.d(TAG, "Listening on port: " + serviceConfig.getServerPort());
 
             // Update state
             setState(STATE_LISTENING);

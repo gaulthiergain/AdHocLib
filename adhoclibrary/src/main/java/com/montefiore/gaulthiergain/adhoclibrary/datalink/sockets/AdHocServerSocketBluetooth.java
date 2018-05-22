@@ -18,6 +18,7 @@ public class AdHocServerSocketBluetooth implements IServerSocket {
 
     /**
      * Constructor
+     *
      * @param serverSocket a serverSocket object which is similar to TCP sockets.
      */
     public AdHocServerSocketBluetooth(BluetoothServerSocket serverSocket) {

@@ -15,12 +15,15 @@ import java.io.IOException;
  * @version 1.0
  */
 class ListenServiceThread extends Thread {
+
     private static final String TAG = "[AdHoc][ListenService]";
     private final boolean v;
     private final SocketManager network;
     private final Handler handler;
 
     /**
+     * Constructor
+     *
      * @param verbose a boolean value to set the debug/verbose mode.
      * @param network a Network object which manages the connection with the remote host.
      * @param handler a Handler object which allows to send and process {@link android.os.Message}
@@ -38,7 +41,7 @@ class ListenServiceThread extends Thread {
     @Override
     public void run() {
 
-        if (v) Log.d(TAG, "Listening message ...");
+        if (v) Log.d(TAG, "Waiting message ...");
 
         while (true) {
             try {
@@ -51,7 +54,13 @@ class ListenServiceThread extends Thread {
                 }
             } catch (IOException e) {
                 if (network.getISocket() != null) {
-                    processDisconnect();
+                    try {
+                        // Notify handler and set remote device address
+                        handler.obtainMessage(Service.CONNECTION_ABORTED, network.getRemoteSocketAddress()).sendToTarget();
+                        network.closeConnection();
+                    } catch (IOException e1) {
+                        handler.obtainMessage(Service.LOG_EXCEPTION, e1).sendToTarget();
+                    }
                 }
                 break;
             } catch (ClassNotFoundException e) {
@@ -66,16 +75,6 @@ class ListenServiceThread extends Thread {
     void cancel() throws IOException {
         if (network.getISocket() != null) {
             network.closeConnection();
-        }
-    }
-
-    private void processDisconnect() {
-        try {
-            // Notify handler and set remote device address
-            handler.obtainMessage(Service.CONNECTION_ABORTED, network.getRemoteSocketAddress()).sendToTarget();
-            network.closeConnection();
-        } catch (IOException e) {
-            handler.obtainMessage(Service.LOG_EXCEPTION, e).sendToTarget();
         }
     }
 }

@@ -24,6 +24,8 @@ public class ListSocketDevice {
 
     /**
      * Constructor
+     *
+     * @param json a boolean value to use json or bytes in network transfer.
      */
     public ListSocketDevice(boolean json) {
         this.json = json;
@@ -36,7 +38,7 @@ public class ListSocketDevice {
      * a client which will be served when a thread is available.
      *
      * @return a ISocket object which represents a socket between the server and the client.
-     * @throws InterruptedException Thrown when a thread is waiting, sleeping, or occupied.
+     * @throws InterruptedException signals an exception when a thread is waiting, sleeping, or occupied.
      */
     synchronized ISocket getSocketDevice() throws InterruptedException {
         while (listISockets.isEmpty()) {

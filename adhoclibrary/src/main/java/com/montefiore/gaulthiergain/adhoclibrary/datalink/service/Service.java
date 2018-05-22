@@ -63,7 +63,7 @@ public abstract class Service {
     /**
      * Method allowing to defines the state of a connection.
      *
-     * @param state a integer values which defines the state of a connection.
+     * @param state an integer values which defines the state of a connection.
      */
     protected void setState(int state) {
         if (v) Log.d(TAG, "setState() " + this.state + " -> " + state);
@@ -73,7 +73,7 @@ public abstract class Service {
     /**
      * Method allowing to get the state of a connection.
      *
-     * @return a integer values which defines the state of a connection.
+     * @return an integer values which defines the state of a connection.
      */
     public int getState() {
         return state;

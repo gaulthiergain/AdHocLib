@@ -21,7 +21,7 @@ public interface IServerSocket {
     /**
      * Method allowing to close a connection.
      *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     void close() throws IOException;
 
@@ -29,7 +29,7 @@ public interface IServerSocket {
      * Method allowing to accept an incoming connection.
      *
      * @return a BluetoothSocket/Socket object depending the type of connection.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     Object accept() throws IOException;
 }

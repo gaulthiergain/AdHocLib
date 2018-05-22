@@ -33,7 +33,7 @@ public class BluetoothClient extends ServiceClient implements Runnable {
      *
      * @param verbose                a boolean value to set the debug/verbose mode.
      * @param json                   a boolean value to use json or bytes in network transfer.
-     * @param timeOut                a integer value which represents the time-out of a connection.
+     * @param timeOut                an integer value which represents the time-out of a connection.
      * @param secure                 a boolean value which represents the state of the connection.
      * @param attempts               a short value which represents the number of attempts.
      * @param bluetoothAdHocDevice   a BluetoothAdHocDevice object which represents a remote Bluetooth

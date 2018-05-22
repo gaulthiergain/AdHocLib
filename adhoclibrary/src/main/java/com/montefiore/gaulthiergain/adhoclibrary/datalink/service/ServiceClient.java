@@ -21,8 +21,8 @@ import java.util.Random;
  */
 public abstract class ServiceClient extends Service {
 
-    protected static final short LOW = 1500;
-    protected static final short HIGH = 2500;
+    private static final short LOW = 1500;
+    private static final short HIGH = 2500;
     protected static final String TAG = "[AdHoc][ServiceClient]";
 
     protected SocketManager network;
@@ -36,10 +36,10 @@ public abstract class ServiceClient extends Service {
      * Constructor
      *
      * @param verbose                a boolean value to set the debug/verbose mode.
-     * @param timeOut
+     * @param timeOut                an integer value which represents the time-out of a connection.
      * @param attempts               a short value which represents the number of attempts.
      * @param json                   a boolean value to use json or bytes in network transfer.
-     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
+     * @param serviceMessageListener a serviceMessageListener object which contains callback functions.
      */
     public ServiceClient(boolean verbose, int timeOut, short attempts, boolean json,
                          ServiceMessageListener serviceMessageListener) {
@@ -52,11 +52,12 @@ public abstract class ServiceClient extends Service {
     /**
      * Method allowing to send a message to the remote host.
      *
-     * @param msg a MessageAdHoc object which defines the message.
-     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
-     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @param msg a MessageAdHoc object which represents the message to send through the network.
+     * @throws NoConnectionException signals that a No Connection Exception exception has occurred.
+     * @throws IOException           signals that an I/O exception of some sort has occurred.
      */
     public void send(MessageAdHoc msg) throws IOException, NoConnectionException {
+
         if (v) Log.d(TAG, "send()");
 
         if (state == STATE_NONE) {
@@ -68,27 +69,13 @@ public abstract class ServiceClient extends Service {
     }
 
     /**
-     * Method allowing to stop the background listening process.
-     */
-    private void stopListeningInBackground() throws IOException {
-        if (v) Log.d(TAG, "stopListeningInBackground()");
-
-        if (state == STATE_CONNECTED) {
-            // Cancel any thread currently running a connection
-            if (threadListening != null) {
-                threadListening.cancel();
-                threadListening = null;
-            }
-        }
-    }
-
-    /**
      * Method allowing to listen in background to receive messages from remote hosts.
      *
-     * @throws NoConnectionException Signals that a No Connection Exception exception has occurred.
-     * @throws IOException           Signals that an I/O exception of some sort has occurred.
+     * @throws NoConnectionException signals that a No Connection Exception exception has occurred.
+     * @throws IOException           signals that an I/O exception of some sort has occurred.
      */
     protected void listenInBackground() throws NoConnectionException, IOException {
+
         if (v) Log.d(TAG, "listenInBackground()");
 
         if (state == STATE_NONE) {
@@ -106,7 +93,28 @@ public abstract class ServiceClient extends Service {
         }
     }
 
+    /**
+     * Method allowing to define a connection time-out backOff time.
+     *
+     * @return a long value which represents a backOffTime.
+     */
     protected long getBackOffTime() {
         return (backOffTime *= 2);
+    }
+
+    /**
+     * Method allowing to stop the background listening process.
+     */
+    private void stopListeningInBackground() throws IOException {
+
+        if (v) Log.d(TAG, "stopListeningInBackground()");
+
+        if (state == STATE_CONNECTED) {
+            // Cancel any thread currently running a connection
+            if (threadListening != null) {
+                threadListening.cancel();
+                threadListening = null;
+            }
+        }
     }
 }

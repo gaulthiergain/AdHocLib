@@ -146,6 +146,12 @@ public class ThreadServer extends Thread {
         }
     }
 
+    /**
+     * Method allowing to accept remote connection.
+     *
+     * @return a ISocket object which represents a socket between the server and the client.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private ISocket acceptISocket() throws IOException {
         // Manage client depending the connection
         if (serverSocket instanceof AdHocServerSocketBluetooth) {
@@ -158,7 +164,7 @@ public class ThreadServer extends Thread {
     /**
      * Method allowing to stop all the threads client and the thread server itself.
      *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     public void cancel() throws IOException {
         if (v) Log.d(TAG, "cancel() thread server");
@@ -172,6 +178,7 @@ public class ThreadServer extends Thread {
             threadClient.interrupt();
         }
 
+        // Clear the array of threads
         arrayThreadClients.clear();
 
         // Close the server socket to throw an exception and thus stop the server thread

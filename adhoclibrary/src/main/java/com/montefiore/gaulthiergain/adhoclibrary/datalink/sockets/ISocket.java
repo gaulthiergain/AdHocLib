@@ -24,7 +24,7 @@ public interface ISocket {
     /**
      * Method allowing to close a remote connection.
      *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     void close() throws IOException;
 
@@ -32,7 +32,7 @@ public interface ISocket {
      * Method allowing to return an output stream for this socket.
      *
      * @return an OutputStream object.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     OutputStream getOutputStream() throws IOException;
 
@@ -40,7 +40,7 @@ public interface ISocket {
      * Method allowing to return an input stream for this socket.
      *
      * @return an OutputStream object.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     InputStream getInputStream() throws IOException;
 

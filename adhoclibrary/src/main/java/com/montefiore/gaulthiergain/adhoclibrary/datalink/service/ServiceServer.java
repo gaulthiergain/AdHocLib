@@ -26,18 +26,27 @@ public abstract class ServiceServer extends Service {
     /**
      * Constructor
      *
-     * @param verbose         a boolean value to set the debug/verbose mode.
-     * @param json            a boolean value to use json or bytes in network transfer.
-     * @param serviceMessageListener a serviceMessageListener object which serves as callback functions.
+     * @param verbose                a boolean value to set the debug/verbose mode.
+     * @param json                   a boolean value to use json or bytes in network transfer.
+     * @param serviceMessageListener a serviceMessageListener object which contains callback functions.
      */
     public ServiceServer(boolean verbose, boolean json, ServiceMessageListener serviceMessageListener) {
         super(verbose, json, serviceMessageListener);
     }
 
     /**
+     * Method allowing to launch a server to handle incoming connections in background.
+     * This method is abstract and must be implemented by specialized classes.
+     *
+     * @param serviceConfig a ServiceConfig object which contains different parameters to setup server.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
+    public abstract void listen(ServiceConfig serviceConfig) throws IOException;
+
+    /**
      * Method allowing to stop the listening thread.
      *
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     public void stopListening() throws IOException {
 
@@ -49,7 +58,6 @@ public abstract class ServiceServer extends Service {
         }
     }
 
-
     /**
      * Method allowing to return the active connections managed by the server.
      *
@@ -59,6 +67,4 @@ public abstract class ServiceServer extends Service {
     public ConcurrentHashMap<String, SocketManager> getActiveConnections() {
         return threadListen.getActiveConnexion();
     }
-
-    public abstract void listen(ServiceConfig serviceConfig) throws IOException;
 }

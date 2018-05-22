@@ -10,8 +10,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import java.util.UUID;
 
 /**
- * <p>This class represents a remote Bluetooth device and corresponds to a wrapper for a
- * BluetoothDevice</p>
+ * <p>This class represents a remote Bluetooth-enabled device.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0

@@ -1,6 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi;
 
 import android.os.Handler;
+import android.os.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
@@ -13,6 +14,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+/**
+ * <p>This class manages the UDP client for the Wi-Fi technology.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class UdpClient extends Thread {
 
     private final int serverPort;
@@ -21,6 +28,16 @@ class UdpClient extends Thread {
     private final MessageAdHoc msg;
     private final InetAddress serverAddr;
 
+    /**
+     * Constructor
+     *
+     * @param handler    a Handler object which allows to send and process {@link Message}
+     *                   and Runnable objects associated with a thread's.
+     * @param json       a boolean value to use json or bytes in network transfer.
+     * @param msg        a MessageAdHoc object which represents a PDU exchanged between nodes.
+     * @param serverAddr a String value to set the remote IP address.
+     * @param serverPort an integer value to set the remote listening port number.
+     */
     UdpClient(Handler handler, boolean json, MessageAdHoc msg, InetAddress serverAddr, int serverPort) {
         this.json = json;
         this.handler = handler;

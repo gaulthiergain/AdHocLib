@@ -10,11 +10,10 @@ import java.util.HashMap;
  */
 public interface DiscoveryListener {
 
-
     void onDeviceDiscovered(AdHocDevice device);
 
     /**
-     * Callback when the discovery is finished.
+     * Method allowing to notify when the discovery is finished.
      *
      * @param mapNameDevice a HashMap<String, AdHocDevice> which contains a mapping between the name
      *                      of a device and a {@link AdHocDevice} object.
@@ -22,14 +21,14 @@ public interface DiscoveryListener {
     void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapNameDevice);
 
     /**
-     * Callback when the discovery started.
+     * Method allowing to notify when the discovery started.
      */
     void onDiscoveryStarted();
 
     /**
-     * Callback when the discovery fails.
+     * Method allowing to notify when the discovery fails.
      *
-     * @param exception
+     * @param exception an Exception object which contains the exception which has been caught.
      */
     void onDiscoveryFailed(Exception exception);
 }
