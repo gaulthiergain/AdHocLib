@@ -1,7 +1,7 @@
 package com.montefiore.gaulthiergain.adhoclibrary.datalink.exceptions;
 
 /**
- * <p>This class signals that a Bluetooth Device Exception exception has occurred.</p>
+ * <p>This class signals that a Device Exception exception has occurred.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0

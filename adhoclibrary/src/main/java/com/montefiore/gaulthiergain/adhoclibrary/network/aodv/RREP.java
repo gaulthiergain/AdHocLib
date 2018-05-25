@@ -26,6 +26,9 @@ public class RREP extends AodvMessage {
     @JsonProperty("lifetime")
     private final long lifetime;
 
+    /**
+     * Default constructor
+     */
     public RREP() {
         super(0);
         hopCount = 0;
@@ -36,6 +39,8 @@ public class RREP extends AodvMessage {
     }
 
     /**
+     * Constructor
+     *
      * @param type            an integer value which represents the type of the RREP message.
      * @param hopCount        an integer value which represents the hops number of the RREP message.
      * @param destIpAddress   a String value which represents the destination IP address of the RREP

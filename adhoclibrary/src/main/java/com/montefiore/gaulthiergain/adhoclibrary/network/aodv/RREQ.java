@@ -28,6 +28,9 @@ public class RREQ extends AodvMessage {
     @JsonProperty("originIpAddress")
     private final String originIpAddress;
 
+    /**
+     * Default Constructor
+     */
     public RREQ() {
         super(0);
         hopCount = 0;

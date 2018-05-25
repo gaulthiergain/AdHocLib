@@ -52,10 +52,17 @@ public class EntryRoutingTable {
     }
 
 
-    public long getActivesDataPath(String ipAddress) {
+    /**
+     * Method allowing to get the address of a remote device.
+     *
+     * @param address a String value which represents the address of a remote device.
+     * @return a long value which represents the timestamp where a data was forwarded for a
+     * particular address.
+     */
+    public long getActivesDataPath(String address) {
 
-        if (activesDataPath.containsKey(ipAddress)) {
-            return activesDataPath.get(ipAddress);
+        if (activesDataPath.containsKey(address)) {
+            return activesDataPath.get(address);
         }
 
         return 0;
@@ -106,16 +113,34 @@ public class EntryRoutingTable {
         return lifetime;
     }
 
-    @Override
-    public String toString() {
-        return "- dst: " + destIpAddress +
-                " nxt: " + next +
-                " hop: " + hop +
-                " seq: " + destSeqNum + displayPrecursors() +
-                " dataPath " + activesDataPath.get(destIpAddress);
-
+    /**
+     * Method allowing to get the list of the precursors.
+     *
+     * @return an ArrayList<String> which represents the list of the precursors of the current node.
+     */
+    public ArrayList<String> getPrecursors() {
+        return precursors;
     }
 
+    /**
+     * Method allowing to add a node's address as a precursor of the current node.
+     *
+     * @param senderAddr a String value which represents the sender IP address.
+     */
+    public void updatePrecursors(String senderAddr) {
+        if (precursors == null) {
+            precursors = new ArrayList<>();
+            precursors.add(senderAddr);
+        } else if (!precursors.contains(senderAddr)) {
+            precursors.add(senderAddr);
+        }
+    }
+
+    /**
+     * Method allowing to display the list of the precursors.
+     *
+     * @return a String value which represents the precursors of the current node.
+     */
     private String displayPrecursors() {
 
         if (precursors == null) {
@@ -130,16 +155,13 @@ public class EntryRoutingTable {
         return str.toString();
     }
 
-    public ArrayList<String> getPrecursors() {
-        return precursors;
-    }
+    @Override
+    public String toString() {
+        return "- dst: " + destIpAddress +
+                " nxt: " + next +
+                " hop: " + hop +
+                " seq: " + destSeqNum + displayPrecursors() +
+                " dataPath " + activesDataPath.get(destIpAddress);
 
-    public void updatePrecursors(String senderAddr) {
-        if (precursors == null) {
-            precursors = new ArrayList<>();
-            precursors.add(senderAddr);
-        } else if (!precursors.contains(senderAddr)) {
-            precursors.add(senderAddr);
-        }
     }
 }

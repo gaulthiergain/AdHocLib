@@ -10,14 +10,14 @@ import android.util.Log;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.Config;
 import com.montefiore.gaulthiergain.adhoclibrary.appframework.ListenerApp;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.AdHocDevice;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.DataLinkManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.datalinkmanager.ListenerDataLink;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvAbstractException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvMessageException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownDestException;
 import com.montefiore.gaulthiergain.adhoclibrary.network.exceptions.AodvUnknownTypeException;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class AodvManager {
      * Constructor
      *
      * @param verbose     a boolean value to set the debug/verbose mode.
-     * @param listenerApp a ListenerApp object which serves as callback functions.
+     * @param listenerApp a ListenerApp object which contains callback functions.
      */
     private AodvManager(boolean verbose, final ListenerApp listenerApp) {
         this.v = verbose;
@@ -98,8 +98,8 @@ public class AodvManager {
      * @param context     a Context object which gives global information about an application
      *                    environment.
      * @param config      a Config object which contains specific configurations.
-     * @param listenerApp a ListenerApp object which serves as callback functions.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @param listenerApp a ListenerApp object which contains callback functions.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     public AodvManager(boolean verbose, Context context, Config config, ListenerApp listenerApp)
             throws IOException {
@@ -115,7 +115,7 @@ public class AodvManager {
      *
      * @param pdu     an Object value which represents the PDU of the message.
      * @param address a String value which represents the destination address.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     public void sendMessageTo(Object pdu, String address) throws IOException {
 
@@ -127,13 +127,13 @@ public class AodvManager {
         send(msg, address);
     }
 
-    /*---------------------------------------Private methods---------------------------------------/
+    //---------------------------------------Private methods---------------------------------------/
 
     /**
      * Method allowing to detect if a link is broken
      *
      * @param remoteNode a String which represents the destination address
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void brokenLinkDetected(String remoteNode) throws IOException {
         // Send RRER to precursors to signal that a remote node is disconnected
@@ -155,7 +155,7 @@ public class AodvManager {
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
      * @param address a String value which represents the destination address.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void sendDirect(MessageAdHoc message, String address) throws IOException {
         // The destination is directly connected
@@ -167,7 +167,7 @@ public class AodvManager {
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
      * @param address a String value which represents the destination address.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void send(MessageAdHoc message, String address) throws IOException {
 
@@ -211,7 +211,7 @@ public class AodvManager {
      * Method allowing to send a message to a remote address.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void processRREQ(MessageAdHoc message) throws IOException {
 
@@ -289,8 +289,8 @@ public class AodvManager {
      * Method allowing to process a RREP message.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException              Signals that an I/O exception of some sort has occurred.
-     * @throws AodvUnknownDestException Signals that an AodvUnknownDestException has occurred.
+     * @throws IOException              signals that an I/O exception of some sort has occurred.
+     * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
     private void processRREP(MessageAdHoc message) throws IOException, AodvUnknownDestException {
 
@@ -346,8 +346,8 @@ public class AodvManager {
      * Method allowing to process a RREP message.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException              Signals that an I/O exception of some sort has occurred.
-     * @throws AodvUnknownDestException Signals that an AodvUnknownDestException has occurred.
+     * @throws IOException              signals that an I/O exception of some sort has occurred.
+     * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
     private void processRREP_GRATUITOUS(MessageAdHoc message) throws IOException, AodvUnknownDestException {
 
@@ -395,7 +395,7 @@ public class AodvManager {
      * Method allowing to process a RERR message.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void processRERR(MessageAdHoc message) throws IOException {
 
@@ -436,8 +436,8 @@ public class AodvManager {
      * Method allowing to process a DATA message.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException              Signals that an I/O exception of some sort has occurred.
-     * @throws AodvUnknownDestException Signals that an AodvUnknownDestException has occurred.
+     * @throws IOException              signals that an I/O exception of some sort has occurred.
+     * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
     private void processData(MessageAdHoc message) throws IOException, AodvUnknownDestException {
 
@@ -491,7 +491,7 @@ public class AodvManager {
      * @param destAddr a String value which represents the destination address.
      * @param retry    an integer value which represents the retries of the RREQ Timer.
      * @param time     an integer value which represents the period of the timer.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void startTimerRREQ(final String destAddr, final int retry, final int time) throws IOException {
 
@@ -543,7 +543,7 @@ public class AodvManager {
      * Method allowing to send a RRER message when the connection is closed.
      *
      * @param brokenNodeAddress a String value which represents the broken node address.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void sendRRER(String brokenNodeAddress) throws IOException {
 
@@ -578,7 +578,7 @@ public class AodvManager {
      *
      * @param senderAddr a String value which represents the source address.
      * @param rreq       a RREQ object which represents a RREQ message.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void sendRREP_GRAT(String senderAddr, RREQ rreq) throws IOException {
         // Get entry in routing table for the destination
@@ -690,9 +690,9 @@ public class AodvManager {
      * Method allowing to process AODV messages.
      *
      * @param message a MessageAdHoc object which represents a message exchanged between nodes.
-     * @throws IOException              Signals that an I/O exception of some sort has occurred.
-     * @throws AodvUnknownTypeException Signals that a Unknown AODV type has been caught.
-     * @throws AodvUnknownDestException Signals that an AodvUnknownDestException has occurred.
+     * @throws IOException              signals that an I/O exception of some sort has occurred.
+     * @throws AodvUnknownTypeException signals that a Unknown AODV type has been caught.
+     * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
     private void processAodvMsgReceived(MessageAdHoc message) throws IOException,
             AodvUnknownTypeException, AodvUnknownDestException {
@@ -816,10 +816,20 @@ public class AodvManager {
         return Constants.UNKNOWN_SEQUENCE_NUMBER;
     }
 
+    /**
+     * Method allowing to get a DataLinkManager object.
+     *
+     * @return a DataLinkManager object which allows to manage Wrappers.
+     */
     public DataLinkManager getDataLink() {
         return dataLink;
     }
 
+    /**
+     * Method allowing to update the ListenerApp.
+     *
+     * @param listenerApp a ListenerApp object which contains callback functions.
+     */
     public void updateListener(ListenerApp listenerApp) {
         this.listenerApp = listenerApp;
         this.dataLink.updateListener(listenerApp);

@@ -47,6 +47,12 @@ import static android.net.wifi.p2p.WifiP2pManager.ERROR;
 import static android.net.wifi.p2p.WifiP2pManager.P2P_UNSUPPORTED;
 import static android.os.Looper.getMainLooper;
 
+/**
+ * <p>This class manages the Wi-Fi discovery and the pairing with other Wi-FI devices.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
 
     private static String TAG = "[AdHoc][WifiManager]";
@@ -363,7 +369,8 @@ public class WifiAdHocManager implements WifiP2pManager.ChannelListener {
     }
 
     /**
-     * Method allowing to update
+     * Method allowing to update the Group Owner value to influence the choice of the Group Owner
+     * negotiation.
      *
      * @param valueGroupOwner an integer value between 0 and 15 where 0 indicates the least
      *                        inclination to be a group owner and 15 indicates the highest inclination

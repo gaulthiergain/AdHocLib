@@ -20,6 +20,9 @@ public class RERR extends AodvMessage {
     @JsonProperty("unreachableDestSeqNum")
     private final long unreachableDestSeqNum;
 
+    /**
+     * Default constructor
+     */
     public RERR() {
         super(0);
         this.unreachableDestIpAddress = "";

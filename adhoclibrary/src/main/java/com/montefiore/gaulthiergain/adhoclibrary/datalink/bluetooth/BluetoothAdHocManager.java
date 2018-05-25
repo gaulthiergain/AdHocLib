@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * <p>This class manages the Bluetooth discovery and the peering with other bluetooth devices.</p>
+ * <p>This class manages the Bluetooth discovery and the pairing with other bluetooth devices.</p>
  *
  * @author Gaulthier Gain
  * @version 1.0

@@ -34,6 +34,17 @@ public class DataLinkManager {
     private final AbstractWrapper wrappers[];
     private final HashMap<String, AdHocDevice> mapAddressDevice;
 
+    /**
+     * Constructor
+     *
+     * @param verbose          a boolean value to set the debug/verbose mode.
+     * @param context          a Context object which gives global information about an application
+     *                         environment.
+     * @param config           a Config object which contains specific configurations.
+     * @param listenerApp      a ListenerApp object which contains callback functions.
+     * @param listenerDataLink a listenerDataLink object which contains callback functions.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public DataLinkManager(boolean verbose, Context context, Config config,
                            final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
             throws IOException {
@@ -60,6 +71,14 @@ public class DataLinkManager {
         checkState();
     }
 
+    /**
+     * Method allowing to perform a discovery depending the technology used. If the Bluetooth and
+     * Wi-Fi is enabled, the two discoveries are performed in parallel. A discovery stands for at
+     * least 10/12 seconds.
+     *
+     * @param discovery a DiscoveryListener object which contains callback function.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void discovery(final DiscoveryListener discovery) throws DeviceException {
 
         int enabled = checkState();
@@ -86,18 +105,31 @@ public class DataLinkManager {
         }
     }
 
-    public void connect(short attemps, AdHocDevice adHocDevice) throws DeviceException {
+    /**
+     * Method allowing to connect to a remote peer.
+     *
+     * @param attempts    an integer value which represents the number of attempts to try to connect
+     *                    to the remote peer.
+     * @param adHocDevice an AdHocDevice object which represents the remote peer.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
+    public void connect(short attempts, AdHocDevice adHocDevice) throws DeviceException {
 
         switch (adHocDevice.getType()) {
             case Service.WIFI:
-                wrappers[Service.WIFI].connect(attemps, adHocDevice);
+                wrappers[Service.WIFI].connect(attempts, adHocDevice);
                 break;
             case Service.BLUETOOTH:
-                wrappers[Service.BLUETOOTH].connect(attemps, adHocDevice);
+                wrappers[Service.BLUETOOTH].connect(attempts, adHocDevice);
                 break;
         }
     }
 
+    /**
+     * Method allowing to stop a listening on incoming connections.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void stopListening() throws IOException {
 
         for (AbstractWrapper wrapper : wrappers) {
@@ -108,6 +140,13 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to send a message to a remote peer.
+     *
+     * @param message a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @param address a String value which represents the address of the remote device.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void sendMessage(MessageAdHoc message, String address) throws IOException {
 
         for (AbstractWrapper wrapper : wrappers) {
@@ -117,6 +156,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to check if a node is a direct neighbour.
+     *
+     * @param address a String value which represents the address of the remote device.
+     * @return a boolean value which is true if the device is a direct neighbors. Otherwise, false.
+     */
     public boolean isDirectNeighbors(String address) {
 
         for (AbstractWrapper wrapper : wrappers) {
@@ -130,6 +175,12 @@ public class DataLinkManager {
         return false;
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes.
+     *
+     * @param message a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void broadcast(MessageAdHoc message) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -138,6 +189,13 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes.
+     *
+     * @param object a generic object used which will be encapsulated into a MessageAdHoc object.
+     * @return a boolean value which is true if the broadcast was successful. Otherwise, false.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public boolean broadcast(Object object) throws IOException {
         boolean sent = false;
         for (AbstractWrapper wrapper : wrappers) {
@@ -152,6 +210,14 @@ public class DataLinkManager {
         return sent;
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes excepted the excluded
+     * node.
+     *
+     * @param message         a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @param excludedAddress a String value which represents the excluded address.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void broadcastExcept(MessageAdHoc message, String excludedAddress) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -160,6 +226,15 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes excepted the excluded
+     * node.
+     *
+     * @param object          a generic object used which will be encapsulated into a MessageAdHoc object.
+     * @param excludedAddress a String value which represents the excluded address.
+     * @return a boolean value which is true if the broadcast was successful. Otherwise, false.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public boolean broadcastExcept(Object object, String excludedAddress) throws IOException {
 
         boolean sent = false;
@@ -175,6 +250,11 @@ public class DataLinkManager {
         return sent;
     }
 
+    /**
+     * Method allowing to get all the Bluetooth devices which are already paired.
+     *
+     * @return a HashMap<String, AdHocDevice> object which contains all paired Bluetooth devices.
+     */
     public HashMap<String, AdHocDevice> getPaired() {
         if (wrappers[Service.BLUETOOTH].isEnabled()) {
             return wrappers[Service.BLUETOOTH].getPaired();
@@ -182,12 +262,30 @@ public class DataLinkManager {
         return null;
     }
 
+    /**
+     * Method allowing to enable both Bluetooth and Wi-Fi technologies.
+     *
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     * @throws BluetoothBadDuration signals that the duration for the bluetooth discovery is invalid.
+     */
     public void enableAll(Context context, final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         for (AbstractWrapper wrapper : wrappers) {
             enable(0, context, wrapper.getType(), listenerAdapter);
         }
     }
 
+    /**
+     * Method allowing to enabled a particular technology depending the input type.
+     *
+     * @param duration        an integer value which is used to set up the time of the bluetooth discovery.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param type            an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     * @throws BluetoothBadDuration signals that the duration for the bluetooth discovery is invalid.
+     */
     public void enable(int duration, final Context context, final int type,
                        final ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
 
@@ -206,6 +304,11 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to disable all technologies.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void disableAll() throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -214,6 +317,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to disable a particular technology depending the input type.
+     *
+     * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void disable(int type) throws IOException {
         if (wrappers[type].isEnabled()) {
             wrappers[type].stopListening();
@@ -221,6 +330,11 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to get the direct neighbours of the current mobile.
+     *
+     * @return an ArrayList<AdHocDevice> object which represents the direct neighbours of the current mobile.
+     */
     public ArrayList<AdHocDevice> getDirectNeighbors() {
 
         ArrayList<AdHocDevice> adHocDevices = new ArrayList<>();
@@ -233,10 +347,24 @@ public class DataLinkManager {
         return adHocDevices;
     }
 
+    /**
+     * Method allowing to enable a a particular technology depending the input type.
+     *
+     * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @return a boolean value which is true if the asked technology has been enabled. Otherwise, false.
+     */
     public boolean isEnabled(int type) {
         return wrappers[type].isEnabled();
     }
 
+    /**
+     * Method allowing to update the name of a particular technology depending the input type.
+     *
+     * @param type    an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @param newName a String value which represents the new name of the device adapter.
+     * @return a boolean value which is true if the name was correctly updated. Otherwise, false.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public boolean updateAdapterName(int type, String newName) throws DeviceException {
         if (wrappers[type].isEnabled()) {
             return wrappers[type].updateDeviceName(newName);
@@ -245,6 +373,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to reset the adapter name of a particular technology depending the input type.
+     *
+     * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void resetAdapterName(int type) throws DeviceException {
         if (wrappers[type].isEnabled()) {
             wrappers[type].resetDeviceName();
@@ -253,6 +387,11 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to disconnect the mobile from a remote mobile.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void disconnectAll() throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -261,6 +400,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to disconnect the mobile from a a particular destination.
+     *
+     * @param remoteDest a String value which represents the current address of the destination.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     public void disconnect(String remoteDest) throws IOException {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -269,6 +414,11 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to get the adapter's names.
+     *
+     * @return a HashMap<Integer, String> object which contains the name of all active adapters.
+     */
     public HashMap<Integer, String> getActifAdapterNames() {
         @SuppressLint("UseSparseArrays") HashMap<Integer, String> adapterNames = new HashMap<>();
         for (AbstractWrapper wrapper : wrappers) {
@@ -281,6 +431,12 @@ public class DataLinkManager {
         return adapterNames;
     }
 
+    /**
+     * Method allowing to get the a particular adapter name depending the input type.
+     *
+     * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @return a String value which represents the adapter name depending the input type.
+     */
     public String getAdapterName(int type) {
         if (wrappers[type].isEnabled()) {
             return wrappers[type].getAdapterName();
@@ -288,6 +444,12 @@ public class DataLinkManager {
         return null;
     }
 
+    /**
+     * Method allowing to update the current context.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
     public void updateContext(Context context) {
         for (AbstractWrapper wrapper : wrappers) {
             if (wrapper.isEnabled()) {
@@ -296,6 +458,17 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to un-pair a bluetooth device.
+     *
+     * @param adHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth device.
+     * @throws InvocationTargetException signals that a method does not exist.
+     * @throws IllegalAccessException    signals that an application tries to reflectively create
+     *                                   an instance which has no access to the definition of
+     *                                   the specified class
+     * @throws NoSuchMethodException     signals that a method does not exist.
+     * @throws DeviceException           signals that a Device Exception exception has occurred.
+     */
     public void unpairDevice(BluetoothAdHocDevice adHocDevice)
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, DeviceException {
         WrapperBluetooth wrapperBt = (WrapperBluetooth) wrappers[Service.BLUETOOTH];
@@ -306,6 +479,17 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to update the Group Owner value to influence the choice of the Group Owner
+     * negotiation.
+     *
+     * @param valueGroupOwner an integer value between 0 and 15 where 0 indicates the least
+     *                        inclination to be a group owner and 15 indicates the highest inclination
+     *                        to be a group owner. A value of -1 indicates the system can choose
+     *                        an appropriate value.
+     * @throws GroupOwnerBadValue signals that the value for the Group Owner intent is invalid.
+     * @throws DeviceException    signals that a Device Exception exception has occurred.
+     */
     public void setWifiGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue, DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
@@ -315,6 +499,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to remove a current Wi-Fi group.
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void removeGroup(ListenerAction listenerAction) throws DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
@@ -324,6 +514,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to check if the current device is the Group Owner.
+     *
+     * @return a boolean value which is true if the current device is the Group Owner. Otherwise, false.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public boolean isWifiGroupOwner() throws DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
@@ -333,7 +529,12 @@ public class DataLinkManager {
         }
     }
 
-
+    /**
+     * Method allowing to cancel a Wi-Fi connection (during the Group Owner negociation).
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void cancelConnection(ListenerAction listenerAction) throws DeviceException {
         IWrapperWifi wrapperWifi = (IWrapperWifi) wrappers[Service.WIFI];
         if (wrapperWifi.isEnabled()) {
@@ -343,12 +544,22 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to update the ListenerApp.
+     *
+     * @param listenerApp a ListenerApp object which contains callback functions.
+     */
     public void updateListener(ListenerApp listenerApp) {
         for (AbstractWrapper wrapper : wrappers) {
             wrapper.updateListener(listenerApp);
         }
     }
 
+    /**
+     * Method allowing to get the state (enabled/disabled of the current
+     *
+     * @return
+     */
     public int checkState() {
         int enabled = 0;
         for (AbstractWrapper wrapper : wrappers) {
@@ -359,6 +570,11 @@ public class DataLinkManager {
         return enabled;
     }
 
+    /**
+     * Method allowing to perform the discovery in parallel for both technologies.
+     *
+     * @param discovery A DiscoveryListener object which contains callback methods.
+     */
     private void bothDiscovery(final DiscoveryListener discovery) {
 
         @SuppressLint("HandlerLeak") final Handler mHandler = new Handler(Looper.getMainLooper()) {
@@ -368,6 +584,7 @@ public class DataLinkManager {
             }
         };
 
+        // Launch discovery independently
         for (AbstractWrapper wrapper : wrappers) {
             wrapper.discovery(discovery);
         }
@@ -407,6 +624,15 @@ public class DataLinkManager {
         }).start();
     }
 
+    /**
+     * Method allowing to process the activation of the adapter.
+     *
+     * @param type            an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @param success         a boolean value which is true if the adapter has been correctly enabled.
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     */
     private void processListenerAdapter(int type, boolean success, Context context,
                                         final ListenerAdapter listenerAdapter) {
         if (success) {
@@ -434,6 +660,12 @@ public class DataLinkManager {
         }
     }
 
+    /**
+     * Method allowing to get the type of the wrapper into a String a value.
+     *
+     * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
+     * @return a String value which represents the type of the wrapper.
+     */
     private String getTypeString(int type) {
         switch (type) {
             case Service.BLUETOOTH:
@@ -448,5 +680,4 @@ public class DataLinkManager {
     public interface ListenerBothDiscovery {
         void onDiscoveryCompleted(HashMap<String, AdHocDevice> mapAddressDevice);
     }
-
 }

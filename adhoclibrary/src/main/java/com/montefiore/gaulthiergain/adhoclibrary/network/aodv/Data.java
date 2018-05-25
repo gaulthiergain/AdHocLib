@@ -1,12 +1,5 @@
 package com.montefiore.gaulthiergain.adhoclibrary.network.aodv;
 
-/**
- * <p>This class represents a DATA message and all theses fields for the AODV protocol. </p>
- *
- * @author Gaulthier Gain
- * @version 1.0
- */
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -33,6 +26,9 @@ public class Data implements Serializable {
     @JsonSerialize(using = Serializer.class)
     private Object payload;
 
+    /**
+     * Default constructor
+     */
     public Data() {
         destIpAddress = "";
         payload = null;
@@ -63,19 +59,23 @@ public class Data implements Serializable {
         return destIpAddress;
     }
 
-    public Object getPayload() {
-        return payload;
-    }
-
-    public void setPayload(Object payload) {
-        this.payload = payload;
-    }
-
     /**
      * Method allowing to get the PDU of the DATA message.
      *
      * @return a Serializable object which represents the PDU of the DATA message.
      */
+    public Object getPayload() {
+        return payload;
+    }
+
+    /**
+     * Method allowing to set the PDU of the DATA message.
+     *
+     * @param payload a Serializable object which represents the PDU of the DATA message.
+     */
+    public void setPayload(Object payload) {
+        this.payload = payload;
+    }
 
 
     @Override

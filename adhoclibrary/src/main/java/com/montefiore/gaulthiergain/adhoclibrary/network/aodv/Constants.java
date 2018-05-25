@@ -14,9 +14,8 @@ public interface Constants {
     //Sequence Numbers
     long MIN_VALID_SEQ_NUM = 0;
     long MAX_VALID_SEQ_NUM = Long.MAX_VALUE;
-    long UNKNOWN_SEQUENCE_NUMBER = -1; //TODO change to 0
+    long UNKNOWN_SEQUENCE_NUMBER = 0;
     long FIRST_SEQUENCE_NUMBER = 1;
-    long SEQUENCE_NUMBER_INTERVAL = (Integer.MAX_VALUE / 2);
 
     // AODV PDU types
     byte RREQ = 1;
@@ -31,10 +30,10 @@ public interface Constants {
     int EXPIRED_TIME = EXPIRED_TABLE * 2;
 
     byte NO_LIFE_TIME = -1;
-    //alive time for a route
+    // Alive time for a route
     int LIFE_TIME = EXPIRED_TIME;
 
-    //the time of hello packets
+    // Time of hello packets
     int HELLO_PACKET_INTERVAL_SND = 15000;
     int HELLO_PACKET_INTERVAL = HELLO_PACKET_INTERVAL_SND / 3;
 

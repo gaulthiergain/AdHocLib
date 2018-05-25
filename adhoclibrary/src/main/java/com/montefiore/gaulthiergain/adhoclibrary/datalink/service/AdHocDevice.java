@@ -167,6 +167,15 @@ public class AdHocDevice implements Parcelable, Serializable {
     }
 
     /**
+     * Method allowing to set the flag directedConnected.
+     *
+     * @param directedConnected a boolean value which represents if the device is directly connected.
+     */
+    public void setDirectedConnected(boolean directedConnected) {
+        this.directedConnected = directedConnected;
+    }
+
+    /**
      * Method allowing to get the label used to identify device.
      *
      * @return a String value which represents the label used to identify device.
