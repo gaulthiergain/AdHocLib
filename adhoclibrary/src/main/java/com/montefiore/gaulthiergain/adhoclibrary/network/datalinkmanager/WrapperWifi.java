@@ -27,6 +27,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
@@ -404,22 +405,38 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 break;
             }
             case CONNECT_BROADCAST: {
-                if (checkFloodEvent(message)) {
+                if (checkFloodEvent(((FloodMsg) message.getPdu()).getId())) {
 
-                    // Get Messsage Header
-                    Header header = message.getHeader();
+                    // Re-broadcast message
+                    broadcastExcept(message, message.getHeader().getLabel());
 
-                    // Remote connection happens in other node
-                    listenerApp.onConnection(new AdHocDevice(header.getLabel(), header.getMac(),
-                            header.getName(), type, false));
+                    // Get Message info
+                    HashSet<AdHocDevice> list = ((FloodMsg) message.getPdu()).getAdHocDevices();
+
+                    // Remote connection(s) happen(s) in other node(s)
+                    for (AdHocDevice adHocDevice : list) {
+                        if (!adHocDevice.getLabel().equals(label) && !setRemoteDevices.contains(adHocDevice)
+                                && !isDirectNeighbors(adHocDevice.getLabel())) {
+
+                            adHocDevice.setDirectedConnected(false);
+
+                            listenerApp.onConnection(adHocDevice);
+
+                            // Update set
+                            setRemoteDevices.add(adHocDevice);
+                        }
+                    }
                 }
 
                 break;
             }
             case DISCONNECT_BROADCAST: {
-                if (checkFloodEvent(message)) {
+                if (checkFloodEvent((String) message.getPdu())) {
 
-                    // Get Messsage Header
+                    // Re-broadcast message
+                    broadcastExcept(message, message.getHeader().getLabel());
+
+                    // Get Message Header
                     Header header = message.getHeader();
 
                     // Remote connection is closed in other node

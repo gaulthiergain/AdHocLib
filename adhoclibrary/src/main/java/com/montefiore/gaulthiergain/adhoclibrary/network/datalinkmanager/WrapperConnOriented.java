@@ -92,7 +92,7 @@ abstract class WrapperConnOriented extends AbstractWrapper {
 
     public ArrayList<AdHocDevice> getDirectNeighbors() {
         ArrayList<AdHocDevice> arrayList = new ArrayList<>();
-        for (String mac: neighbors.getLabelMac().values()) {
+        for (String mac : neighbors.getLabelMac().values()) {
             arrayList.add(mapAddrDevices.get(mac));
         }
         return arrayList;
@@ -127,6 +127,11 @@ abstract class WrapperConnOriented extends AbstractWrapper {
                         adHocDevice.getMacAddress(), adHocDevice.getLabel(), adHocDevice.getDeviceName(),
                         adHocDevice.getType());
                 broadcastExcept(new MessageAdHoc(header, id), adHocDevice.getLabel());
+
+                // Update set
+                if (setRemoteDevices.contains(adHocDevice)) {
+                    setRemoteDevices.remove(adHocDevice);
+                }
             }
         } else {
             throw new NoConnectionException("Error while closing connection");
@@ -156,12 +161,18 @@ abstract class WrapperConnOriented extends AbstractWrapper {
             // Callback connection
             listenerApp.onConnection(device);
 
+            // Update set
+            setRemoteDevices.add(device);
+
             // If connectionFlooding option is enable, flood connect events
             if (connectionFlooding) {
                 String id = header.getLabel() + System.currentTimeMillis();
                 setFloodEvents.add(id);
                 header.setType(AbstractWrapper.CONNECT_BROADCAST);
-                broadcastExcept(new MessageAdHoc(header, id), header.getLabel());
+                broadcastExcept(new MessageAdHoc(header, new FloodMsg(id, setRemoteDevices)), header.getLabel());
+
+                header.setType(AbstractWrapper.CONNECT_BROADCAST);
+                sendMessage(new MessageAdHoc(header, new FloodMsg(id, setRemoteDevices)), header.getLabel());
             }
 
         }

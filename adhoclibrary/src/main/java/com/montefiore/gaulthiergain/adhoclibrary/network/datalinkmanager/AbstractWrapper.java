@@ -44,6 +44,8 @@ abstract class AbstractWrapper {
 
     Set<String> setFloodEvents;
 
+    HashSet<AdHocDevice> setRemoteDevices;
+
     AbstractWrapper(boolean v, Config config, HashMap<String, AdHocDevice> mapMacDevices,
                     ListenerApp listenerApp, ListenerDataLink listenerDataLink) {
 
@@ -58,6 +60,8 @@ abstract class AbstractWrapper {
         this.listenerApp = listenerApp;
         this.mapMacDevices = mapMacDevices;
         this.listenerDataLink = listenerDataLink;
+
+        this.setRemoteDevices = new HashSet<>();
     }
 
     abstract void connect(short attemps, AdHocDevice device) throws DeviceException;
@@ -124,13 +128,10 @@ abstract class AbstractWrapper {
         return ownMac;
     }
 
-    boolean checkFloodEvent(MessageAdHoc message) throws IOException {
-
-        String id = (String) message.getPdu();
+    boolean checkFloodEvent(String id) {
 
         if (!setFloodEvents.contains(id)) {
             setFloodEvents.add(id);
-            broadcastExcept(message, message.getHeader().getLabel());
 
             return true;
         }

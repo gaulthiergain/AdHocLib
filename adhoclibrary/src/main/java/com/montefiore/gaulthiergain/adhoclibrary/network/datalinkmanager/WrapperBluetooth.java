@@ -27,6 +27,7 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -70,7 +71,7 @@ class WrapperBluetooth extends WrapperConnOriented {
 
         BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
         if (btDevice != null) {
-            if (!serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
+            if (serviceServer.getActiveConnections()!= null && !serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
                 _connect(attemps, btDevice);
             } else {
                 throw new DeviceException(device.getDeviceName()
@@ -342,27 +343,49 @@ class WrapperBluetooth extends WrapperConnOriented {
                 break;
             }
             case CONNECT_BROADCAST: {
-                if (checkFloodEvent(message)) {
+                if (checkFloodEvent(((FloodMsg) message.getPdu()).getId())) {
 
-                    // Get Messsage Header
-                    Header header = message.getHeader();
+                    // Re-broadcast message
+                    broadcastExcept(message, message.getHeader().getLabel());
 
-                    // Remote connection happens in other node
-                    listenerApp.onConnection(new AdHocDevice(header.getLabel(), header.getMac(),
-                            header.getName(), type, false));
+                    // Get Message info
+                    HashSet<AdHocDevice> list = ((FloodMsg) message.getPdu()).getAdHocDevices();
+
+                    // Remote connection(s) happen(s) in other node(s)
+                    for (AdHocDevice adHocDevice : list) {
+                        if (!adHocDevice.getLabel().equals(label) && !setRemoteDevices.contains(adHocDevice)
+                                && !isDirectNeighbors(adHocDevice.getLabel())) {
+
+                            adHocDevice.setDirectedConnected(false);
+
+                            listenerApp.onConnection(adHocDevice);
+
+                            // Update set
+                            setRemoteDevices.add(adHocDevice);
+                        }
+                    }
                 }
 
                 break;
             }
             case DISCONNECT_BROADCAST: {
-                if (checkFloodEvent(message)) {
+                if (checkFloodEvent((String) message.getPdu())) {
 
-                    // Get Messsage Header
+                    // Re-broadcast message
+                    broadcastExcept(message, message.getHeader().getLabel());
+
+                    // Get Message Header
                     Header header = message.getHeader();
 
+                    AdHocDevice adHocDevice = new AdHocDevice(header.getLabel(), header.getMac(),
+                            header.getName(), type, false);
+
                     // Remote connection is closed in other node
-                    listenerApp.onConnectionClosed(new AdHocDevice(header.getLabel(), header.getMac(),
-                            header.getName(), type, false));
+                    listenerApp.onConnectionClosed(adHocDevice);
+
+                    if (setRemoteDevices.contains(adHocDevice)) {
+                        setRemoteDevices.remove(adHocDevice);
+                    }
                 }
                 break;
             }
