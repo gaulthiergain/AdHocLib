@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Gaulthier Gain
  * @version 1.0
  */
-
 class Neighbors {
 
     private ConcurrentHashMap<String, SocketManager> neighbors;

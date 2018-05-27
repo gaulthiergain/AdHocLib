@@ -70,9 +70,9 @@ public class AodvManager {
         this.listenerDataLink = new ListenerDataLink() {
 
             @Override
-            public void initInfos(String mac, String name) {
-                ownMac = mac;
-                ownName = name;
+            public void initInfos(String macAddress, String deviceName) {
+                ownMac = macAddress;
+                ownName = deviceName;
             }
 
             @Override
@@ -153,7 +153,8 @@ public class AodvManager {
     /**
      * Method allowing to send directly a message to a remote address
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @param address a String value which represents the destination address.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
@@ -165,7 +166,8 @@ public class AodvManager {
     /**
      * Method allowing to send a message to a remote address.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @param address a String value which represents the destination address.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
@@ -288,7 +290,8 @@ public class AodvManager {
     /**
      * Method allowing to process a RREP message.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException              signals that an I/O exception of some sort has occurred.
      * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
@@ -345,7 +348,8 @@ public class AodvManager {
     /**
      * Method allowing to process a RREP message.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException              signals that an I/O exception of some sort has occurred.
      * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
@@ -394,7 +398,8 @@ public class AodvManager {
     /**
      * Method allowing to process a RERR message.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     private void processRERR(MessageAdHoc message) throws IOException {
@@ -435,7 +440,8 @@ public class AodvManager {
     /**
      * Method allowing to process a DATA message.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException              signals that an I/O exception of some sort has occurred.
      * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.
      */
@@ -689,7 +695,8 @@ public class AodvManager {
     /**
      * Method allowing to process AODV messages.
      *
-     * @param message a MessageAdHoc object which represents a message exchanged between nodes.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException              signals that an I/O exception of some sort has occurred.
      * @throws AodvUnknownTypeException signals that a Unknown AODV type has been caught.
      * @throws AodvUnknownDestException signals that an AodvUnknownDestException has occurred.

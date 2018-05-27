@@ -16,13 +16,13 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceConfig;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.sockets.SocketManager;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager.ServiceDiscoverListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiClient;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiServer;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -30,6 +30,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+/**
+ * <p>This class represents a wrapper and manages all communications related to TCP for Wi-FI.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifi]";
@@ -41,6 +47,19 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
     private WifiAdHocManager wifiAdHocManager;
     private HashMap<String, String> mapAddrMac;
 
+    /**
+     * Constructor
+     *
+     * @param verbose          a boolean value to set the debug/verbose mode.
+     * @param context          a Context object which gives global information about an application
+     *                         environment.
+     * @param config           a Config object which contains specific configurations.
+     * @param mapAddressDevice a HashMap<String, AdHocDevice> which maps a UUID address entry to an
+     *                         AdHocDevice object.
+     * @param listenerApp      a ListenerApp object which contains callback functions.
+     * @param listenerDataLink a ListenerDataLink object which contains callback functions.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     WrapperWifi(boolean verbose, Context context, Config config,
                 HashMap<String, AdHocDevice> mapAddressDevice,
                 final ListenerApp listenerApp, final ListenerDataLink listenerDataLink)
@@ -68,6 +87,14 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     /*-------------------------------------Override methods---------------------------------------*/
 
+    /**
+     * Method allowing to initialize internal parameters.
+     *
+     * @param config  a Config object which contains specific configurations.
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     @Override
     void init(Config config, Context context) throws IOException {
         this.isGroupOwner = false;
@@ -76,6 +103,12 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         this.listenServer();
     }
 
+    /**
+     * Method allowing to get a remote IP from a MAC address.
+     *
+     * @param mac a String value which represents the MAC address of a remote device.
+     * @return a String value which represents the IP address of a remote device.
+     */
     private String getIpByMac(String mac) {
         for (Map.Entry<String, String> entry : mapAddrMac.entrySet()) {
             if (mac.equals(entry.getValue())) {
@@ -85,29 +118,49 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         return null;
     }
 
+    /**
+     * Method allowing to connect to a remote peer.
+     *
+     * @param attempts    an integer value which represents the number of attempts to try to connect
+     *                    to the remote peer.
+     * @param adHocDevice an AdHocDevice object which represents the remote peer.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     @Override
-    void connect(short attempts, AdHocDevice device) throws DeviceException {
+    void connect(short attempts, AdHocDevice adHocDevice) throws DeviceException {
 
-        String ip = getIpByMac(device.getMacAddress());
+        String ip = getIpByMac(adHocDevice.getMacAddress());
         if (ip == null) {
-            this.attemps = attempts;
-            wifiAdHocManager.connect(device.getMacAddress());
+            this.attempts = attempts;
+            wifiAdHocManager.connect(adHocDevice.getMacAddress());
         } else {
             if (!serviceServer.getActiveConnections().containsKey(ip)) {
-                this.attemps = attempts;
-                wifiAdHocManager.connect(device.getMacAddress());
+                this.attempts = attempts;
+                wifiAdHocManager.connect(adHocDevice.getMacAddress());
             } else {
-                throw new DeviceException(device.getDeviceName()
-                        + "(" + device.getMacAddress() + ") is already connected");
+                throw new DeviceException(adHocDevice.getDeviceName()
+                        + "(" + adHocDevice.getMacAddress() + ") is already connected");
             }
         }
     }
 
+    /**
+     * Method allowing to stop a listening on incoming connections.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     @Override
     void stopListening() throws IOException {
         serviceServer.stopListening();
     }
 
+    /**
+     * Method allowing to perform a discovery depending the technology used. If the Bluetooth and
+     * Wi-Fi is enabled, the two discoveries are performed in parallel. A discovery stands for at
+     * least 10/12 seconds.
+     *
+     * @param discoveryListener a DiscoveryListener object which contains callback function.
+     */
     @Override
     void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
@@ -162,17 +215,35 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         });
     }
 
+    /**
+     * Method allowing to get all the Bluetooth devices which are already paired. It is not used
+     * in this context.
+     *
+     * @return a HashMap<String, AdHocDevice> object which contains all paired Bluetooth devices.
+     */
     @Override
     HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }
 
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }
 
+    /**
+     * Method allowing to enabled a particular technology.
+     *
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param duration        an integer value which is used to set up the time of the bluetooth
+     *                        discovery. It is not used in this context.
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     */
     @Override
     void enable(Context context, int duration, ListenerAdapter listenerAdapter) {
         this.wifiAdHocManager = new WifiAdHocManager(v, context, serverPort, initConnectionListener(),
@@ -189,6 +260,9 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         enabled = true;
     }
 
+    /**
+     * Method allowing to disabled a particular technology.
+     */
     @Override
     void disable() {
         // Clear data structure if adapter is disabled
@@ -201,27 +275,49 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         enabled = false;
     }
 
+    /**
+     * Method allowing to update the current context.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
     @Override
     void updateContext(Context context) {
         wifiAdHocManager.updateContext(context);
     }
 
-
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterAdapter() {
         // Not used in wifi context
     }
 
+    /**
+     * Method allowing to reset the adapter name of a particular technology.
+     */
     @Override
     void resetDeviceName() {
         wifiAdHocManager.resetDeviceName();
     }
 
+    /**
+     * Method allowing to update the name of a particular technology.
+     *
+     * @param name a String value which represents the new name of the device adapter.
+     * @return a boolean value which is true if the name was correctly updated. Otherwise, false.
+     */
     @Override
     boolean updateDeviceName(String name) {
         return wifiAdHocManager.updateDeviceName(name);
     }
 
+    /**
+     * Method allowing to get a particular adapter name.
+     *
+     * @return a String which represents the name of a particular adapter name.
+     */
     @Override
     String getAdapterName() {
         return wifiAdHocManager.getAdapterName();
@@ -229,6 +325,16 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     /*--------------------------------------IWifi methods----------------------------------------*/
 
+    /**
+     * Method allowing to update the Group Owner value to influence the choice of the Group Owner
+     * negotiation.
+     *
+     * @param valueGroupOwner an integer value between 0 and 15 where 0 indicates the least
+     *                        inclination to be a group owner and 15 indicates the highest inclination
+     *                        to be a group owner. A value of -1 indicates the system can choose
+     *                        an appropriate value.
+     * @throws GroupOwnerBadValue signals that the value for the Group Owner intent is invalid.
+     */
     @Override
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
@@ -239,16 +345,31 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
 
+    /**
+     * Method allowing to remove a current Wi-Fi group.
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     */
     @Override
     public void removeGroup(ListenerAction listenerAction) {
         wifiAdHocManager.removeGroup(listenerAction);
     }
 
+    /**
+     * Method allowing to cancel a Wi-Fi connection (during the Group Owner negotiation).
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     */
     @Override
     public void cancelConnect(ListenerAction listenerAction) {
         wifiAdHocManager.cancelConnection(listenerAction);
     }
 
+    /**
+     * Method allowing to check if the current device is the Group Owner.
+     *
+     * @return a boolean value which is true if the current device is the Group Owner. Otherwise, false.
+     */
     @Override
     public boolean isWifiGroupOwner() {
         return isGroupOwner;
@@ -256,6 +377,11 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
 
     /*--------------------------------------Private methods---------------------------------------*/
 
+    /**
+     * Method allowing to launch a server to handle incoming connections in background.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private void listenServer() throws IOException {
         serviceServer = new WifiServer(v, json, new ServiceMessageListener() {
             @Override
@@ -299,9 +425,14 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         serviceServer.listen(new ServiceConfig(nbThreads, serverPort));
     }
 
+    /**
+     * Method allowing to connect to a remote node/
+     *
+     * @param remotePort an integer value which represents the port of the remote peer.
+     */
     private void _connect(int remotePort) {
         final WifiClient wifiClient = new WifiClient(v, json,
-                groupOwnerAddr, remotePort, timeout, attemps, new ServiceMessageListener() {
+                groupOwnerAddr, remotePort, timeout, attempts, new ServiceMessageListener() {
             @Override
             public void onConnectionClosed(String remoteAddress) {
                 try {
@@ -359,6 +490,13 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         new Thread(wifiClient).start();
     }
 
+    /**
+     * Method allowing to process messages from remote nodes.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private void processMsgReceived(final MessageAdHoc message) throws IOException {
 
         switch (message.getHeader().getType()) {
@@ -459,6 +597,11 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
         }
     }
 
+    /**
+     * Method allowing to initialize the ConnectionWifiListener object.
+     *
+     * @return a ConnectionWifiListener object which contains callback functions.
+     */
     private ConnectionWifiListener initConnectionListener() {
         return new ConnectionWifiListener() {
             @Override
@@ -493,8 +636,8 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
                 serviceServer.stopListening();
 
                 // If attempts is not defined set to 1
-                if (attemps == 0) {
-                    attemps = 3;
+                if (attempts == 0) {
+                    attempts = 3;
                 }
 
                 wifiAdHocManager.discoverService(new ServiceDiscoverListener() {
@@ -508,6 +651,4 @@ class WrapperWifi extends WrapperConnOriented implements IWrapperWifi {
             }
         };
     }
-
-
 }

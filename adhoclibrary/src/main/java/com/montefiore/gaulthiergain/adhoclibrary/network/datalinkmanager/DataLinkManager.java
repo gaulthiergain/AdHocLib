@@ -25,6 +25,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * <p>This class acts as an intermediary sub-layer between the lower layer and the sub-layer related
+ * to the routing protocol. It chooses which wrapper to use to transmit data.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class DataLinkManager {
 
     private static final int POOLING_DISCOVERY = 1000;
@@ -143,7 +150,8 @@ public class DataLinkManager {
     /**
      * Method allowing to send a message to a remote peer.
      *
-     * @param message a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @param address a String value which represents the address of the remote device.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
@@ -178,7 +186,8 @@ public class DataLinkManager {
     /**
      * Method allowing to broadcast a message to all directly connected nodes.
      *
-     * @param message a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
     public void broadcast(MessageAdHoc message) throws IOException {
@@ -214,7 +223,8 @@ public class DataLinkManager {
      * Method allowing to broadcast a message to all directly connected nodes excepted the excluded
      * node.
      *
-     * @param message         a MessageAdHoc which represents the message that must be sent to the remote peer.
+     * @param message         a MessageAdHoc object which represents the message to send through
+     *                        the network.
      * @param excludedAddress a String value which represents the excluded address.
      * @throws IOException signals that an I/O exception of some sort has occurred.
      */
@@ -348,10 +358,10 @@ public class DataLinkManager {
     }
 
     /**
-     * Method allowing to enable a a particular technology depending the input type.
+     * Method allowing to check if a particular technology is enabled depending the input type.
      *
      * @param type an integer value which represents the type of the wrapper. 1: Bluetooth and 0: Wi-Fi
-     * @return a boolean value which is true if the asked technology has been enabled. Otherwise, false.
+     * @return a boolean value which is true is enabled. Otherwise, false.
      */
     public boolean isEnabled(int type) {
         return wrappers[type].isEnabled();
@@ -530,7 +540,7 @@ public class DataLinkManager {
     }
 
     /**
-     * Method allowing to cancel a Wi-Fi connection (during the Group Owner negociation).
+     * Method allowing to cancel a Wi-Fi connection (during the Group Owner negotiation).
      *
      * @param listenerAction a ListenerAction object which contains callback functions.
      * @throws DeviceException signals that a Device Exception exception has occurred.
@@ -556,9 +566,9 @@ public class DataLinkManager {
     }
 
     /**
-     * Method allowing to get the state (enabled/disabled of the current
+     * Method allowing to get the state (enabled/disabled) of the different technologies.
      *
-     * @return
+     * @return an integer value which represents the number of technologies enabled.
      */
     public int checkState() {
         int enabled = 0;

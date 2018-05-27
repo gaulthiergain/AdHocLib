@@ -6,9 +6,11 @@ import com.montefiore.gaulthiergain.adhoclibrary.appframework.exceptions.MaxThre
 import java.util.UUID;
 
 /**
- * Created by gaulthiergain on 21/03/18.
+ * <p>This class defines several different parameters to setup the library's behaviour. </p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
  */
-
 public class Config {
 
     private static final short MAX_THREAD = 8;

@@ -19,16 +19,15 @@ import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.Service;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.service.ServiceMessageListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPDU;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.udpwifi.UdpPeers;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
+import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.ConnectionWifiListener;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocDevice;
 import com.montefiore.gaulthiergain.adhoclibrary.datalink.wifi.WifiAdHocManager;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.Constants;
 import com.montefiore.gaulthiergain.adhoclibrary.network.aodv.TypeAodv;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.Header;
-import com.montefiore.gaulthiergain.adhoclibrary.datalink.util.MessageAdHoc;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -39,6 +38,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * <p>This class represents a wrapper and manages all communications related to UDP for Wi-FI.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     private static final String TAG = "[AdHoc][WrapperWifiUdp]";
@@ -54,6 +59,18 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
     private HashMap<String, Long> helloMessages;
     private HashMap<String, AdHocDevice> neighbors;
 
+    /**
+     * Constructor
+     *
+     * @param verbose          a boolean value to set the debug/verbose mode.
+     * @param context          a Context object which gives global information about an application
+     *                         environment.
+     * @param config           a Config object which contains specific configurations.
+     * @param mapAddressDevice a HashMap<String, AdHocDevice> which maps a UUID address entry to an
+     *                         AdHocDevice object.
+     * @param listenerApp      a ListenerApp object which contains callback functions.
+     * @param listenerDataLink a ListenerDataLink object which contains callback functions.
+     */
     WrapperWifiUdp(boolean verbose, Context context, Config config,
                    HashMap<String, AdHocDevice> mapAddressDevice,
                    final ListenerApp listenerApp, final ListenerDataLink listenerDataLink) {
@@ -78,27 +95,63 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
     /*-------------------------------------Override methods---------------------------------------*/
 
-    @Override
-    void connect(short attempts, AdHocDevice device) throws DeviceException {
 
-        String label = getLabelByMac(device.getMacAddress());
+    /**
+     * Method allowing to initialize internal parameters.
+     *
+     * @param config  a Config object which contains specific configurations.
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
+    @Override
+    void init(Config config, Context context) {
+        this.isGroupOwner = false;
+        this.neighbors = new HashMap<>();
+        this.helloMessages = new HashMap<>();
+        this.ackSet = new HashSet<>();
+        this.serverPort = config.getServerPort();
+        this.listenServer();
+    }
+
+    /**
+     * Method allowing to connect to a remote peer.
+     *
+     * @param attempts    an integer value which represents the number of attempts to try to connect
+     *                    to the remote peer.
+     * @param adHocDevice an AdHocDevice object which represents the remote peer.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
+    @Override
+    void connect(short attempts, AdHocDevice adHocDevice) throws DeviceException {
+
+        String label = getLabelByMac(adHocDevice.getMacAddress());
         if (label == null) {
-            wifiAdHocManager.connect(device.getMacAddress());
+            wifiAdHocManager.connect(adHocDevice.getMacAddress());
         } else {
             if (!neighbors.containsKey(label)) {
-                wifiAdHocManager.connect(device.getMacAddress());
+                wifiAdHocManager.connect(adHocDevice.getMacAddress());
             } else {
-                throw new DeviceException(device.getDeviceName()
-                        + "(" + device.getMacAddress() + ") is already connected");
+                throw new DeviceException(adHocDevice.getDeviceName()
+                        + "(" + adHocDevice.getMacAddress() + ") is already connected");
             }
         }
     }
 
+    /**
+     * Method allowing to stop a listening on incoming connections.
+     */
     @Override
     void stopListening() {
         udpPeers.stopServer();
     }
 
+    /**
+     * Method allowing to perform a discovery depending the technology used. If the Bluetooth and
+     * Wi-Fi is enabled, the two discoveries are performed in parallel. A discovery stands for at
+     * least 10/12 seconds.
+     *
+     * @param discoveryListener a DiscoveryListener object which contains callback function.
+     */
     @Override
     void discovery(final DiscoveryListener discoveryListener) {
         wifiAdHocManager.discovery(new DiscoveryListener() {
@@ -114,8 +167,6 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
 
             @Override
             public void onDeviceDiscovered(AdHocDevice device) {
-
-                //todo refactor this
 
                 if (!mapMacDevices.containsKey(device.getMacAddress())) {
                     if (v)
@@ -154,12 +205,27 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         });
     }
 
+    /**
+     * Method allowing to get all the Bluetooth devices which are already paired. It is not used
+     * in this context.
+     *
+     * @return a HashMap<String, AdHocDevice> object which contains all paired Bluetooth devices.
+     */
     @Override
     HashMap<String, AdHocDevice> getPaired() {
         // Not used in wifi context
         return null;
     }
 
+    /**
+     * Method allowing to enabled a particular technology.
+     *
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param duration        an integer value which is used to set up the time of the bluetooth
+     *                        discovery. It is not used in this context.
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     */
     @Override
     void enable(Context context, int duration, ListenerAdapter listenerAdapter) {
         this.wifiAdHocManager = new WifiAdHocManager(v, context, serverPort, initConnectionListener(),
@@ -176,6 +242,9 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         enabled = true;
     }
 
+    /**
+     * Method allowing to disabled a particular technology.
+     */
     @Override
     void disable() {
         // Clear data structure if adapter is disabled
@@ -188,60 +257,95 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         enabled = false;
     }
 
+    /**
+     * Method allowing to update the current context.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
     @Override
     void updateContext(Context context) {
         wifiAdHocManager.updateContext(context);
     }
 
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterConnection() {
         wifiAdHocManager.unregisterConnection();
     }
 
-    @Override
-    void init(Config config, Context context) {
-        this.isGroupOwner = false;
-        this.neighbors = new HashMap<>();
-        this.helloMessages = new HashMap<>();
-        this.ackSet = new HashSet<>();
-        this.serverPort = config.getServerPort();
-        this.listenServer();
-    }
-
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterAdapter() {
         // Not used in wifi context
     }
 
+    /**
+     * Method allowing to reset the adapter name of a particular technology.
+     */
     @Override
     void resetDeviceName() {
         wifiAdHocManager.resetDeviceName();
     }
 
+    /**
+     * Method allowing to update the name of a particular technology.
+     *
+     * @param name a String value which represents the new name of the device adapter.
+     * @return a boolean value which is true if the name was correctly updated. Otherwise, false.
+     */
     @Override
     boolean updateDeviceName(String name) {
         return wifiAdHocManager.updateDeviceName(name);
     }
 
+    /**
+     * Method allowing to get a particular adapter name.
+     *
+     * @return a String which represents the name of a particular adapter name.
+     */
     @Override
     String getAdapterName() {
         return wifiAdHocManager.getAdapterName();
     }
 
+    /**
+     * Method allowing to send a message to a remote peer.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     * @param address a String value which represents the address of the remote device.
+     */
     @Override
-    void sendMessage(MessageAdHoc msg, String label) {
+    void sendMessage(MessageAdHoc message, String address) {
 
-        WifiAdHocDevice wifiDevice = (WifiAdHocDevice) neighbors.get(label);
+        WifiAdHocDevice wifiDevice = (WifiAdHocDevice) neighbors.get(address);
         if (wifiDevice != null) {
-            _sendMessage(msg, wifiDevice.getIpAddress());
+            _sendMessage(message, wifiDevice.getIpAddress());
         }
     }
 
+    /**
+     * Method allowing to check if a node is a direct neighbour.
+     *
+     * @param address a String value which represents the address of the remote device.
+     * @return a boolean value which is true if the device is a direct neighbors. Otherwise, false.
+     */
     @Override
     boolean isDirectNeighbors(String address) {
         return neighbors.containsKey(address);
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     */
     @Override
     boolean broadcast(MessageAdHoc message) {
         if (neighbors.size() > 0) {
@@ -252,16 +356,31 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         return false;
     }
 
+    /**
+     * Method allowing to disconnect the mobile from all the remote mobiles.
+     */
     @Override
     void disconnectAll() {
         // Not used in this context
     }
 
+    /**
+     * Method allowing to disconnect the mobile from a remote mobile.
+     */
     @Override
     void disconnect(String remoteDest) {
         // Not used in this context
     }
 
+    /**
+     * Method allowing to broadcast a message to all directly connected nodes excepted the excluded
+     * node.
+     *
+     * @param message         a MessageAdHoc object which represents the message to send through
+     *                        the network.
+     * @param excludedAddress a String value which represents the excluded address.
+     * @return a boolean value which is true if the broadcast was successful. Otherwise, false.
+     */
     @Override
     boolean broadcastExcept(MessageAdHoc message, String excludedAddress) {
         if (neighbors.size() > 0) {
@@ -276,12 +395,27 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         return false;
     }
 
+    /**
+     * Method allowing to get the direct neighbours of the current mobile.
+     *
+     * @return an ArrayList<AdHocDevice> object which represents the direct neighbours of the current mobile.
+     */
     public ArrayList<AdHocDevice> getDirectNeighbors() {
         return new ArrayList<>(neighbors.values());
     }
 
     /*--------------------------------------IWifi methods----------------------------------------*/
 
+    /**
+     * Method allowing to update the Group Owner value to influence the choice of the Group Owner
+     * negotiation.
+     *
+     * @param valueGroupOwner an integer value between 0 and 15 where 0 indicates the least
+     *                        inclination to be a group owner and 15 indicates the highest inclination
+     *                        to be a group owner. A value of -1 indicates the system can choose
+     *                        an appropriate value.
+     * @throws GroupOwnerBadValue signals that the value for the Group Owner intent is invalid.
+     */
     @Override
     public void setGroupOwnerValue(int valueGroupOwner) throws GroupOwnerBadValue {
 
@@ -292,31 +426,46 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         wifiAdHocManager.setValueGroupOwner(valueGroupOwner);
     }
 
+    /**
+     * Method allowing to remove a current Wi-Fi group.
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     */
     @Override
     public void removeGroup(ListenerAction listenerAction) {
         wifiAdHocManager.removeGroup(listenerAction);
     }
 
+    /**
+     * Method allowing to cancel a Wi-Fi connection (during the Group Owner negotiation).
+     *
+     * @param listenerAction a ListenerAction object which contains callback functions.
+     */
     @Override
     public void cancelConnect(ListenerAction listenerAction) {
         wifiAdHocManager.cancelConnection(listenerAction);
     }
 
+    /**
+     * Method allowing to check if the current device is the Group Owner.
+     *
+     * @return a boolean value which is true if the current device is the Group Owner. Otherwise, false.
+     */
     @Override
     public boolean isWifiGroupOwner() {
         return isGroupOwner;
     }
+
     /*--------------------------------------Private methods---------------------------------------*/
 
+    /**
+     * Method allowing to launch a server to handle incoming connections in background.
+     */
     private void listenServer() {
         udpPeers = new UdpPeers(v, serverPort, json, label, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
-                try {
-                    processMsgReceived(message);
-                } catch (IOException e) {
-                    listenerApp.processMsgException(e);
-                }
+                processMsgReceived(message);
             }
 
             @Override
@@ -361,6 +510,14 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         timerHelloCheck(Constants.HELLO_PACKET_INTERVAL_SND);
     }
 
+    /**
+     * Method allowing to send a Connect message if no ACK is received.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     * @param dest    a String address which represents the IP address of the remote node.
+     * @param time    an integer value which represents the time-expiration of the timer.
+     */
     private void timerConnectMessage(final MessageAdHoc message, final String dest, final int time) {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -376,14 +533,21 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         }, time);
     }
 
-    private void _sendMessage(final MessageAdHoc msg, final String address) {
+    /**
+     * Method allowing to send a message to a remote node.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     * @param dest    a String address which represents the IP address of the remote node.
+     */
+    private void _sendMessage(final MessageAdHoc message, final String dest) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 InetAddress inetAddress;
                 try {
-                    inetAddress = InetAddress.getByName(address);
-                    udpPeers.sendMessageTo(msg, inetAddress, remotePort);
+                    inetAddress = InetAddress.getByName(dest);
+                    udpPeers.sendMessageTo(message, inetAddress, remotePort);
                 } catch (UnknownHostException e) {
                     listenerApp.processMsgException(e);
                 }
@@ -465,6 +629,12 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         }, time);
     }
 
+    /**
+     * Method allowing to process a remote peer that has left the session.
+     *
+     * @param label a String address which represents the label of the remote node.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private void leftPeer(String label) throws IOException {
 
         // Process broken link in protocol
@@ -481,7 +651,13 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         }
     }
 
-    private void processMsgReceived(final MessageAdHoc message) throws IOException {
+    /**
+     * Method allowing to process messages from remote nodes.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     */
+    private void processMsgReceived(final MessageAdHoc message) {
 
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
@@ -637,6 +813,11 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         }
     }
 
+    /**
+     * Method allowing to initialize the ConnectionWifiListener object.
+     *
+     * @return a ConnectionWifiListener object which contains callback functions.
+     */
     private ConnectionWifiListener initConnectionListener() {
         return new ConnectionWifiListener() {
             @Override
@@ -682,7 +863,12 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         };
     }
 
-
+    /**
+     * Method allowing to get a label address from a MAC address.
+     *
+     * @param mac a String value which represents a MAC address.
+     * @return a String value which represents an label address associated with the given MAC address.
+     */
     private String getLabelByMac(String mac) {
         for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
             if (mac.equals(entry.getValue().getMacAddress())) {
@@ -692,6 +878,12 @@ class WrapperWifiUdp extends AbstractWrapper implements IWrapperWifi {
         return null;
     }
 
+    /**
+     * Method allowing to get a label address from an IP address.
+     *
+     * @param ip a String value which represents an IP address.
+     * @return a String value which represents an label address associated with the given IP address.
+     */
     private String getLabelByIP(String ip) {
         for (Map.Entry<String, AdHocDevice> entry : neighbors.entrySet()) {
             WifiAdHocDevice wifiDevice = (WifiAdHocDevice) entry.getValue();

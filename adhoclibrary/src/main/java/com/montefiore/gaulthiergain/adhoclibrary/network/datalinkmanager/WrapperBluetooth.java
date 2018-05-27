@@ -31,6 +31,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * <p>This class represents a wrapper and manages all communications related to Bluetooth.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 class WrapperBluetooth extends WrapperConnOriented {
 
     private static final String TAG = "[AdHoc][WrapperBt]";
@@ -39,6 +45,19 @@ class WrapperBluetooth extends WrapperConnOriented {
     private String ownStringUUID;
     private BluetoothAdHocManager bluetoothAdHocManager;
 
+    /**
+     * Constructor
+     *
+     * @param verbose          a boolean value to set the debug/verbose mode.
+     * @param context          a Context object which gives global information about an application
+     *                         environment.
+     * @param config           a Config object which contains specific configurations.
+     * @param mapAddressDevice a HashMap<String, AdHocDevice> which maps a UUID address entry to an
+     *                         AdHocDevice object.
+     * @param listenerApp      a ListenerApp object which contains callback functions.
+     * @param listenerDataLink a ListenerDataLink object which contains callback functions.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     WrapperBluetooth(boolean verbose, Context context, Config config,
                      HashMap<String, AdHocDevice> mapAddressDevice,
                      ListenerApp listenerApp, ListenerDataLink listenerDataLink) throws IOException {
@@ -56,6 +75,14 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     /*-------------------------------------Override methods---------------------------------------*/
 
+    /**
+     * Method allowing to initialize internal parameters.
+     *
+     * @param config  a Config object which contains specific configurations.
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     @Override
     void init(Config config, Context context) throws IOException {
         this.secure = config.isSecure();
@@ -66,25 +93,45 @@ class WrapperBluetooth extends WrapperConnOriented {
         this.listenServer();
     }
 
+    /**
+     * Method allowing to connect to a remote peer.
+     *
+     * @param attempts    an integer value which represents the number of attempts to try to connect
+     *                    to the remote peer.
+     * @param adHocDevice an AdHocDevice object which represents the remote peer.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     @Override
-    void connect(short attemps, AdHocDevice device) throws DeviceException {
+    void connect(short attempts, AdHocDevice adHocDevice) throws DeviceException {
 
-        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(device.getMacAddress());
+        BluetoothAdHocDevice btDevice = (BluetoothAdHocDevice) mapMacDevices.get(adHocDevice.getMacAddress());
         if (btDevice != null) {
-            if (serviceServer.getActiveConnections()!= null && !serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
-                _connect(attemps, btDevice);
+            if (serviceServer.getActiveConnections() != null && !serviceServer.getActiveConnections().containsKey(btDevice.getMacAddress())) {
+                _connect(attempts, btDevice);
             } else {
-                throw new DeviceException(device.getDeviceName()
-                        + "(" + device.getMacAddress() + ") is already connected");
+                throw new DeviceException(adHocDevice.getDeviceName()
+                        + "(" + adHocDevice.getMacAddress() + ") is already connected");
             }
         }
     }
 
+    /**
+     * Method allowing to stop a listening on incoming connections.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     @Override
     void stopListening() throws IOException {
         serviceServer.stopListening();
     }
 
+    /**
+     * Method allowing to perform a discovery depending the technology used. If the Bluetooth and
+     * Wi-Fi is enabled, the two discoveries are performed in parallel. A discovery stands for at
+     * least 10/12 seconds.
+     *
+     * @param discoveryListener a DiscoveryListener object which contains callback function.
+     */
     @Override
     void discovery(final DiscoveryListener discoveryListener) {
         bluetoothAdHocManager.discovery(new DiscoveryListener() {
@@ -138,6 +185,11 @@ class WrapperBluetooth extends WrapperConnOriented {
         });
     }
 
+    /**
+     * Method allowing to get all the Bluetooth devices which are already paired.
+     *
+     * @return a HashMap<String, AdHocDevice> object which contains all paired Bluetooth devices.
+     */
     @Override
     HashMap<String, AdHocDevice> getPaired() {
 
@@ -158,11 +210,23 @@ class WrapperBluetooth extends WrapperConnOriented {
         return mapMacDevices;
     }
 
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterConnection() {
         // Not used in bluetooth context
     }
 
+    /**
+     * Method allowing to enabled a particular technology.
+     *
+     * @param context         a Context object which gives global information about an application
+     *                        environment.
+     * @param duration        an integer value which is used to set up the time of the bluetooth discovery.
+     * @param listenerAdapter a ListenerAdapter object which contains callback functions.
+     * @throws BluetoothBadDuration signals that the duration for the bluetooth discovery is invalid.
+     */
     @Override
     void enable(Context context, int duration, ListenerAdapter listenerAdapter) throws BluetoothBadDuration {
         bluetoothAdHocManager = new BluetoothAdHocManager(v, context);
@@ -171,6 +235,9 @@ class WrapperBluetooth extends WrapperConnOriented {
         enabled = true;
     }
 
+    /**
+     * Method allowing to disabled a particular technology.
+     */
     @Override
     void disable() {
         // Clear data structure if adapter is disabled
@@ -182,26 +249,49 @@ class WrapperBluetooth extends WrapperConnOriented {
         enabled = false;
     }
 
+    /**
+     * Method allowing to update the current context.
+     *
+     * @param context a Context object which gives global information about an application
+     *                environment.
+     */
     @Override
     void updateContext(Context context) {
         bluetoothAdHocManager.updateContext(context);
     }
 
+    /**
+     * Method allowing to unregister broadcast receivers for Bluetooth and Wi-FI adapters.
+     */
     @Override
     void unregisterAdapter() {
         bluetoothAdHocManager.unregisterAdapter();
     }
 
+    /**
+     * Method allowing to reset the adapter name of a particular technology.
+     */
     @Override
     void resetDeviceName() {
         bluetoothAdHocManager.resetDeviceName();
     }
 
+    /**
+     * Method allowing to update the name of a particular technology.
+     *
+     * @param name a String value which represents the new name of the device adapter.
+     * @return a boolean value which is true if the name was correctly updated. Otherwise, false.
+     */
     @Override
     boolean updateDeviceName(String name) {
         return bluetoothAdHocManager.updateDeviceName(name);
     }
 
+    /**
+     * Method allowing to get a particular adapter name.
+     *
+     * @return a String which represents the name of a particular adapter name.
+     */
     @Override
     String getAdapterName() {
         return bluetoothAdHocManager.getAdapterName();
@@ -209,6 +299,16 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     /*--------------------------------------Public  methods---------------------------------------*/
 
+    /**
+     * Method allowing to unpair a previously paired bluetooth device.
+     *
+     * @param device a BluetoothAdHocDevice object which represents a remote Bluetooth device.
+     * @throws InvocationTargetException signals that a method does not exist.
+     * @throws IllegalAccessException    signals that an application tries to reflectively create
+     *                                   an instance which has no access to the definition of
+     *                                   the specified class
+     * @throws NoSuchMethodException     signals that a method does not exist.
+     */
     public void unpairDevice(BluetoothAdHocDevice device)
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         bluetoothAdHocManager.unpairDevice(device);
@@ -216,6 +316,11 @@ class WrapperBluetooth extends WrapperConnOriented {
 
     /*--------------------------------------Private methods---------------------------------------*/
 
+    /**
+     * Method allowing to launch a server to handle incoming connections in background.
+     *
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private void listenServer() throws IOException {
         serviceServer = new BluetoothServer(v, json, new ServiceMessageListener() {
             @Override
@@ -257,9 +362,16 @@ class WrapperBluetooth extends WrapperConnOriented {
                 UUID.fromString(ownStringUUID)));
     }
 
-    private void _connect(short attemps, final BluetoothAdHocDevice bluetoothAdHocDevice) {
+    /**
+     * Method allowing to connect to a remote node/
+     *
+     * @param attempts             an integer value which represents the number of attempts to try to connect
+     *                             to the remote peer.
+     * @param bluetoothAdHocDevice a BluetoothAdHocDevice object which represents a remote Bluetooth device.
+     */
+    private void _connect(short attempts, final BluetoothAdHocDevice bluetoothAdHocDevice) {
         final BluetoothClient bluetoothClient = new BluetoothClient(v,
-                json, timeout, secure, attemps, bluetoothAdHocDevice, new ServiceMessageListener() {
+                json, timeout, secure, attempts, bluetoothAdHocDevice, new ServiceMessageListener() {
             @Override
             public void onMessageReceived(MessageAdHoc message) {
                 try {
@@ -315,6 +427,13 @@ class WrapperBluetooth extends WrapperConnOriented {
         new Thread(bluetoothClient).start();
     }
 
+    /**
+     * Method allowing to process messages from remote nodes.
+     *
+     * @param message a MessageAdHoc object which represents the message to send through
+     *                the network.
+     * @throws IOException signals that an I/O exception of some sort has occurred.
+     */
     private void processMsgReceived(MessageAdHoc message) throws IOException {
         switch (message.getHeader().getType()) {
             case CONNECT_SERVER: {
@@ -391,7 +510,7 @@ class WrapperBluetooth extends WrapperConnOriented {
             }
             case BROADCAST: {
 
-                // Get Messsage Header
+                // Get Message Header
                 Header header = message.getHeader();
 
                 listenerApp.onReceivedData(new AdHocDevice(header.getLabel(), header.getMac(),
