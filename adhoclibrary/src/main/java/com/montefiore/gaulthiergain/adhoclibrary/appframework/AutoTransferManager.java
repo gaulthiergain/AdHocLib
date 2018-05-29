@@ -15,6 +15,12 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * <p>This class provide high-Level APIs to manage automatically ad hoc networks and communications.</p>
+ *
+ * @author Gaulthier Gain
+ * @version 1.0
+ */
 public class AutoTransferManager extends TransferManager {
 
     private static final String TAG = "[AdHoc][AutoTransfer]";
@@ -27,37 +33,51 @@ public class AutoTransferManager extends TransferManager {
     private static final short DISCOVERY_STATE = 1;
     private static final short CONNECT_STATE = 2;
 
-    private final Set<String> connectedDevices;
     private final ListenerApp listenerApp;
-    private Timer timer;
-
-    private int elapseTimeMax;
-    private int elapseTimeMin;
-
-    private ArrayList<AdHocDevice> arrayList;
+    private final Set<String> connectedDevices;
+    private final ArrayList<AdHocDevice> discoveredDevices;
 
     private short state;
+    private Timer timer;
+    private int elapseTimeMax;
+    private int elapseTimeMin;
     private AdHocDevice currentDevice = null;
 
+    /**
+     * Constructor
+     *
+     * @param verbose     a boolean value to set the debug/verbose mode.
+     * @param listenerApp a ListenerApp object which contains callback functions.
+     */
     public AutoTransferManager(boolean verbose, ListenerApp listenerApp) {
         super(verbose);
         setListenerApp(initListener());
 
         this.listenerApp = listenerApp;
         this.connectedDevices = new HashSet<>();
-        this.arrayList = new ArrayList<>();
+        this.discoveredDevices = new ArrayList<>();
         this.state = INIT_STATE;
     }
 
+    /**
+     * Constructor
+     *
+     * @param verbose     a boolean value to set the debug/verbose mode.
+     * @param config      a Config object which contains specific configurations.
+     * @param listenerApp a ListenerApp object which contains callback functions.
+     */
     public AutoTransferManager(boolean verbose, Config config, ListenerApp listenerApp) {
         super(verbose, config);
         setListenerApp(initListener());
         this.listenerApp = listenerApp;
         this.connectedDevices = new HashSet<>();
-        this.arrayList = new ArrayList<>();
+        this.discoveredDevices = new ArrayList<>();
         this.state = INIT_STATE;
     }
 
+    /**
+     * Method allowing to stop the discovery process.
+     */
     public void stopDiscovery() {
 
         if (timer != null) {
@@ -66,6 +86,11 @@ public class AutoTransferManager extends TransferManager {
         }
     }
 
+    /**
+     * Method allowing to launch a timer to execute the discovery mode.
+     *
+     * @param time an integer which represents the expiration of the timer.
+     */
     private void timerDiscovery(int time) {
 
         timer = new Timer();
@@ -90,6 +115,11 @@ public class AutoTransferManager extends TransferManager {
         }, time);
     }
 
+    /**
+     * Method allowing to initialize the discovery listener.
+     *
+     * @return A DiscoveryListener object which contains callback methods.
+     */
     private DiscoveryListener initListenerDiscovery() {
         return new DiscoveryListener() {
             @Override
@@ -119,7 +149,7 @@ public class AutoTransferManager extends TransferManager {
                             && !connectedDevices.contains(adHocDevice.getMacAddress())) {
 
                         if (v) Log.d(TAG, "Add device " + adHocDevice.toString());
-                        arrayList.add(adHocDevice);
+                        discoveredDevices.add(adHocDevice);
                     } else {
                         if (v) Log.d(TAG, "Found device " + adHocDevice.toString());
                     }
@@ -129,11 +159,23 @@ public class AutoTransferManager extends TransferManager {
         };
     }
 
+    /**
+     * Method allowing to wait a random time.
+     *
+     * @param min an integer value which represents the lower bound (exclusive).  It must be positive.
+     * @param max an integer value which represents the upper bound (exclusive).  It must be positive.
+     * @return an integer value which represents the random time between min and max parameter.
+     */
     private int waitRandomTime(int min, int max) {
         Random random = new Random();
         return random.nextInt(max - min + 1) + min;
     }
 
+    /**
+     * Method allowing to update the adapter name with a specific prefix.
+     *
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     private void updateAdapterName() throws DeviceException {
         String name = getBluetoothAdapterName();
         if (name != null) {
@@ -149,6 +191,9 @@ public class AutoTransferManager extends TransferManager {
         }
     }
 
+    /**
+     * Method allowing to connect to a paired device (Bluetooth).
+     */
     private void connectPairedDevices() {
         Map<String, AdHocDevice> paired = getPairedBluetoothDevices();
         if (paired != null) {
@@ -156,12 +201,20 @@ public class AutoTransferManager extends TransferManager {
                 if (v) Log.d(TAG, "Paired devices: " + String.valueOf(adHocDevice));
                 if (!connectedDevices.contains(adHocDevice.getMacAddress())
                         && adHocDevice.getDeviceName().contains(PREFIX)) {
-                    arrayList.add(adHocDevice);
+                    discoveredDevices.add(adHocDevice);
                 }
             }
         }
     }
 
+    /**
+     * Method allowing to start the discovery process every x seconds where x is a random value
+     * between elapseTimeMin and elapseTimeMax in milliseconds.
+     *
+     * @param elapseTimeMin an integer value which represents the lower bound (exclusive).  It must be positive.
+     * @param elapseTimeMax an integer value which represents the upper bound (exclusive).  It must be positive.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     private void _startDiscovery(int elapseTimeMin, int elapseTimeMax) throws DeviceException {
 
         this.elapseTimeMin = elapseTimeMin;
@@ -180,14 +233,33 @@ public class AutoTransferManager extends TransferManager {
         timerConnect();
     }
 
+    /**
+     * Method allowing to start the discovery process every x seconds where x is a random value
+     * between elapseTimeMin and elapseTimeMax in milliseconds.
+     *
+     * @param elapseTimeMin an integer value which represents the lower bound (exclusive).  It must be positive.
+     * @param elapseTimeMax an integer value which represents the upper bound (exclusive).  It must be positive.
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void startDiscovery(int elapseTimeMin, int elapseTimeMax) throws DeviceException {
         _startDiscovery(elapseTimeMin, elapseTimeMax);
     }
 
+    /**
+     * Method allowing to start the discovery process every x seconds where x is a random value
+     * between 50 and 60.
+     *
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void startDiscovery() throws DeviceException {
         _startDiscovery(50000, 60000);
     }
 
+    /**
+     * Method allowing to initialize the ListenerApp listener.
+     *
+     * @return a ListenerApp object which contains callback functions.
+     */
     private ListenerApp initListener() {
         return new ListenerApp() {
 
@@ -226,32 +298,41 @@ public class AutoTransferManager extends TransferManager {
                 if (v)
                     Log.d(TAG, "Add " + adHocDevice.getMacAddress() + " into connectedDevices set");
 
+                // Add the device into the connected devices list
                 connectedDevices.add(adHocDevice.getMacAddress());
 
                 listenerApp.onConnection(adHocDevice);
 
-                arrayList.remove(adHocDevice);
+                // Remove device from the discovered devices list
+                discoveredDevices.remove(adHocDevice);
 
+                // Update state
                 state = INIT_STATE;
             }
 
             @Override
             public void onConnectionFailed(Exception e) {
+
                 listenerApp.onConnectionFailed(e);
 
-                arrayList.remove(currentDevice);
+                // Remove device from the discovered devices list
+                discoveredDevices.remove(currentDevice);
 
+                // Update state
                 state = INIT_STATE;
             }
         };
     }
 
+    /**
+     * Method allowing to launch a timer for outgoing connection(s).
+     */
     private void timerConnect() {
         Timer timerConnect = new Timer();
         timerConnect.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (AdHocDevice device : arrayList) {
+                for (AdHocDevice device : discoveredDevices) {
                     if (state == INIT_STATE) {
                         try {
                             if (v) Log.d(TAG, "Try to connect to " + device.toString());
@@ -261,7 +342,7 @@ public class AutoTransferManager extends TransferManager {
                         } catch (DeviceException e) {
                             e.printStackTrace();
                             state = INIT_STATE;
-                            arrayList.remove(device);
+                            discoveredDevices.remove(device);
                         }
                     } else {
                         if (v) Log.d(TAG, "Unable to connect " + getStateString());
@@ -271,6 +352,11 @@ public class AutoTransferManager extends TransferManager {
         }, MIN_DELAY_TIME, MAX_DELAY_TIME);
     }
 
+    /**
+     * Method allowing to get the current state as a String value.
+     *
+     * @return a String value which represents the current state.
+     */
     private String getStateString() {
         switch (state) {
             case DISCOVERY_STATE:
@@ -283,6 +369,11 @@ public class AutoTransferManager extends TransferManager {
         }
     }
 
+    /**
+     * Method allowing to reset the adapter name (Wi-Fi and Bluetooth) of the current device.
+     *
+     * @throws DeviceException signals that a Device Exception exception has occurred.
+     */
     public void reset() throws DeviceException {
         String name = getBluetoothAdapterName();
         if (name != null && name.contains(PREFIX)) {
