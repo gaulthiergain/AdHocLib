@@ -1,4 +1,11 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.2" // jCenter
+    id "com.github.dcendents.android-maven" version "1.5" // maven
+}
+
 apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 26
@@ -31,4 +38,57 @@ dependencies {
     })
     implementation 'com.android.support:appcompat-v7:26.+'
     testImplementation 'junit:junit:4.12'
+}
+
+// for Bintray
+def libGit = 'https://github.com/gaulthiergain/AdHocLib.git'
+def libUrl = 'https://github.com/gaulthiergain/AdHocLib'
+def libDescription = 'Android library for ad hoc communications'
+def libGroupId = 'com.montefiore.gaulthiergain.adhoclib'
+def libArtifactId = 'adhoclibrary'
+
+// for Maven
+group = 'com.montefiore.gaulthiergain.adhoclib'
+version = '1.0.0'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name libArtifactId
+            description libDescription
+            url libUrl
+            inceptionYear '2018'
+
+            packaging 'aar'
+            groupId libGroupId
+            artifactId libArtifactId
+            version '1.0.0'
+
+            licenses {
+                license {
+                    name 'MIT'
+                    url 'https://opensource.org/licenses/MIT'
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = bintray_user
+    key = bintray_apikey
+    pkg {
+        repo = libGroupId
+        name = libArtifactId
+        licenses = ['MIT']
+        vcsUrl = libGit
+        version {
+            name = projectVersionName
+            gpg {
+                sign = true
+                passphrase = bintray_gpg_phrase
+            }
+        }
+    }
+    configurations = ['archives']
 }
