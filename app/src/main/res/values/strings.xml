@@ -1,13 +1,16 @@
 <resources>
-    <string name="app_name">AdHocLib</string>
-    <string name="title_activity_main">MainActivity</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="get_infos">Get infos</string>
-    <string name="connect_to">Connect to</string>
-    <string name="listen">Listen</string>
-    <string name="stop">Stop</string>
-    <string name="discovery">Discovery</string>
-    <string name="chat">Chat</string>
+    <string name="app_name">Tests</string>
+    <string name="button_connect">Connect</string>
+    <string name="button_scan">Scan</string>
+    <string name="button_send">Send</string>
+    <string name="message_to_send">Message</string>
+    <string name="disable_bt">Disable Bluetooth</string>
+    <string name="enable_bt">Enable Bluetooth</string>
+    <string name="disable_wifi">Disable Wifi</string>
+    <string name="enable_wifi">Enable Wifi</string>
+    <string name="broadcast">Broadcast</string>
+    <string name="getPaired">Paired Bt</string>
+    <string name="remove_group">Remove Group</string>
+    <string name="is_groupOwner">Is groupOwner?</string>
+    <string name="get_neighbors">Get neighbors</string>
 </resources>

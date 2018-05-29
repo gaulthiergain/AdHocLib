@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/enable_wifi"
+        android:title="@string/enable_wifi"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/disable_wifi"
+        android:title="@string/disable_wifi"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/enable_bt"
+        android:title="@string/enable_bt"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/disable_bt"
+        android:title="@string/disable_bt"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/remove_group"
+        android:title="@string/remove_group"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/is_groupOwner"
+        android:title="@string/is_groupOwner"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/get_neighbors"
+        android:title="@string/get_neighbors"
+        app:showAsAction="never" />
+</menu>
+
