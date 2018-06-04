@@ -49,7 +49,7 @@ def libArtifactId = 'adhoclibrary'
 
 // for Maven
 group = 'com.montefiore.gaulthiergain.adhoclib'
-version = '1.0.0'
+version = '1.0.1'
 
 install {
     repositories.mavenInstaller {
@@ -62,7 +62,7 @@ install {
             packaging 'aar'
             groupId libGroupId
             artifactId libArtifactId
-            version '1.0.0'
+            version '1.0.1'
 
             licenses {
                 license {
@@ -83,7 +83,7 @@ bintray {
         licenses = ['MIT']
         vcsUrl = libGit
         version {
-            name = '1.0.0-adhoclib'
+            name = '1.0.1-adhoclib'
             gpg {
                 sign = true
                 passphrase = bintray_gpg_phrase
