@@ -83,7 +83,7 @@ bintray {
         licenses = ['MIT']
         vcsUrl = libGit
         version {
-            name = projectVersionName
+            name = '1.0.0-adhoclib'
             gpg {
                 sign = true
                 passphrase = bintray_gpg_phrase
