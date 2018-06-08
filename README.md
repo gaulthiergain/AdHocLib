@@ -1,6 +1,6 @@
 # AdHocLib: Android library for ad hoc network.
 
-AdHocLib version 1.0.0
+AdHocLib version 1.0.1
 
 ### What is AdHocLib?
 
