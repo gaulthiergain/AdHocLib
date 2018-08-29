@@ -17,7 +17,7 @@ Its interface offers the following basic functionalities:
   
 ### Installation and documentation
 
-For installation and documentation, a wiki is available on this [address](https://github.com/gaulthiergain/AdHocLib/wiki).
+For installation and documentation, a wiki is available on this [address](https://github.com/gaulthiergain/AdHocLib/wiki/Main-page).
 
 ### Contribute
 
