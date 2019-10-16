@@ -19,6 +19,8 @@ Its interface offers the following basic functionalities:
 
 For installation and documentation, a wiki is available on this [address](https://github.com/gaulthiergain/AdHocLib/wiki/Main-page).
 
+Further information can be found here (master thesis): https://matheo.uliege.be/handle/2268.2/4702
+
 ### Contribute
 
 AdhocLib is an open source project (under MIT license) and is currently hosted at <https://github.com/gaulthiergain/AdHocLib>.  You are encouraged to download the code, examine it, modify it, and submit bug reports, bug fixes, feature requests, new features and other issues and pull requests.
